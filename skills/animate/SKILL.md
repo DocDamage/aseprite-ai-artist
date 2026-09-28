@@ -1,5 +1,5 @@
 ---
-name: pixel-animate
+name: animate
 title: Animate a cycle
 description: Build an idle, walk, run or attack cycle from key poses, set timing that reads as motion rather than a metronome, tag it, and review it as a filmstrip. Use when a rigged sprite needs to move.
 ---
@@ -8,7 +8,7 @@ description: Build an idle, walk, run or attack cycle from key poses, set timing
 
 ## Before you start
 
-The sprite must be rigged onto named layers — see `pixel-rig`. Animating a
+The sprite must be rigged onto named layers — see `aseprite:rig`. Animating a
 flattened sprite means redrawing every frame by hand.
 
 ## Procedure

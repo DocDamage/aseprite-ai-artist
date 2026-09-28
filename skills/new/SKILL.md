@@ -1,5 +1,5 @@
 ---
-name: pixel-new
+name: new
 title: Create a sprite document
 description: Create a new Aseprite document with the right canvas size, colour mode, palette and layer structure, so later work does not have to fight the setup. Use when starting fresh rather than editing an existing sprite.
 ---
@@ -49,7 +49,7 @@ things right and the rest of the work is drawing.
    ```
 
    For anything that will be animated, build the full character rig instead —
-   see `pixel-rig`. Splitting baked pixels apart later is real work.
+   see `aseprite:rig`. Splitting baked pixels apart later is real work.
 
 5. **Save immediately**, so the user has a file and undo has an anchor:
 
@@ -63,7 +63,7 @@ things right and the rest of the work is drawing.
 
 ## Then
 
-`pixel-draw` to block in the art.
+`aseprite:draw` to block in the art.
 
 ## Related
 

@@ -1,5 +1,5 @@
 ---
-name: pixel-tileset
+name: tileset
 title: Build a tileset
 description: Design seamless tiles and autotile sets, or deduplicate a hand-painted mockup into a reusable tileset, then export for Tiled or Godot. Use for level art, terrain and anything that repeats.
 ---

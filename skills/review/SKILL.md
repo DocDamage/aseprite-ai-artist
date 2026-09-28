@@ -1,5 +1,5 @@
 ---
-name: pixel-review
+name: review
 title: Review a sprite before calling it done
 description: Run the mechanical checks and the by-eye checks, then report what you found with evidence instead of declaring success. Use before finishing any pixel-art task, and when the user asks "is this good" or "why does this look off".
 ---

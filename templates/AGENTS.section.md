@@ -11,8 +11,8 @@ the Aseprite window that is open on this machine — not into files on disk.
 2. Call `sprite_info`. Layer names, frame count and palette come from the
    document, never from assumption.
 3. Read the workflow that matches the task. The server exposes them as MCP
-   resources — `skill://pixel-draw`, `skill://pixel-animate`,
-   `skill://pixel-review` and others — and the craft rules as `rules://index`.
+   resources — `skill://draw`, `skill://animate`,
+   `skill://review` and others — and the craft rules as `rules://index`.
    Start with `rules://00-core-principles`.
 
 **While working:**

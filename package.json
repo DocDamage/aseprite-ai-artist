@@ -1,7 +1,7 @@
 {
   "name": "@pebbly/aseprite-ai-artist",
   "version": "0.1.6",
-  "description": "Agent-native control layer for Aseprite. MCP server (2025-11-25 spec, designed forward to 2026-07-28) + cross-agent skills for Claude Code, Codex, Gemini CLI and Cursor.",
+  "description": "Agent-native control layer for Aseprite. MCP server (2025-11-25 spec, designed forward to 2026-07-28) + cross-agent skills for Claude Code, omp, Codex, Gemini CLI and Cursor.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -19,6 +19,7 @@
     "rules",
     "agents",
     "hooks",
+    "omp",
     "knowledge",
     "templates",
     "examples",
@@ -41,6 +42,8 @@
     "sprites",
     "animation",
     "claude-code",
+    "omp",
+    "oh-my-pi",
     "codex",
     "gemini-cli",
     "cursor"
@@ -50,12 +53,17 @@
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test --experimental-strip-types tests/color.test.ts tests/render.test.ts tests/bridge.test.ts tests/server.test.ts tests/cli.test.ts",
+    "test": "node --test --experimental-strip-types tests/color.test.ts tests/render.test.ts tests/bridge.test.ts tests/server.test.ts tests/cli.test.ts tests/omp.test.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "npm run clean && npm run build",
     "test:extension": "aseprite -b --script-param root=. --script tests/extension.test.lua",
     "test:e2e": "node tests/e2e.mjs",
     "test:pure": "lua tests/pure.test.lua"
+  },
+  "omp": {
+    "extensions": [
+      "./omp/aseprite-ai-artist.mjs"
+    ]
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

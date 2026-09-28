@@ -37,21 +37,77 @@ and adds an `AGENTS.md` section for the clients that read one. Existing config
 files are backed up first (`.bak-<timestamp>`), and `--dry-run` prints the change
 without making it.
 
+### Workflow names
+
+Every client sees the same twelve workflows under the same names:
+`aseprite:studio` (the front door — give it any request and it picks and runs
+the rest), `aseprite:brief`, `aseprite:new`, `aseprite:palette`, `aseprite:draw`,
+`aseprite:shade`, `aseprite:rig`, `aseprite:animate`, `aseprite:tileset`,
+`aseprite:review`, `aseprite:fix`, `aseprite:export`.
+
+| Client | How they appear |
+|--------|-----------------|
+| Claude Code (plugin) | `/aseprite:draw` — plugin skills |
+| omp (plugin) | `/aseprite:draw` — commands from the omp extension |
+| Gemini CLI, Cursor, other prompt-aware MCP clients | MCP prompt `aseprite:draw` |
+| Codex, and any client without prompts | resource `skill://draw`; the server instructions list the names |
+
 ### Claude Code
 
-The plugin is the better route — it brings the `/pixel-*` skills, the specialist
-subagents and the hooks, not just the tools:
+The plugin is the better route — it brings the `/aseprite:*` workflows, the
+specialist subagents and the hooks, not just the tools:
 
 ```
 /plugin marketplace add with-pebbly/aseprite-ai-artist
-/plugin install aseprite-ai-artist
+/plugin install aseprite@aseprite-ai-artist
 ```
+
+Installed before the rename, as `aseprite-ai-artist`? Uninstall that one first
+(`/plugin uninstall aseprite-ai-artist`) — the plugin ID changed so the commands
+could be `aseprite:*`, and both copies would start a server.
 
 Or wire the server alone:
 
 ```bash
 npx @pebbly/aseprite-ai-artist install claude
 ```
+
+### omp (oh-my-pi)
+
+omp installs the same plugin from its own marketplace:
+
+```bash
+omp plugin marketplace add with-pebbly/aseprite-ai-artist
+omp plugin install aseprite@aseprite-ai-artist
+```
+
+The skills, subagents and MCP server come from the same tree Claude Code reads.
+omp does not run Claude's `hooks/hooks.json`, so the plugin ships the two hooks
+again as an omp extension (`omp/aseprite-ai-artist.mjs`, declared in
+`package.json` under `omp.extensions`): the bridge status on the first prompt
+and the once-per-session nudge to `look` after a mutating call.
+
+omp lists plugin skills as `/skill:<name>`, so the same extension registers the
+`/aseprite:*` commands itself, from the same `SKILL.md` files. They inject the
+skill as a prompt, with anything typed after the command as the request.
+
+omp also imports Claude Code's plugins. Install it in omp under the same ID as
+in Claude Code — omp's registry wins for a shared ID, so this replaces the
+imported copy instead of starting a second server. For the same reason, do not
+also run `install claude`: omp reads `~/.claude.json` too, and you would load
+every tool twice.
+
+From a checkout, point the marketplace at the directory instead:
+
+```bash
+omp plugin marketplace add /path/to/aseprite-ai-artist
+omp plugin install aseprite@aseprite-ai-artist
+```
+
+omp copies the tree into its plugin cache, so after changing it run
+`omp plugin marketplace update aseprite-ai-artist` and
+`omp plugin install --force aseprite@aseprite-ai-artist`, then restart
+the session.
 
 ### Codex CLI
 
@@ -65,7 +121,7 @@ source of "it silently does nothing".
 
 Codex does not expose MCP **prompts**, so the skills do not appear as commands
 there. It does read MCP **resources**, which is where the same skill content
-lives (`skill://pixel-draw` and friends), and in practice it finds and follows
+lives (`skill://draw` and friends), and in practice it finds and follows
 them on its own — verified against Codex CLI 0.145.0.
 
 ### Gemini CLI
@@ -175,7 +231,9 @@ The `npx` form is correct everywhere else.
 ## Uninstall
 
 Delete the `aseprite-ai-artist` directory from Aseprite's `extensions` folder,
-remove the server entry from your agent's config, and stop any running bridge:
+remove the server entry from your agent's config (in omp:
+`omp plugin uninstall aseprite@aseprite-ai-artist`), and stop any
+running bridge:
 
 ```bash
 pkill -f "aseprite-ai-artist bridge"    # macOS / Linux

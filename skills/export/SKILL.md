@@ -1,5 +1,5 @@
 ---
-name: pixel-export
+name: export
 title: Export game-ready assets
 description: Produce the files an engine actually consumes — spritesheets with atlases, GIFs, scaled PNGs — with the tags and layout the target needs. Use when work is finished and needs to leave Aseprite.
 ---
@@ -21,7 +21,7 @@ re-export. If you do not know, ask — it is one question.
 
 ## Before exporting
 
-Run `pixel-review`. Exporting broken art just distributes it.
+Run `aseprite:review`. Exporting broken art just distributes it.
 
 Then check specifically:
 

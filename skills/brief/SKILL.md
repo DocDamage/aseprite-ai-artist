@@ -1,5 +1,5 @@
 ---
-name: pixel-brief
+name: brief
 title: Plan a sprite before drawing it
 description: Turn a vague pixel-art request into a written brief — size, palette, view, light, outline style — and confirm it with the user before any pixel is drawn. Use when the request is open-ended ("make me a knight") rather than a specific edit.
 ---
@@ -52,7 +52,7 @@ the user's time and yours. Five questions, one answer, then draw.
 
 ## Then
 
-Go to `pixel-new` to create the document, or `pixel-draw` if a suitable sprite
+Go to `aseprite:new` to create the document, or `aseprite:draw` if a suitable sprite
 is already open.
 
 ## Related

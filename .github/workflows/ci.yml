@@ -73,7 +73,7 @@ jobs:
               'extension/ai-artist.lua',
               'extension/package.json',
               'knowledge/palettes.json',
-              'skills/pixel-draw/SKILL.md',
+              'skills/draw/SKILL.md',
               'rules/00-core-principles.md',
               'templates/AGENTS.section.md',
               'dist/cli.js',

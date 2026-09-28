@@ -11,7 +11,8 @@ Guidance for agents and humans changing this code. For using the tool, see the
 | `extension/ai-artist.lua` | Everything that runs inside Aseprite |
 | `rules/` | Pixel-art craft, served as `rules://` resources |
 | `skills/` | Workflows, served as `skill://` resources and MCP prompts |
-| `agents/`, `hooks/` | Claude Code plugin surface |
+| `agents/`, `hooks/` | Claude Code plugin surface; omp reads the same tree as a marketplace plugin |
+| `omp/` | omp extension replaying `hooks/hooks.json` with omp's event API; hook text lives in `hooks/shared.mjs` |
 | `tests/` | Node tests, plus a Lua harness that runs inside `aseprite -b` |
 | `docs/adr/` | Why things are the way they are. Read these before arguing with them. |
 

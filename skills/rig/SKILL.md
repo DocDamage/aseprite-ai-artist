@@ -1,5 +1,5 @@
 ---
-name: pixel-rig
+name: rig
 title: Rig a character for animation
 description: Split a character onto named layers — head, torso, arms, legs — so it can be animated by moving cels instead of redrawing pixels. Use before animating anything, or when limbs are baked into one layer.
 ---
@@ -69,7 +69,7 @@ moment it rotates. Copy generously and let the stacking order hide the excess.
 
 ## Then
 
-`pixel-animate`.
+`aseprite:animate`.
 
 ## Related
 

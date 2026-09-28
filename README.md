@@ -29,8 +29,8 @@ The agent picks a palette, blocks in a silhouette, **looks at what it drew**,
 shades it, splits it onto layers, animates, tags the cycle, and tells you what it
 had to compromise on. Every edit is one Ctrl+Z.
 
-Works with **Claude Code, Codex CLI, Gemini CLI, Cursor, VS Code and Windsurf**
-from the same one-line config.
+Works with **Claude Code, omp, Codex CLI, Gemini CLI, Cursor, VS Code and
+Windsurf** from the same one-line config.
 
 ## Install
 
@@ -55,12 +55,27 @@ running from before the install will never connect.
 
 ```
 /plugin marketplace add with-pebbly/aseprite-ai-artist
-/plugin install aseprite-ai-artist
+/plugin install aseprite@aseprite-ai-artist
 ```
 
-It brings its own server plus the `/pixel-*` commands, the subagents and the
+It brings its own server plus the `/aseprite:*` commands, the subagents and the
 preview hooks. Don't also add the server by hand — you'd load all eighteen tools
 twice, on every request.
+
+</details>
+
+<details>
+<summary><b>omp</b> — the same plugin, through omp's marketplace</summary>
+
+<br>
+
+```bash
+omp plugin marketplace add with-pebbly/aseprite-ai-artist
+omp plugin install aseprite@aseprite-ai-artist
+```
+
+Same server, skills, subagents and `/aseprite:*` commands as in Claude Code;
+the preview hooks come as an omp extension.
 
 </details>
 
@@ -152,11 +167,14 @@ where they're still better.
 `reference` · `export` · `tileset`, plus `run_lua` as an escape hatch, off by
 default. Full reference: [docs/TOOLS.md](docs/TOOLS.md).
 
-**Eleven workflows** the agent follows, served to every client — `pixel-brief` ·
-`pixel-new` · `pixel-palette` · `pixel-draw` · `pixel-shade` · `pixel-rig` ·
-`pixel-animate` · `pixel-tileset` · `pixel-review` · `pixel-fix` ·
-`pixel-export`. In Claude Code you also get four specialists: **pixel-critic**,
-**palette-smith**, **rig-builder**, **animation-director**.
+**Twelve workflows** the agent follows, served to every client under the same
+names — `aseprite:studio`, the front door that picks and orders the rest ·
+`aseprite:brief` · `aseprite:new` · `aseprite:palette` · `aseprite:draw` ·
+`aseprite:shade` · `aseprite:rig` · `aseprite:animate` · `aseprite:tileset` ·
+`aseprite:review` · `aseprite:fix` · `aseprite:export`. Slash commands in
+Claude Code and omp, MCP prompts elsewhere, `skill://<name>` resources for
+clients with neither. In Claude Code and omp you also get four specialists:
+**pixel-critic**, **palette-smith**, **rig-builder**, **animation-director**.
 
 **A rulebook** in [`rules/`](rules/) — palette discipline, hue-shifted shading,
 silhouette, outlines, animation timing, layer rigging, review checklist. Skills

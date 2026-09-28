@@ -127,7 +127,7 @@ function splitFrontmatter(raw: string): { frontmatter: Frontmatter; body: string
  * wrong catastrophically, and points at the skills for everything else.
  */
 export function serverInstructions(skills: SkillDoc[]): string {
-  const catalogue = skills.map((s) => `  - ${s.name}: ${s.description}`).join("\n");
+  const catalogue = skills.map((s) => `  - aseprite:${s.name} (skill://${s.name}): ${s.description}`).join("\n");
 
   return `Aseprite AI Artist — draw pixel art in the user's OPEN Aseprite window.
 
@@ -142,5 +142,5 @@ Non-negotiables:
 Craft rules live in the \`rules://\` resources (read \`rules://index\` first). Workflows live in the \`skill://\` resources and as prompts:
 ${catalogue}
 
-Read the skill that matches the task before starting it.`;
+Read the skill that matches the task before starting it. When a request spans several steps, or none of them obviously fits, start with aseprite:studio: it picks and orders the others.`;
 }

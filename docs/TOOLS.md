@@ -83,7 +83,7 @@ code execution in the application holding the user's unsaved work. Enable with
 |-----|------|
 | `rules://index` | The pixel-art rulebook contents |
 | `rules://{name}` | One chapter, e.g. `rules://02-shading-and-light` |
-| `skill://{name}` | One workflow, e.g. `skill://pixel-animate` |
+| `skill://{name}` | One workflow, e.g. `skill://animate` |
 | `knowledge://palettes` | Bundled palette presets with notes |
 
 Every skill is also registered as an MCP **prompt**, so clients that render

@@ -1,5 +1,5 @@
 ---
-name: pixel-fix
+name: fix
 title: Fix or iterate on existing art
 description: Change a sprite that already exists — the user's own work or your earlier output — without destroying what is already right. Use for edits, touch-ups, style corrections and "make it more X" requests.
 ---
@@ -73,7 +73,7 @@ Report what changed and what you deliberately left alone.
 | "more detail" | Usually wrong at small sizes — ask what should read better |
 | "pop more" | Contrast against the background, or a brighter accent |
 | "less flat" | Shading exists but does not hue-shift, or has no light direction |
-| "off / uncanny" | Run `pixel-review`; name the specific cause |
+| "off / uncanny" | Run `aseprite:review`; name the specific cause |
 
 Reflect your reading back before acting on it. "More detail" on a 16×16 sprite
 usually means the sprite needs to be bigger, and that is worth one question.
@@ -88,4 +88,4 @@ usually means the sprite needs to be bigger, and that is worth one question.
 
 ## Related
 
-`pixel-review`, `rules://00-core-principles`.
+`aseprite:review`, `rules://00-core-principles`.

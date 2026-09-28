@@ -1,5 +1,5 @@
 ---
-name: pixel-shade
+name: shade
 title: Shade a sprite
 description: Add light and shadow with proper hue shifting, one step at a time, so the sprite gains form without gaining the flat-luminance look that marks generated pixel art. Use when flat art needs volume.
 ---

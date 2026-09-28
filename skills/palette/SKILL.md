@@ -1,5 +1,5 @@
 ---
-name: pixel-palette
+name: palette
 title: Choose, build and repair a palette
 description: Pick a palette that fits the request, build hue-shifted ramps, or clean up a sprite whose colours have sprawled. Use when the user asks about colour, wants a specific retro look, or when validate reports off-palette colours.
 ---

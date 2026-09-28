@@ -4,6 +4,40 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is
 [semver](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **omp support.** `omp plugin marketplace add with-pebbly/aseprite-ai-artist`
+  then `omp plugin install aseprite@aseprite-ai-artist` brings the server,
+  the workflows and the four subagents from the same tree Claude
+  Code reads. omp does not run Claude's `hooks.json`, so the two hooks ship
+  again as an omp extension (`omp/aseprite-ai-artist.mjs`, declared under
+  `omp.extensions` in `package.json`): bridge status on the first prompt, and
+  the once-per-session `look` nudge after `draw`, `recolor` or `transform`.
+  The extension also registers the `/aseprite:*` commands, since omp would
+  otherwise list plugin skills as `/skill:<name>`.
+- **`aseprite:studio`, a workflow that runs the others.** Given any request it
+  classifies it, writes down the chain of workflows it needs (brief → new →
+  draw → shade → rig → animate → review → export, or any slice of that), hands
+  stages to the specialist agents where the harness has them, and does not
+  report done before `look` and a review. The server instructions now point to
+  it when no single workflow fits.
+
+### Changed
+
+- **Breaking: every workflow is `aseprite:<name>` in every client.** Skill
+  directories lost their `pixel-` prefix (`skills/draw`, `skill://draw`), the
+  plugin is now `aseprite` (Claude Code shows `/aseprite:draw`), MCP prompts are
+  named `aseprite:draw`, and the server instructions list them under those names.
+  Claude Code users must reinstall: `/plugin uninstall aseprite-ai-artist`, then
+  `/plugin install aseprite@aseprite-ai-artist`. `skill://pixel-*` URIs no longer
+  resolve. The npm package and the MCP server key are unchanged.
+
+- The hook messages and the bridge probe moved to `hooks/shared.mjs`, so the
+  Claude Code hooks and the omp extension cannot drift apart. The session hook
+  no longer probes the plugin port, whose answer it never used.
+
 ## [0.1.6] — 2026-09-09
 
 Mostly documentation and art, plus one thing that should have existed from the

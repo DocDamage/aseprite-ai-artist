@@ -162,9 +162,12 @@ function registerSkillSurface(
     },
   );
 
+  // Prompt names carry the same `aseprite:` namespace the Claude Code plugin and
+  // the omp extension give these workflows, so a client that turns MCP prompts
+  // into slash commands (Gemini CLI, Cursor) shows `/aseprite:draw` as well.
   for (const skill of skills) {
     server.registerPrompt(
-      skill.name,
+      `aseprite:${skill.name}`,
       {
         title: skill.title,
         description: skill.description,

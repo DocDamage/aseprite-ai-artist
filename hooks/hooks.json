@@ -12,7 +12,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "mcp__plugin_aseprite-ai-artist_aseprite__draw|mcp__plugin_aseprite-ai-artist_aseprite__recolor|mcp__plugin_aseprite-ai-artist_aseprite__transform",
+        "matcher": "mcp__plugin_aseprite_aseprite__draw|mcp__plugin_aseprite_aseprite__recolor|mcp__plugin_aseprite_aseprite__transform",
         "hooks": [
           {
             "type": "command",

@@ -11,6 +11,7 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import { LOOK_NUDGE } from "./shared.mjs";
 
 let payload = {};
 try {
@@ -39,8 +40,7 @@ process.stdout.write(
   JSON.stringify({
     hookSpecificOutput: {
       hookEventName: "PostToolUse",
-      additionalContext:
-        "You just changed pixels. Call `look` before deciding whether it worked — op 'preview' for the overall read, op 'ascii' for exact pixel positions. A tool result saying pixels changed is not evidence that the sprite is right.",
+      additionalContext: LOOK_NUDGE,
     },
   }),
 );

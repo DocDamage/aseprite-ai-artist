@@ -83,6 +83,11 @@ test("every skill is also reachable as a prompt", async () => {
   const { client, close } = await connected();
   const { prompts } = await client.listPrompts();
   assert.ok(prompts.length > 0, "no prompts registered");
+  assert.ok(
+    prompts.every((p) => p.name.startsWith("aseprite:")),
+    "every workflow is namespaced aseprite:<name>, the same as in Claude Code and omp",
+  );
+  assert.ok(prompts.some((p) => p.name === "aseprite:studio"));
 
   const first = prompts[0]!;
   const got = await client.getPrompt({ name: first.name, arguments: {} });

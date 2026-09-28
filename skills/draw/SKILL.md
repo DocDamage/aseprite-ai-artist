@@ -1,5 +1,5 @@
 ---
-name: pixel-draw
+name: draw
 title: Draw a sprite
 description: Draw a sprite from silhouette to finished pixels, in the order that catches mistakes while they are still cheap — block in, check the silhouette, shade, outline, verify. Use for the main body of any drawing task.
 ---
@@ -52,7 +52,7 @@ leather, cloth. Still flat. Still one `draw` call.
 
 ### 5. Shade
 
-See `pixel-shade`. One shadow step, look, one light step, look. Stop there
+See `aseprite:shade`. One shadow step, look, one light step, look. Stop there
 unless the sprite is 32px+ and genuinely needs more.
 
 ### 6. Outline
