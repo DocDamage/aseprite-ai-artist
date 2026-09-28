@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-09-28
+
 ### Fixed
 
 - **Windows:** the auto-started bridge no longer opens a console window, and
