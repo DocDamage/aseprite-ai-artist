@@ -28,7 +28,8 @@
       ],
       "env": {
         "ASEPRITE_AI_PLUGIN_PORT": "9931",
-        "ASEPRITE_AI_CONTROL_PORT": "9932"
+        "ASEPRITE_AI_CONTROL_PORT": "9932",
+        "ASEPRITE_AI_PROMPTS": "0"
       }
     }
   },

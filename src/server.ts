@@ -19,6 +19,12 @@ export interface CreateServerOptions {
   pluginPort?: number;
   /** Enables the run_lua escape hatch. Off unless the operator opts in. */
   allowLua?: boolean;
+  /**
+   * Register every workflow as an MCP prompt. Plugin installs (Claude Code,
+   * omp) turn this off: they already list the skills as `/aseprite:<name>`, and
+   * the harness would add the prompts again as `/aseprite:aseprite:aseprite:<name>`.
+   */
+  prompts?: boolean;
   autoSpawnBridge?: boolean;
   root?: string;
 }
@@ -64,7 +70,7 @@ export function createServer(opts: CreateServerOptions = {}): RunningServer {
   registerAssetTools(server, live);
   registerEscapeTools(server, live, opts.allowLua ?? false);
 
-  registerSkillSurface(server, root, skills, rules);
+  registerSkillSurface(server, root, skills, rules, opts.prompts ?? true);
 
   return { server, live };
 }
@@ -74,6 +80,7 @@ function registerSkillSurface(
   root: string,
   skills: ReturnType<typeof loadSkills>,
   rules: ReturnType<typeof loadRules>,
+  prompts: boolean,
 ): void {
   // ── rules ────────────────────────────────────────────────────────────────
   server.registerResource(
@@ -165,7 +172,7 @@ function registerSkillSurface(
   // Prompt names carry the same `aseprite:` namespace the Claude Code plugin and
   // the omp extension give these workflows, so a client that turns MCP prompts
   // into slash commands (Gemini CLI, Cursor) shows `/aseprite:draw` as well.
-  for (const skill of skills) {
+  for (const skill of prompts ? skills : []) {
     server.registerPrompt(
       `aseprite:${skill.name}`,
       {

@@ -76,7 +76,13 @@ async function main(): Promise<void> {
 
   switch (command) {
     case "serve":
-      return serve({ pluginPort, controlPort, allowLua: truthy(flags.allowLua ?? process.env.ASEPRITE_AI_ALLOW_LUA) });
+      return serve({
+        pluginPort,
+        controlPort,
+        allowLua: truthy(flags.allowLua ?? process.env.ASEPRITE_AI_ALLOW_LUA),
+        // Plugin manifests set ASEPRITE_AI_PROMPTS=0; see ServerOptions.prompts.
+        prompts: process.env.ASEPRITE_AI_PROMPTS !== "0",
+      });
     case "bridge":
       return runBridge({ pluginPort, controlPort });
     case "install":
@@ -92,11 +98,12 @@ async function main(): Promise<void> {
   }
 }
 
-async function serve(opts: { pluginPort: number; controlPort: number; allowLua: boolean }): Promise<void> {
+async function serve(opts: { pluginPort: number; controlPort: number; allowLua: boolean; prompts: boolean }): Promise<void> {
   const { server, live } = createServer({
     pluginPort: opts.pluginPort,
     controlPort: opts.controlPort,
     allowLua: opts.allowLua,
+    prompts: opts.prompts,
   });
 
   const transport = new StdioServerTransport();

@@ -4,7 +4,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer } from "../dist/server.js";
 
-async function connected() {
+async function connected(opts: { prompts?: boolean } = {}) {
   const { server, live } = createServer({
     // Ports nothing listens on, and no bridge spawn: these tests are about the
     // MCP surface, not the Aseprite link.
@@ -12,6 +12,7 @@ async function connected() {
     controlPort: 19942,
     autoSpawnBridge: false,
     allowLua: false,
+    ...opts,
   });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "test", version: "0" });
@@ -93,6 +94,17 @@ test("every skill is also reachable as a prompt", async () => {
   const got = await client.getPrompt({ name: first.name, arguments: {} });
   assert.ok(String(got.messages[0]?.content.text).length > 100, "prompt body is empty");
 
+  await close();
+});
+
+test("plugin installs drop the prompts but keep the skill resources", async () => {
+  // Claude Code and omp already list skills as /aseprite:<name>; prompts there
+  // would reappear as /aseprite:aseprite:aseprite:<name>.
+  const { client, close } = await connected({ prompts: false });
+  const { prompts } = await client.listPrompts().catch(() => ({ prompts: [] }));
+  assert.equal(prompts.length, 0);
+  const { resources } = await client.listResources();
+  assert.ok(resources.some((r) => r.uri === "skill://studio"));
   await close();
 });
 

@@ -33,6 +33,9 @@ All notable changes to this project are documented here. Format follows
   Claude Code users must reinstall: `/plugin uninstall aseprite-ai-artist`, then
   `/plugin install aseprite@aseprite-ai-artist`. `skill://pixel-*` URIs no longer
   resolve. The npm package and the MCP server key are unchanged.
+  Plugin installs start the server with `ASEPRITE_AI_PROMPTS=0`: the harness
+  already lists the skills, and the prompts would reappear as
+  `/aseprite:aseprite:aseprite:<name>`.
 
 - The hook messages and the bridge probe moved to `hooks/shared.mjs`, so the
   Claude Code hooks and the omp extension cannot drift apart. The session hook
