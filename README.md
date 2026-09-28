@@ -119,7 +119,8 @@ haven't run are listed as untested rather than guessed at.
 
 | Model | What it drew | How it went |
 |---|---|---|
-| **Claude Fable 5.1** | the animation up top | Best so far. One session, no review passes needed. |
+| **Claude Opus 5.5** | the rainy bookshop up top | Best so far. 500×400, 72 frames, 20 layers in one session — plus a few rounds of user notes (café table, hoodie, an arm rig redone with fixed-length IK, lightning, raccoon). |
+| **Claude Fable 5.1** | the robot at the easel, below | Very strong. One session, no review passes needed. |
 | **Codex CLI** `gpt-5.6-terra`, high reasoning | the harbour below, and the mascot | Strong, but it took five rounds of critique. |
 | **Claude Opus 5** | the server, the rulebook, every review pass | The planner and the critic. Its own drawing attempt got scrapped. |
 | Gemini 3 Pro, Sonnet 5, Cursor, others | — | Untested. Run one and send us the sprite. |
@@ -129,7 +130,7 @@ haven't run are listed as untested rather than guessed at.
 <sub><i>the mascot — Codex, from the brief and the rulebook alone</i></sub>
 </div>
 
-**Method mattered more than the model.** Both good results came the same way:
+**Method mattered more than the model.** Every good result came the same way:
 
 - **Generate, don't hand-place.** Write a small program that emits every frame,
   then push it. Placing pixels one call at a time by eye is where the weak
@@ -211,7 +212,7 @@ npm run test:extension   # the real handlers, headless, against a real sprite
 
 `test:extension` needs Aseprite installed, so CI can't run it.
 
-## Two more, drawn the same way
+## More, drawn the same way
 
 <div align="center">
 
@@ -228,6 +229,15 @@ water, smoke, boat, stars — each on its own cycle length, which is what keeps 
 ambient loop from feeling mechanical.</sub>
 
 </div>
+
+## Who drew what
+
+| Art | Model |
+|---|---|
+| Rainy bookshop (hero, `docs/media/rainy-bookshop.gif`) | Claude Opus 5.5 |
+| Robot at the easel (`docs/media/hero2.gif`) | Claude Fable 5.1 |
+| Night harbour (`docs/media/harbour.gif`) | Codex CLI, `gpt-5.6-terra`, high reasoning |
+| Mascot (`docs/media/mascot.png`) | Codex CLI, `gpt-5.6-terra`, high reasoning |
 
 ## Licence
 
