@@ -314,7 +314,8 @@ export class LiveClient {
       const child = spawn(
         process.execPath,
         [cli, "bridge", "--plugin-port", String(this.pluginPort), "--control-port", String(this.controlPort)],
-        { detached: true, stdio: "ignore" },
+        // windowsHide: a detached Node child otherwise opens a console window on Windows.
+        { detached: true, stdio: "ignore", windowsHide: true },
       );
       child.unref();
       this.spawnedPid = child.pid ?? null;

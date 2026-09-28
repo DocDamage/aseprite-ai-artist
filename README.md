@@ -45,8 +45,9 @@ Windsurf** — one config line each.
 
 ## 🚀 Get started in three steps
 
-You need [Aseprite](https://www.aseprite.org/) 1.3+ and Node 22.6+. Open Aseprite
-once before you start, so its config folder exists.
+You need [Aseprite](https://www.aseprite.org/) 1.3+ and Node 22.6+ on macOS,
+Linux or Windows. Open Aseprite once before you start, so its config folder
+exists.
 
 ### 1. Install the extension
 
@@ -117,6 +118,25 @@ npx @pebbly/aseprite-ai-artist doctor
 
 Ticks all the way down? You're ready. If something's missing, it tells you
 which half — no guessing. More in [docs/INSTALL.md](docs/INSTALL.md).
+
+## 💻 macOS, Linux and Windows
+
+It runs the same on all three. CI builds and tests every commit on
+`macos-latest`, `ubuntu-latest` and `windows-latest`.
+
+| | macOS | Linux | Windows |
+|---|:---:|:---:|:---:|
+| MCP server, bridge, installer, `doctor` | ✅ | ✅ | ✅ |
+| Aseprite extension | ✅ | ✅ | ✅ |
+| Where `install-extension` looks for Aseprite | `~/Library/Application Support/Aseprite` | `$XDG_CONFIG_HOME/aseprite` (default `~/.config/aseprite`), then `~/.aseprite` | `%APPDATA%\Aseprite` |
+
+Steam, itch.io and self-built Aseprite all use the same config folder as their
+platform's standard build. If yours lives somewhere else, point the installer
+at it: set `ASEPRITE_USER_FOLDER`, or pass `--dir <path>`.
+
+On Windows the bridge starts as a hidden background process, so no console
+window pops up while you draw. Both sockets bind `127.0.0.1` only, so Windows
+Firewall has nothing to ask about.
 
 ## 🎨 The skills, and how to use them
 

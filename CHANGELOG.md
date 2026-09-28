@@ -6,6 +6,13 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **Windows:** the auto-started bridge no longer opens a console window, and
+  `npm run clean` works without a Unix shell. The README gets a platform
+  section listing where the installer looks for Aseprite on macOS, Linux and
+  Windows.
+
 ## [0.2.0] — 2026-09-28
 
 ### Added
