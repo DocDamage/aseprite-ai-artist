@@ -6,7 +6,13 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-09-28
+
 ### Added
+
+- **New README hero:** a 500×400, 72-frame rainy-night bookshop drawn end to
+  end by Claude Opus 5.5 through this server; the README now recommends Opus 5.5
+  as the model to drive it. The robot and the harbour moved to the gallery.
 
 - **omp support.** `omp plugin marketplace add with-pebbly/aseprite-ai-artist`
   then `omp plugin install aseprite@aseprite-ai-artist` brings the server,

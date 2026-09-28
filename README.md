@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/media/hero2.gif" alt="A pixel robot at an easel paints a landscape stroke by stroke under a pendant lamp" width="768">
+<img src="docs/media/rainy-bookshop.gif" alt="A rainy night in Japan: a raccoon pulls a can from a vending machine, lightning flashes over the rooftops, maple leaves blow past an old bookshop where someone in a hoodie reads and sips coffee in warm lamplight" width="768">
 
 # Aseprite AI Artist
 
@@ -11,9 +11,10 @@ open.** Not a copy, not a file on disk — the document you are looking at.
 [![CI](https://github.com/with-pebbly/aseprite-ai-artist/actions/workflows/ci.yml/badge.svg)](https://github.com/with-pebbly/aseprite-ai-artist/actions/workflows/ci.yml)
 [![licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
-<sub>192×96, 54 frames, one palette. Drawn through this server into a live
-Aseprite window — the paint appears under the brush, every frame. Then the robot
-wipes the canvas clean and starts again, which is why the loop has no seam.</sub>
+<sub>500×400, 72 frames, 20 layers, one 50-colour palette. Drawn by Claude Opus 5.5
+through this server into a live Aseprite window: rain, wind, lightning, a
+raccoon at the vending machine, and a reader who drinks her coffee and turns the
+page. Every moving part runs on a cycle that divides the loop, so it has no seam.</sub>
 
 </div>
 
@@ -31,6 +32,9 @@ had to compromise on. Every edit is one Ctrl+Z.
 
 Works with **Claude Code, omp, Codex CLI, Gemini CLI, Cursor, VS Code and
 Windsurf** from the same one-line config.
+
+**Recommended model: Claude Opus 5.5** — right now the top pick for driving this
+server. The scene above is its work, end to end.
 
 ## Install
 
@@ -207,9 +211,15 @@ npm run test:extension   # the real handlers, headless, against a real sprite
 
 `test:extension` needs Aseprite installed, so CI can't run it.
 
-## One more, drawn the same way
+## Two more, drawn the same way
 
 <div align="center">
+
+<img src="docs/media/hero2.gif" alt="A pixel robot at an easel paints a landscape stroke by stroke under a pendant lamp" width="768">
+
+<sub>192×96, 54 frames, one palette. The paint appears under the brush, every
+frame. Then the robot wipes the canvas clean and starts again, which is why the
+loop has no seam.</sub>
 
 <img src="docs/media/harbour.gif" alt="A pixel-art harbour at night: a lighthouse beam sweeps over the water, windows flicker, smoke drifts from a chimney" width="768">
 
