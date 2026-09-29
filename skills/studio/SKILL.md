@@ -63,6 +63,8 @@ workflow it names and follow that — do not do the step from memory.
 | A change to existing art ("make it more menacing", "fix the hands") | `aseprite:fix` → `aseprite:review` |
 | An opinion ("is this good?", "why does it look off?") | `aseprite:review` only — report, do not edit unless asked |
 | Files for an engine or for sharing | `aseprite:review` if not already done → `aseprite:export` |
+| Words on the art — a label, score, title card | `aseprite:draw` (its Text section) → `aseprite:review` |
+| Nine-slice UI panels, pivots or hotspots for an engine | `aseprite:export` (slices) |
 
 If a request fits no row, it is usually a direct tool call ("rename the layer",
 "add a frame"): make it, `look` if pixels changed, and say what you did.

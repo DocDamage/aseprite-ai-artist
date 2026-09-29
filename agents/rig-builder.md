@@ -25,6 +25,13 @@ Bottom to top: `shadow`, `leg-far`, `arm-far`, `torso`, `head`, `leg-near`,
 
 Build it in one `layer` call with a `batch` array — one undo step for the user.
 
+Grouping twins is fine: `left/arm` and `right/arm` can both be named `arm`, and
+every tool takes the group path. A bare `arm` is then refused rather than
+guessed, so always address those layers by path.
+
+Reusing a part from another open sprite (the same sword for two characters):
+`layer op="duplicate" toSprite="#<id>"` copies it with its cels.
+
 ## Splitting baked art
 
 `draw` op `blit` per part, copying from the source layer to its new home.

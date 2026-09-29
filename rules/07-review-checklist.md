@@ -35,6 +35,8 @@ The text grid is where you find the pixel that is one row too low, the run of
 - [ ] The cycle loops cleanly
 - [ ] Contact poses hold longer than pass poses
 - [ ] There is anticipation before any strong action
+- [ ] In-betweens ease against their neighbours — check with `look` op `onion`
+- [ ] Parts that must not collide do not — `validate` with `expect.mustNotOverlap`
 
 ## Before handing over
 

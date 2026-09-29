@@ -16,6 +16,13 @@ interior into a colouring book.
 Pure black outlines on everything read as harsh and flatten the form. A very dark
 version of the sprite's own colours nearly always looks better.
 
+`transform` op `outline` draws a whole silhouette's outline in one call.
+`side="outside"` grows the shape by a pixel; `side="inside"` recolours its own
+edge pixels and keeps the size — use it when the sprite already fills its
+budget. By default only pixels touching the shape edge-on are outlined, which
+leaves convex corners cut — a softer, rounder read. `diagonals=true` fills those
+corner pixels too, for closed, square corners.
+
 ## Clean lines
 
 A pixel line is clean when its segment lengths are consistent: 2,2,2,2 or

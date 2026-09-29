@@ -23,6 +23,17 @@ location where one exists.
 Fix every **error**. For each **warning** you do not fix, have a reason and say
 it.
 
+For animation, tell `validate` what the cycle is supposed to be, and it checks
+that instead of only the generic rules:
+
+```
+validate expect={ layerFrames: { "sword-fx": [[3,4]] }, mustNotOverlap: [["sword","head"]] }
+```
+
+`layerFrames` flags a layer that is empty inside its frame range or has pixels
+outside it (a slash effect leaking into the idle); `mustNotOverlap` flags any
+frame where two layers' pixels collide (the blade crossing the face).
+
 ### 2. Look at it
 
 ```
@@ -58,6 +69,15 @@ look op="filmstrip"
 
 Volume consistent? Height consistent? Does it loop? Do contact poses hold
 longer? Is there anticipation before strong actions?
+
+Then check the in-betweens one at a time against their neighbours:
+
+```
+look op="onion" frame=3
+```
+
+Ghosts of frames 2 and 4 under frame 3 show whether the spacing eases or jumps,
+and whether a limb changed length on the way — both invisible in a filmstrip.
 
 ### 5. Report
 

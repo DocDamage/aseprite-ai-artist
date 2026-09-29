@@ -106,7 +106,9 @@ untagged sprite as an error.
 
 `look op="filmstrip"` again, then run through the animation checks in
 `rules://07-review-checklist`: consistent volume, consistent height, clean loop,
-anticipation before strong actions, light that does not move.
+anticipation before strong actions, light that does not move. Run `validate`
+with an `expect` describing the cycle — which layers live on which frames, which
+parts must never overlap — so the mechanical check knows what "right" means here.
 
 ## Related
 

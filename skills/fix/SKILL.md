@@ -24,7 +24,9 @@ For a targeted edit, also `look op="ascii"` on the region. You cannot edit
 pixels precisely from a description.
 
 **Never assume layer names, frame counts or the palette.** Drawing into the
-wrong layer is the most common way an agent damages someone's file.
+wrong layer is the most common way an agent damages someone's file. When two
+groups hold same-named layers (`left/arm`, `right/arm`), a bare name is refused
+— pass the group path rather than renaming the user's layers.
 
 ### 2. Say what you are about to change
 
@@ -54,7 +56,8 @@ look op="diff" fromFrame=… toFrame=…
 
 for animation work, or `look op="ascii"` on the region for a static edit. A
 preview shows you the result; a diff shows you the *change*, including the parts
-you did not intend.
+you did not intend. The diff's `changedBounds` is the quick test: if you edited
+the hand and the box spans the whole sprite, something else moved.
 
 ### 6. Validate and report
 
@@ -73,6 +76,8 @@ Report what changed and what you deliberately left alone.
 | "more detail" | Usually wrong at small sizes — ask what should read better |
 | "pop more" | Contrast against the background, or a brighter accent |
 | "less flat" | Shading exists but does not hue-shift, or has no light direction |
+| "muddy colours" | Too many near-duplicates — `palette op="extract"` on a copy, or `analyze` + `snap` |
+| "add a label / score / title" | `draw` kind `text`; measure with `measureOnly` first so it lands centred |
 | "off / uncanny" | Run `aseprite:review`; name the specific cause |
 
 Reflect your reading back before acting on it. "More detail" on a 16×16 sprite

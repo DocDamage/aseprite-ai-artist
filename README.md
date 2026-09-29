@@ -58,6 +58,10 @@ npx @pebbly/aseprite-ai-artist install-extension
 Then **quit and reopen Aseprite**. It only connects at startup, so an editor that
 was already running will never find the server.
 
+Updating to a new version? Run the same command again — the extension carries
+part of every new feature, and an old one answers new requests with a clear
+"not supported" rather than doing half the job.
+
 ### 2. Connect your agent
 
 <details open>
@@ -177,15 +181,15 @@ Reach for these directly when you know exactly which step you want.
 |---|---|---|
 | 📝 **`brief`** | the idea is still vague. Settles size, palette, view, light and outline in one message before a pixel is drawn. | `/aseprite:brief a cosy tavern keeper` |
 | 📄 **`new`** | you're starting fresh. Sets up canvas, colour mode, palette and layers so nothing fights you later. | `/aseprite:new 64×64 sprite, PICO-8` |
-| 🎨 **`palette`** | colour is the question — a retro look, hue-shifted ramps, or cleaning up ninety near-identical browns. | `/aseprite:palette give this a Game Boy look` |
-| ✏️ **`draw`** | it's time to make the thing. Silhouette first, then materials, shading, outline, verify. | `/aseprite:draw a fox curled up asleep` |
+| 🎨 **`palette`** | colour is the question — a retro look, hue-shifted ramps, cleaning up ninety near-identical browns, or building a tight palette out of the art itself. | `/aseprite:palette give this a Game Boy look` |
+| ✏️ **`draw`** | it's time to make the thing. Silhouette first, then materials, shading, outline, verify. Labels and title cards too, in a crisp pixel font — measured first, so they land centred. | `/aseprite:draw a fox curled up asleep` |
 | 🌗 **`shade`** | the art looks flat. Adds light and shadow one step at a time, with hue shifting. | `/aseprite:shade light from the upper left` |
-| 🦴 **`rig`** | a character is about to move. Splits it onto head, torso, arm and leg layers. | `/aseprite:rig split the knight for animation` |
-| 🏃 **`animate`** | something needs to move. Key poses first, timing that breathes, tagged cycles. | `/aseprite:animate 8-frame walk cycle` |
+| 🦴 **`rig`** | a character is about to move. Splits it onto head, torso, arm and leg layers — `left/arm` and `right/arm` can share a name. | `/aseprite:rig split the knight for animation` |
+| 🏃 **`animate`** | something needs to move. Key poses first, timing that breathes, tagged cycles. Checks each in-between over onion-skin ghosts; a cape's drift or a lantern's sway can be generated instead of hand-placed. | `/aseprite:animate 8-frame walk cycle` |
 | 🧱 **`tileset`** | you need terrain or level art — seamless tiles, autotiles, Tiled/Godot export. | `/aseprite:tileset grass-to-dirt autotile, 16px` |
-| 🔍 **`review`** | you want the truth. Mechanical checks plus eyes-on checks, reported with evidence. | `/aseprite:review why does this look off?` |
+| 🔍 **`review`** | you want the truth. Mechanical checks plus eyes-on checks, reported with evidence — including rules you set, like "the sword never covers the face". | `/aseprite:review why does this look off?` |
 | 🩹 **`fix`** | something exists and needs changing without wrecking what's already right. | `/aseprite:fix make him look more menacing` |
-| 📦 **`export`** | it's done and has to leave Aseprite — spritesheets with JSON atlases, GIFs, scaled PNGs. | `/aseprite:export spritesheet for Godot` |
+| 📦 **`export`** | it's done and has to leave Aseprite — spritesheets with JSON atlases, GIFs, scaled PNGs, nine-slice panels and pivot points for your engine. | `/aseprite:export spritesheet for Godot` |
 
 ### 🧑‍🎨 The specialists
 
@@ -229,29 +233,6 @@ scored task instead of a log entry, see [the knight benchmark](docs/evals/knight
 - **Turn reasoning up** before you blame the model. A 32×32 grid is a spatial
   problem.
 
-## 🆕 New in 0.3
-
-- **Onion skin.** Ask the agent to check an in-between and it sees the frame
-  over faded copies of its neighbours, the way you would in the editor.
-- **Tweens and bobbing.** A cape can drift, a lantern can sway, a ghost can
-  float — the agent fills the in-between frames with an easing curve or a sine
-  wave instead of placing each one by hand. Still one Ctrl+Z.
-- **Text.** Labels, score counters and title cards in a crisp pixel font drawn
-  for this project. The agent can measure a line before drawing it, so a label
-  lands centred the first time.
-- **Slices for engines.** Nine-patch centres and pivot points go straight into
-  the spritesheet's JSON, ready for Godot or Unity.
-- **Palette from the art.** "This has gotten muddy" → the agent builds a tight
-  palette out of what's actually on the canvas.
-- **Rigs with twins.** `left/arm` and `right/arm` can share a name; the agent
-  says which one it means instead of guessing.
-- **Also:** inside or outside outlines, copying a layer into another open
-  sprite, animation checks like "the sword never covers the face", and a
-  [knight benchmark](docs/evals/knight-benchmark.md) to compare models on.
-
-Upgrading? Run `npx @pebbly/aseprite-ai-artist install-extension` again and
-restart Aseprite — the new abilities live in the extension too.
-
 ## 💡 Why this one
 
 🌍 **It works everywhere, not just in Claude Code.** Most Aseprite MCP projects
@@ -266,8 +247,8 @@ call is one undo step for you.
 
 👀 **It has to look at its own work.** `look` gives the agent an upscaled
 preview, a one-glyph-per-pixel text grid, a filmstrip, an onion skin and a
-frame-to-frame diff.
-`validate` then checks the sprite mechanically before anything is called done.
+frame-to-frame diff. `validate` then checks the sprite mechanically before
+anything is called done.
 
 🛡️ **It can't quietly wreck your file.** With Aseprite detached, every tool
 refuses immediately instead of timing out — because an agent that "recovers" by

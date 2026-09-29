@@ -17,7 +17,11 @@ character is a different size. Keys first, always.
 2. Read `rules://05-animation`.
 3. Plan the cycle in writing. Get agreement. Then build.
 4. Review with `look` op `filmstrip` — a vision model reads only the first frame
-   of a GIF, so this is the only way to actually see motion.
+   of a GIF, so this is the only way to actually see motion. Then `look` op
+   `onion` on each in-between to check its spacing against its neighbours.
+5. Close with `validate` and an `expect` built from the plan: `layerFrames` for
+   layers that exist only on some frames (a slash trail on frames 3–4),
+   `mustNotOverlap` for parts that must never collide (weapon and head).
 
 ## What a plan contains
 
@@ -26,6 +30,9 @@ character is a different size. Keys first, always.
 - **Breakdowns** — which in-betweens are needed and which are not.
 - **Timing in milliseconds per frame**, with contacts held longer than passes.
 - **Tag name and direction.**
+- **What is keyed and what is generated.** Primary motion is hand-keyed. Secondary
+  motion that should go unnoticed — a cape drifting, a lantern swaying, a float —
+  can be `cel` op `tween` or `oscillate`. Name which is which in the plan.
 
 ## Cycle templates
 

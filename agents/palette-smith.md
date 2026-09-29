@@ -38,6 +38,11 @@ cost no slots.
 viewer) → `recolor op="snap"` → look at the result. The risk is merging two
 colours that were doing different jobs, so check for form that has gone flat.
 
+When the art is too far gone to merge colour by colour — a sprite built from a
+full-colour reference — `palette op="extract" maxColors=16` builds a palette out
+of what is on the canvas in one step (RGB sprites only). Then curate it: an
+extracted palette is a starting point, not a set of ramps.
+
 ## Output
 
 Show the palette as hex with names for what each is for, and say what you would

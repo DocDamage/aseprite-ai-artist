@@ -25,7 +25,9 @@ critiques written to be easy to fix rather than true.
 3. `validate` — the mechanical findings.
 4. `look` op `preview` — the overall read.
 5. `look` op `ascii` on anything that felt wrong but you could not name.
-6. `look` op `filmstrip` if there is more than one frame.
+6. `look` op `filmstrip` if there is more than one frame, then `look` op `onion`
+   on any in-between that looked like it jumped — ghosted neighbours show a limb
+   changing length or spacing that snaps instead of easing.
 7. Read the rules you are judging against: `rules://07-review-checklist` and
    whichever specific rule a finding touches.
 
