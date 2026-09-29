@@ -38,7 +38,7 @@ const result = (toolName: string, isError = false) => ({
 
 test("every skill becomes an /aseprite:<workflow> command carrying its body", () => {
   const commands = loadSkillCommands();
-  assert.equal(commands.length, 12);
+  assert.equal(commands.length, 13);
   assert.ok(commands.some((c: { name: string }) => c.name === "aseprite:studio"));
   const draw = commands.find((c: { name: string }) => c.name === "aseprite:draw");
   assert.ok(draw, "draw maps to aseprite:draw");

@@ -1,0 +1,222 @@
+<script lang="ts">
+	import { resolve } from '$app/paths';
+	import ArrowLeftIcon from '~icons/pixelarticons/arrow-left';
+	import DownloadIcon from '~icons/pixelarticons/download';
+	import ExternalLinkIcon from '~icons/pixelarticons/external-link';
+	import { Badge, Button, Card } from '$shared/ui/8bit';
+	import { FileImage, ScoreMeter } from '$entities/generation';
+	import { sequenceText } from '$entities/prompt';
+	import { CopyButton } from '$features/copyPrompt';
+	import { PromptTimeline } from '$widgets/promptTimeline';
+	import { formatDate } from '$shared/lib/format';
+	import { saveFrom } from '$shared/lib/download';
+	import type { GenerationPageData } from '../model/types';
+	import GenerationFiles from './GenerationFiles.svelte';
+	import MoreViews from './MoreViews.svelte';
+	import ValidateReports from './ValidateReports.svelte';
+
+	interface Props {
+		data: GenerationPageData;
+	}
+
+	let { data }: Props = $props();
+
+	const g = $derived(data.generation);
+
+	const source = $derived(g.files.find((file) => file.role === 'source'));
+	const passed = $derived(g.results.filter((result) => result.pass).length);
+	const modelSteps = $derived(
+		g.models.map((model) => ({
+			model,
+			steps: g.steps.flatMap((step, index) =>
+				step.model === model || (!step.model && g.models.length === 1) ? [index + 1] : []
+			)
+		}))
+	);
+</script>
+
+<svelte:head>
+	<title>{g.title}: Aseprite AI Artist</title>
+	<meta name="description" content={g.description ?? `${g.title}, drawn by ${g.modelLabel} with Aseprite AI Artist v${g.plugin}.`} />
+</svelte:head>
+
+<div class="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
+	<a href={resolve('/gallery')} class="text-muted-foreground hover:text-foreground inline-flex h-10 items-center gap-1.5 text-sm">
+		<ArrowLeftIcon aria-hidden="true" />
+		Gallery
+	</a>
+
+	<div class="mt-4 grid gap-10 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
+		<div class="self-start px-1.5">
+			<Card font="normal" class="gap-0 py-0">
+				<div class="canvas-checker grid min-h-72 place-items-center overflow-hidden p-6 sm:p-10">
+					<FileImage file={g.cover} alt={g.title} max={560} eager />
+				</div>
+			</Card>
+		</div>
+
+		<div>
+			<div class="mb-8 flex flex-wrap gap-6 px-1.5">
+				<CopyButton
+					text={sequenceText(g.steps)}
+					label={g.steps.length > 1 ? 'Copy full prompt' : 'Copy prompt'}
+					done="Copied the full prompt"
+					variant="default"
+					size="default"
+				/>
+				{#if source}
+					<Button href={source.url} download={source.name} onclick={(event: MouseEvent) => saveFrom(event, source.url, source.name)} variant="outline">
+						<DownloadIcon aria-hidden="true" />
+						Download .aseprite
+					</Button>
+				{/if}
+			</div>
+			<h1 class="text-xl leading-snug sm:text-3xl sm:leading-snug">{g.title}</h1>
+			{#if g.description}
+				<p class="text-muted-foreground mt-4 max-w-[60ch] text-lg">{g.description}</p>
+			{/if}
+
+			<dl class="mt-8 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-[0.95rem]">
+				<dt class="text-muted-foreground">Author</dt>
+				<dd>
+					{#if g.author.github}
+						<a href="https://github.com/{g.author.github}" class="underline underline-offset-4" rel="noopener">
+							{g.author.name}
+						</a>
+						<span class="text-muted-foreground">@{g.author.github}</span>
+					{:else}
+						{g.author.name}
+					{/if}
+				</dd>
+				<dt class="text-muted-foreground">Date</dt>
+				<dd><time datetime={g.date}>{formatDate(g.date)}</time></dd>
+				<dt class="text-muted-foreground">Plugin</dt>
+				<dd>v{g.plugin}</dd>
+				<dt class="text-muted-foreground">Harness</dt>
+				<dd>{g.harness}</dd>
+				<dt class="text-muted-foreground">{g.models.length === 1 ? 'Model' : 'Models'}</dt>
+				<dd>
+					<ul class="space-y-1">
+						{#each modelSteps as entry (entry.model)}
+							<li>
+								<span class="font-medium">{entry.model}</span>
+								{#if g.steps.length > 1 && entry.steps.length > 0}
+									<span class="text-muted-foreground">
+										ran {entry.steps.length === g.steps.length ? 'every step' : `step ${entry.steps.join(' and ')}`}
+									</span>
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				</dd>
+				{#if g.benchmark}
+					<dt class="text-muted-foreground">Benchmark</dt>
+					<dd class="space-y-1.5">
+						<a href={resolve('/benchmarks/[prompt]', { prompt: g.benchmark.prompt })} class="underline underline-offset-4">
+							{g.benchmark.promptTitle}
+						</a>
+						<span class="text-muted-foreground">revision {g.benchmark.revision}</span>
+						{#if g.outdated}
+							<Badge variant="outline" class="ml-2 text-[0.625rem]">Older revision, unranked</Badge>
+						{/if}
+						{#if g.score}
+							<div><ScoreMeter score={g.score} size="lg" /></div>
+						{/if}
+					</dd>
+				{/if}
+				{#if g.tags.length > 0}
+					<dt class="text-muted-foreground">Tags</dt>
+					<dd class="flex flex-wrap gap-4 px-1.5">
+						{#each g.tags as tag (tag)}
+							<Badge variant="secondary" href="{resolve('/gallery')}?tag={encodeURIComponent(tag)}" class="text-[0.625rem]">{tag}</Badge>
+						{/each}
+					</dd>
+				{/if}
+			</dl>
+
+			<div class="mt-10 flex flex-wrap gap-6 px-1.5">
+				<CopyButton text={g.yaml} label="Copy YAML" done="Copied generation.yaml" variant="ghost" />
+				<Button href={g.githubUrl} variant="ghost" rel="noopener">
+					<ExternalLinkIcon aria-hidden="true" />
+					On GitHub
+				</Button>
+			</div>
+		</div>
+	</div>
+
+	<div class="mt-16 max-w-3xl px-1.5">
+		<PromptTimeline
+			prompt={{ id: g.id, steps: g.steps, setup: { rules: [] } }}
+			heading="The prompts, verbatim"
+		/>
+	</div>
+
+	{#if g.results.length > 0 || g.validate.length > 0}
+		<section class="mt-16 grid gap-12 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+			<div>
+				{#if g.results.length > 0}
+					<section aria-labelledby="results">
+						<h2 id="results" class="text-base sm:text-lg">Benchmark results</h2>
+						<p class="text-muted-foreground mt-2 text-sm">{passed} of {g.results.length} criteria passed.</p>
+						<ul class="mt-5 space-y-4">
+							{#each g.results as result (result.criterion)}
+								<li class="flex gap-3">
+									<span
+										class={[
+											'mt-0.5 grid size-7 shrink-0 place-items-center',
+											result.pass ? 'bg-secondary text-secondary-foreground' : 'bg-pico-red text-black'
+										]}
+									>
+										{#if result.pass}
+											<svg viewBox="0 0 16 16" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true">
+												<rect x="3" y="8" width="3" height="2" fill="currentColor" />
+												<rect x="5" y="10" width="3" height="2" fill="currentColor" />
+												<rect x="6" y="6" width="3" height="2" fill="currentColor" />
+												<rect x="8" y="4" width="3" height="2" fill="currentColor" />
+												<rect x="10" y="2" width="3" height="2" fill="currentColor" />
+											</svg>
+										{:else}
+											<svg viewBox="0 0 16 16" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true">
+												<rect x="3" y="3" width="3" height="2" fill="currentColor" />
+												<rect x="3" y="5" width="3" height="2" fill="currentColor" />
+												<rect x="3" y="7" width="3" height="2" fill="currentColor" />
+												<rect x="3" y="9" width="3" height="2" fill="currentColor" />
+												<rect x="3" y="11" width="3" height="2" fill="currentColor" />
+												<rect x="5" y="3" width="3" height="2" fill="currentColor" />
+												<rect x="7" y="3" width="3" height="2" fill="currentColor" />
+												<rect x="9" y="3" width="3" height="2" fill="currentColor" />
+												<rect x="11" y="3" width="3" height="2" fill="currentColor" />
+											</svg>
+										{/if}
+										<span class="sr-only">{result.pass ? 'Passed' : 'Failed'}:</span>
+									</span>
+									<div class="min-w-0 text-sm">
+										<p>{result.text ?? result.criterion}</p>
+										<p class="text-muted-foreground mt-0.5 text-xs">
+											{#if result.step}Step {result.step}, {/if}<code>{result.criterion}</code>
+										</p>
+										{#if result.note}
+											<p class="border-pixel mt-1.5 border-l-4 pl-2.5">{result.note}</p>
+										{/if}
+									</div>
+								</li>
+							{/each}
+						</ul>
+					</section>
+				{/if}
+			</div>
+
+			<div class="space-y-12">
+				<ValidateReports reports={g.validate} />
+			</div>
+		</section>
+	{/if}
+
+	<div class="mt-16">
+		<MoreViews generation={g} />
+	</div>
+
+	<div class="mt-16">
+		<GenerationFiles files={g.files} />
+	</div>
+</div>

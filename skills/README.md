@@ -28,6 +28,7 @@ names everywhere:
 | `aseprite:review` | Before saying anything is finished |
 | `aseprite:fix` | Editing art that already exists |
 | `aseprite:export` | Handing files to a game engine |
+| `aseprite:submit` | Sharing a finished sprite to the community gallery as a pull request |
 
 Skills reference `rules://` rather than restating craft, so a rule has exactly
 one place to be wrong.

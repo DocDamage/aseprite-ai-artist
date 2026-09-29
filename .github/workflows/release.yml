@@ -16,14 +16,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Reads the pnpm version from `packageManager` in package.json.
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
           # Writes the .npmrc that makes NODE_AUTH_TOKEN authenticate the publish.
           registry-url: https://registry.npmjs.org
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       # A release publishes whatever the tag points at. If the tag and the
       # manifest disagree, npm ships the manifest's version regardless and the
@@ -38,9 +40,9 @@ jobs:
           fi
           echo "publishing ${manifest}"
 
-      - run: npm run typecheck
-      - run: npm run build
-      - run: npm test
+      - run: pnpm run typecheck
+      - run: pnpm run build
+      - run: pnpm test
 
       # A prerelease must not take the `latest` dist-tag — that is what a bare
       # `npm install` resolves to.

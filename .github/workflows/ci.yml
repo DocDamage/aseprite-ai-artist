@@ -15,14 +15,16 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
+      # Reads the pnpm version from `packageManager` in package.json.
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm run build
-      - run: npm test
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm run build
+      - run: pnpm test
 
   lua:
     name: Lua
@@ -56,12 +58,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Reads the pnpm version from `packageManager` in package.json.
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
       # The published tarball must carry the extension, skills and rules — the
       # server is useless without them and a missing `files` entry is silent.
       - name: Assert the tarball ships its content
@@ -82,3 +86,18 @@ jobs:
             if (missing.length) { console.error('missing from package:', missing); process.exit(1); }
             console.log('package carries all required content (' + files.length + ' files)');
           "
+
+  launcher:
+    name: Plugin install from git
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # A marketplace install arrives as source, and bin/aseprite-ai-artist.mjs
+      # builds it with npm, which never reads pnpm-lock.yaml. `npm ci` fails
+      # when package-lock.json has drifted from package.json, so this keeps the
+      # tree every plugin user builds pinned to the one CI tested.
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build

@@ -39,11 +39,11 @@ without making it.
 
 ### Workflow names
 
-Every client sees the same twelve workflows under the same names:
+Every client sees the same thirteen workflows under the same names:
 `aseprite:studio` (the front door — give it any request and it picks and runs
 the rest), `aseprite:brief`, `aseprite:new`, `aseprite:palette`, `aseprite:draw`,
 `aseprite:shade`, `aseprite:rig`, `aseprite:animate`, `aseprite:tileset`,
-`aseprite:review`, `aseprite:fix`, `aseprite:export`.
+`aseprite:review`, `aseprite:fix`, `aseprite:export`, `aseprite:submit`.
 
 | Client | How they appear |
 |--------|-----------------|
@@ -211,7 +211,7 @@ live keeps working unfocused; only re-establishing a dropped one needs focus.
 ```bash
 git clone https://github.com/with-pebbly/aseprite-ai-artist
 cd aseprite-ai-artist
-npm install && npm run build
+pnpm install && pnpm run build
 node dist/cli.js install --all
 node dist/cli.js install-extension
 ```

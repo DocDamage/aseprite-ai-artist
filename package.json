@@ -7,6 +7,7 @@
   "engines": {
     "node": ">=22.6.0"
   },
+  "packageManager": "pnpm@11.25.0",
   "bin": {
     "aseprite-ai-artist": "dist/cli.js"
   },
@@ -55,10 +56,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test --experimental-strip-types tests/color.test.ts tests/render.test.ts tests/text.test.ts tests/bridge.test.ts tests/server.test.ts tests/cli.test.ts tests/omp.test.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "npm run clean && npm run build",
+    "prepublishOnly": "pnpm run clean && pnpm run build",
     "test:extension": "aseprite -b --script-param root=. --script tests/extension.test.lua",
     "test:e2e": "node tests/e2e.mjs",
-    "test:pure": "lua tests/pure.test.lua"
+    "test:pure": "lua tests/pure.test.lua",
+    "gallery:check": "pnpm --filter @pebbly/gallery run check",
+    "web:dev": "pnpm --filter @pebbly/web run dev"
   },
   "omp": {
     "extensions": [
@@ -73,6 +76,7 @@
   "devDependencies": {
     "@types/node": "^24.3.0",
     "@types/ws": "^8.18.1",
+    "turbo": "^2.11.5",
     "typescript": "^5.9.2"
   }
 }

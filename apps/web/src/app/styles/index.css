@@ -1,0 +1,206 @@
+/*
+ * "Pebble & Moss" — lavender pebble #83769c (primary), PICO-8 moss #008751 (secondary) and PICO-8
+ * orange #ffa300 (accent) on calm purple-tinted neutrals; the same three in light and dark.
+ * Radius 0 and the pixel-border rule are 8bitcn/ui's (MIT, see src/shared/ui/8bit/LICENSE):
+ * borders draw in --foreground (light) and --ring (dark); --ring is the tinted border colour
+ * here, not the focus colour — focus uses the accent. Foreground/background pairs pass WCAG AA
+ * (4.5:1): primary on #111016 4.5, secondary on white 4.6, accent on #111016 9.5, body text 16+.
+ */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@fontsource-variable/geist';
+@import '@fontsource/press-start-2p';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+	--radius: 0rem;
+	--background: #f8f6fa;
+	--foreground: #1b1824;
+	--card: #ffffff;
+	--card-foreground: #1b1824;
+	--popover: #ffffff;
+	--popover-foreground: #1b1824;
+	--primary: #83769c;
+	--primary-foreground: #111016;
+	--secondary: #008751;
+	--secondary-foreground: #ffffff;
+	--muted: #eeeaf2;
+	--muted-foreground: #5f5870;
+	--accent: #ffa300;
+	--accent-foreground: #1b1824;
+	/* The accent as text or icon on a light background; plain orange is under 3:1 there. */
+	--accent-ink: #9a5c00;
+	--destructive: #c8003c;
+	--border: #ddd6e6;
+	--input: #d3cbdd;
+	--ring: #3d3452;
+	--chart-1: #83769c;
+	--chart-2: #008751;
+	--chart-3: #ffa300;
+	--chart-4: #ff77a8;
+	--chart-5: #29adff;
+
+	--pico-black: #000000;
+	--pico-navy: #1d2b53;
+	--pico-plum: #7e2553;
+	--pico-forest: #008751;
+	--pico-brown: #ab5236;
+	--pico-slate: #5f574f;
+	--pico-silver: #c2c3c7;
+	--pico-white: #fff1e8;
+	--pico-red: #ff004d;
+	--pico-orange: #ffa300;
+	--pico-yellow: #ffec27;
+	--pico-green: #00e436;
+	--pico-blue: #29adff;
+	--pico-lavender: #83769c;
+	--pico-pink: #ff77a8;
+	--pico-peach: #ffccaa;
+
+	--canvas-a: #f1edf5;
+	--canvas-b: #e7e1ee;
+	--grid-dot: rgb(27 24 36 / 0.12);
+	--pixel: var(--foreground);
+}
+
+.dark {
+	--background: #111016;
+	--foreground: #f1edf6;
+	--card: #1a1822;
+	--card-foreground: #f1edf6;
+	--popover: #1a1822;
+	--popover-foreground: #f1edf6;
+	--primary: #83769c;
+	--primary-foreground: #0e0d12;
+	--secondary: #008751;
+	--secondary-foreground: #ffffff;
+	--muted: #221f2c;
+	--muted-foreground: #aaa3b9;
+	--accent: #ffa300;
+	--accent-foreground: #111016;
+	--accent-ink: #ffa300;
+	--destructive: #ff4d7a;
+	--border: #2e2a3b;
+	--input: #3a3449;
+	--ring: #6a6080;
+	--chart-1: #83769c;
+	--chart-2: #008751;
+	--chart-3: #ffa300;
+	--chart-4: #ff77a8;
+	--chart-5: #29adff;
+
+	--canvas-a: #1d1a26;
+	--canvas-b: #16141d;
+	--grid-dot: rgb(241 237 246 / 0.07);
+	--pixel: var(--ring);
+}
+
+@theme inline {
+	--font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+	--font-retro: 'Press Start 2P', system-ui, sans-serif;
+	--color-ring: var(--ring);
+	--color-input: var(--input);
+	--color-border: var(--border);
+	--color-destructive: var(--destructive);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-accent-ink: var(--accent-ink);
+	--color-accent: var(--accent);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-muted: var(--muted);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary: var(--secondary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary: var(--primary);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-popover: var(--popover);
+	--color-card-foreground: var(--card-foreground);
+	--color-card: var(--card);
+	--color-foreground: var(--foreground);
+	--color-background: var(--background);
+	--color-pixel: var(--pixel);
+	--color-pico-red: var(--pico-red);
+	--color-pico-orange: var(--pico-orange);
+	--color-pico-yellow: var(--pico-yellow);
+	--color-pico-green: var(--pico-green);
+	--color-pico-blue: var(--pico-blue);
+	--color-pico-navy: var(--pico-navy);
+	--color-pico-white: var(--pico-white);
+	--radius-sm: calc(var(--radius) * 0.6);
+	--radius-md: calc(var(--radius) * 0.8);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) * 1.4);
+	--radius-2xl: calc(var(--radius) * 1.8);
+	--radius-3xl: calc(var(--radius) * 2.2);
+	--radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+	html {
+		@apply font-sans;
+		color-scheme: light;
+	}
+	html.dark {
+		color-scheme: dark;
+	}
+	body {
+		@apply bg-background text-foreground antialiased;
+		line-height: 1.6;
+	}
+	h1,
+	h2,
+	h3,
+	h4 {
+		@apply retro;
+		font-weight: 400;
+		text-wrap: balance;
+	}
+	:focus-visible {
+		outline: 3px solid var(--accent);
+		outline-offset: 3px;
+	}
+}
+
+/* 8bitcn/ui components/ui/8bit/styles/retro.css, with the font self-hosted instead of Google Fonts. */
+@utility retro {
+	font-family: var(--font-retro);
+	line-height: 1.5;
+	letter-spacing: 0.5px;
+}
+
+@layer components {
+	.pixelated {
+		image-rendering: pixelated;
+		image-rendering: crisp-edges;
+	}
+	/*
+	 * pixelarticons are drawn on a 24px grid; any other size resamples the pixels. The
+	 * `!important` beats shadcn's `[&_svg]:size-4` defaults inside buttons, selects and toasts.
+	 */
+	[data-pixel-icon] {
+		width: 24px !important;
+		height: 24px !important;
+		flex-shrink: 0;
+		shape-rendering: crispEdges;
+	}
+	/* Aseprite's transparency checkerboard, so transparent art reads as a canvas. */
+	.canvas-checker {
+		background: repeating-conic-gradient(var(--canvas-a) 0 25%, var(--canvas-b) 0 50%) 0 0 / 16px 16px;
+	}
+	.grid-dots {
+		background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1.5px);
+		background-size: 16px 16px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}

@@ -1,0 +1,172 @@
+<script lang="ts">
+	import { resolve } from '$app/paths';
+	import ChecklistIcon from '~icons/pixelarticons/checklist';
+	import NoteIcon from '~icons/pixelarticons/note';
+	import PlayIcon from '~icons/pixelarticons/play';
+	import TrophyIcon from '~icons/pixelarticons/trophy';
+	import {
+		Badge,
+		Card,
+		CardContent,
+		CardFooter,
+		CardHeader,
+		CardTitle,
+		Progress,
+		Table
+	} from '$shared/ui/8bit';
+	import { plural } from '$shared/lib/format';
+	import { FileImage, ScoreMeter } from '$entities/generation';
+	import type { BenchmarksPageData } from '../model/types';
+
+	interface Props {
+		data: BenchmarksPageData;
+	}
+
+	let { data }: Props = $props();
+
+	const { total, leaderboard, cards } = $derived(data);
+
+	const explainerSteps = [
+		{ icon: NoteIcon, title: 'Fixed prompts', body: 'Same words, canvas and palette for every model.' },
+		{ icon: PlayIcon, title: 'Run in Aseprite', body: 'The model draws through the plugin, one session per step.' },
+		{ icon: ChecklistIcon, title: 'Scored', body: 'Each criterion is a yes-or-no check on the finished files.' }
+	];
+</script>
+
+<svelte:head>
+	<title>Benchmarks: Aseprite AI Artist</title>
+	<meta
+		name="description"
+		content="Fixed pixel-art tasks run by different models on different plugin versions, scored criterion by criterion."
+	/>
+</svelte:head>
+
+<div class="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
+	<h1 class="text-2xl sm:text-4xl">Benchmarks</h1>
+	<p class="text-muted-foreground mt-4 max-w-[62ch] text-lg">
+		How well each model draws pixel art through the plugin, on the same fixed tasks.
+	</p>
+
+	<section class="mt-10" aria-labelledby="leaderboard">
+		<h2 id="leaderboard" class="flex items-center gap-3 text-lg sm:text-2xl">
+			<TrophyIcon class="text-accent-ink" aria-hidden="true" />Leaderboard
+		</h2>
+		<p class="text-muted-foreground mt-2 text-sm">
+			Each model's best score per benchmark, averaged over the benchmarks it has been run on.
+		</p>
+		{#if leaderboard.length > 0}
+			<div class="mt-6 overflow-x-auto px-2 pb-2">
+				<Table.Root font="normal" containerClass="w-full min-w-max" class="text-sm">
+					<caption class="sr-only">Models ranked by their mean best score</caption>
+					<Table.Header>
+						<Table.Row>
+							<Table.Head class="retro w-12 text-[0.625rem]">#</Table.Head>
+							<Table.Head class="retro text-[0.625rem]">Model</Table.Head>
+							<Table.Head class="retro text-[0.625rem]">Score</Table.Head>
+							<Table.Head class="retro text-[0.625rem]">Coverage</Table.Head>
+							<Table.Head class="retro text-right text-[0.625rem]">Runs</Table.Head>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
+						{#each leaderboard as entry, rank (entry.modelLabel)}
+							<Table.Row class="last:border-b-0">
+								<Table.Cell class={['retro text-xs tabular-nums', rank === 0 && 'text-accent-ink']}>{rank + 1}</Table.Cell>
+								<Table.Head scope="row" class="text-foreground font-medium">{entry.modelLabel}</Table.Head>
+								<Table.Cell>
+									<span class="flex items-center gap-3">
+										<span class="retro w-10 text-xs tabular-nums">{Math.round(entry.score * 100)}%</span>
+										<Progress
+											variant="retro"
+											value={entry.score * 100}
+											segments={10}
+											progressBg="bg-accent"
+											class="h-2.5 w-28"
+											aria-label="Mean best score {Math.round(entry.score * 100)} percent"
+										/>
+									</span>
+								</Table.Cell>
+								<Table.Cell class="tabular-nums">{entry.benchmarks}/{total} benchmarks</Table.Cell>
+								<Table.Cell class="text-right tabular-nums">{entry.runs}</Table.Cell>
+							</Table.Row>
+						{/each}
+					</Table.Body>
+				</Table.Root>
+			</div>
+		{:else}
+			<p class="text-muted-foreground border-pixel mt-6 border-2 border-dashed p-4 text-sm">
+				No model has been ranked yet. The maintainers run the benchmarks; new models are added as they are tested.
+			</p>
+		{/if}
+	</section>
+
+	<section class="mt-16" aria-labelledby="all-benchmarks">
+		<h2 id="all-benchmarks" class="text-lg sm:text-2xl">All benchmarks</h2>
+		<ul class="mt-8 grid grid-cols-1 gap-x-8 gap-y-10 px-1.5 sm:grid-cols-2 lg:grid-cols-3">
+			{#each cards as card (card.id)}
+				<li>
+					<a
+						href={resolve('/benchmarks/[prompt]', { prompt: card.id })}
+						class="group block h-full outline-offset-8 transition-transform hover:-translate-y-1 motion-reduce:hover:translate-y-0"
+					>
+						<Card font="normal" class="h-full gap-4 pt-0">
+							<div class="canvas-checker grid aspect-[4/3] place-items-center overflow-hidden p-4">
+								{#if card.cover}
+									<FileImage file={card.cover} alt="" max={200} />
+								{:else}
+									<span class="retro text-muted-foreground text-[0.625rem]">Not run yet</span>
+								{/if}
+							</div>
+							<CardHeader class="px-4">
+								<CardTitle class="text-xs leading-relaxed group-hover:underline">{card.title}</CardTitle>
+							</CardHeader>
+							<CardContent font="normal" class="space-y-3 px-4 text-sm">
+								<p class="text-muted-foreground">{card.summary}</p>
+								<ul class="flex flex-wrap gap-3 px-1.5" aria-label="What it tests">
+									{#each card.chips as chip (chip)}
+										<li><Badge variant="secondary" class="text-[0.625rem]">{chip}</Badge></li>
+									{/each}
+								</ul>
+							</CardContent>
+							<CardFooter font="normal" class="flex-col items-stretch gap-2 px-4 text-sm">
+								{#if card.top.length > 0}
+									<ol class="space-y-2">
+										{#each card.top as entry, rank (entry.modelLabel)}
+											<li class="flex items-center gap-2">
+												<span class="retro text-muted-foreground w-5 text-[0.625rem]">{rank + 1}</span>
+												<span class="min-w-0 flex-1 truncate">{entry.modelLabel}</span>
+												<ScoreMeter score={entry.best} />
+											</li>
+										{/each}
+									</ol>
+								{:else}
+									<p class="text-muted-foreground">Waiting for its first maintainer run.</p>
+								{/if}
+								<p class="text-muted-foreground text-xs">{plural(card.steps, 'step')}, {plural(card.runs, 'ranked run')}</p>
+							</CardFooter>
+						</Card>
+					</a>
+				</li>
+			{:else}
+				<li class="text-muted-foreground">No benchmark prompts are defined yet.</li>
+			{/each}
+		</ul>
+	</section>
+	<section aria-label="How a benchmark works" class="mt-16">
+		<ol class="grid gap-4 sm:grid-cols-3 sm:gap-6">
+			{#each explainerSteps as step, index (step.title)}
+				<li class="border-pixel flex items-start gap-3 border-l-4 pl-3">
+					<step.icon class="text-accent-ink shrink-0" aria-hidden="true" />
+					<div>
+						<p class="retro text-[0.625rem] leading-relaxed">{index + 1}. {step.title}</p>
+						<p class="text-muted-foreground mt-1 text-sm">{step.body}</p>
+					</div>
+				</li>
+			{/each}
+		</ol>
+		<p class="text-muted-foreground mt-4 text-xs">
+			Benchmarks are run by the maintainers; new models are added as they are tested. A prompt's revision changes when
+			its wording or criteria do, and only runs on the current revision are ranked.
+		</p>
+	</section>
+
+</div>

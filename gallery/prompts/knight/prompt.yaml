@@ -1,0 +1,51 @@
+title: Knight — pose and sword slash
+summary: >-
+  A still 32×32 knight, then a sword slash animated from it. Tests whether a
+  model can hold the brush — silhouette, palette discipline, a rig that
+  holds its own contract, and motion that reads as an arc rather than a
+  metronome.
+revision: 1
+tags: [character, animation, 32x32, pico-8]
+setup:
+  canvas:
+    width: 32
+    height: 32
+    colorMode: rgb
+  palette: pico8
+  rules:
+    - Start from a new document created with sprite_manage op="new" width=32 height=32 colorMode="rgb", then palette op="preset" preset="pico8".
+    - Hand the model exactly the step text — no reference image, no extra steering beyond the server's own instructions and skills.
+    - One session per step. Step 2 runs in a fresh session against a copy of the step-1 result.
+    - Do not intervene mid-run unless the model asks a genuine clarifying question, and record it under the step's interventions.
+steps:
+  - title: The still knight
+    text: Draw me a 32×32 knight with a sword, standing still. One frame.
+  - title: The slash
+    text: |-
+      Starting from this knight, animate a sword slash: windup, then
+      follow-through. 4 to 6 frames.
+criteria:
+  - id: still-validate
+    step: 1
+    text: validate passes with no unaddressed errors (warnings may stand if the report names and justifies them).
+  - id: still-silhouette
+    step: 1
+    text: The preview reads as a knight with a sword at a glance — head, torso and sword distinguishable without the ascii grid.
+  - id: still-palette
+    step: 1
+    text: Every colour is on the PICO-8 palette (validate check palette, or a clean palette op="analyze").
+  - id: slash-contract
+    step: 2
+    text: validate with expect set to the model's own rig (layerFrames, mustNotOverlap [["sword","body"]]) passes — the contract it built holds itself.
+  - id: slash-tagged
+    step: 2
+    text: The cycle is tagged — tag op="list" shows a named tag covering all frames.
+  - id: slash-poses
+    step: 2
+    text: Windup reads as a distinct pose from follow-through on the filmstrip, not two frames either side of a single held pose.
+  - id: slash-arc
+    step: 2
+    text: The onion-skinned in-between shows the sword's arc moving, not just the arm translating in a straight line.
+  - id: slash-timing
+    step: 2
+    text: Frame timing is not uniform — frame op="list" durations vary, fast on the strike and longer on the hold.

@@ -1,0 +1,553 @@
+import { existsSync, openSync, readFileSync, readSync, closeSync, readdirSync, lstatSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parse as parseYaml } from 'yaml';
+import type { z } from 'zod';
+import {
+  generationSchema,
+  promptSchema,
+  type GenerationFile,
+  type GenerationFileEntry,
+  type PromptFile,
+} from './schema.ts';
+
+/** GitHub rejects a push containing any file over 100 MiB; stay clear of it. */
+export const MAX_FILE_BYTES = 95 * 1024 * 1024;
+/** GitHub warns on every push above 50 MiB — worth telling the author. */
+export const WARN_FILE_BYTES = 50 * 1024 * 1024;
+
+const GENERATION_DIR = /^(\d{4}-\d{2}-\d{2})-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const PROMPT_DIR = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/**
+ * Files a generation folder may hold without listing them. `.DS_Store` is
+ * ignored by git anyway; anything else a reviewer would have to open blind.
+ */
+const UNLISTED_ALLOWED = new Set(['generation.yaml', '.DS_Store']);
+/** Non-folder entries tolerated beside the prompt and generation folders. */
+const STRAY_ALLOWED = new Set(['.gitkeep', '.DS_Store']);
+
+export interface Problem {
+  level: 'error' | 'warning';
+  /** Repository-relative path the problem is about. */
+  where: string;
+  message: string;
+}
+
+export interface PluginRelease {
+  version: string;
+  date: string | null;
+}
+
+export interface Prompt extends PromptFile {
+  id: string;
+}
+
+export interface StoredFile extends GenerationFileEntry {
+  /** Absolute path on disk. */
+  absolutePath: string;
+  bytes: number;
+  extension: string;
+}
+
+export interface Score {
+  passed: number;
+  total: number;
+}
+
+export interface Generation extends Omit<GenerationFile, 'files'> {
+  id: string;
+  files: StoredFile[];
+  cover: StoredFile;
+  /** Models in listed order joined with " + " — the benchmark's model axis. */
+  modelLabel: string;
+  /** Set when `benchmark` is present. */
+  score: Score | null;
+  /** True when the run used an older revision of its benchmark prompt. */
+  outdated: boolean;
+}
+
+export interface BenchmarkCell {
+  modelLabel: string;
+  plugin: string;
+  /** Best run first. */
+  runs: Generation[];
+  best: Score;
+}
+
+export interface Benchmark {
+  prompt: Prompt;
+  /** Plugin versions that have at least one current-revision run, newest first. */
+  versions: string[];
+  /** Model labels, strongest best score first. */
+  models: string[];
+  cells: BenchmarkCell[];
+  /** Runs against older revisions of this prompt; listed, never ranked. */
+  outdatedRuns: Generation[];
+}
+
+export interface Gallery {
+  root: string;
+  releases: PluginRelease[];
+  prompts: Prompt[];
+  /** Newest first. */
+  generations: Generation[];
+  benchmarks: Benchmark[];
+  /** Overall model ranking across every benchmark, best first. */
+  leaderboard: LeaderboardEntry[];
+}
+
+export interface LeaderboardEntry {
+  modelLabel: string;
+  /**
+   * Criteria passed ÷ criteria in the whole suite, 0–1, using the model's best
+   * current-revision run on each benchmark. A benchmark it never ran counts as
+   * all-failed, so one easy win cannot outrank a model that ran everything.
+   */
+  score: number;
+  /** Benchmarks with at least one ranked run, out of `Gallery.benchmarks.length`. */
+  benchmarks: number;
+  runs: number;
+  /** The model's best cell per benchmark, keyed by prompt id. */
+  best: Record<string, BenchmarkCell>;
+}
+
+export interface LoadResult {
+  gallery: Gallery;
+  problems: Problem[];
+}
+
+export class GalleryError extends Error {
+  readonly problems: Problem[];
+  constructor(problems: Problem[]) {
+    super(
+      `gallery has ${problems.length} error(s):\n` +
+        problems.map((problem) => `  ${problem.where}: ${problem.message}`).join('\n'),
+    );
+    this.name = 'GalleryError';
+    this.problems = problems;
+  }
+}
+
+export const DEFAULT_GALLERY_ROOT = fileURLToPath(new URL('..', import.meta.url));
+
+/** Reads, validates and cross-checks the whole gallery. Never throws on bad data — see `problems`. */
+export function inspectGallery(root: string = DEFAULT_GALLERY_ROOT): LoadResult {
+  const galleryRoot = resolve(root);
+  const repoRoot = resolve(galleryRoot, '..');
+  const problems: Problem[] = [];
+  const rel = (path: string) => path.slice(repoRoot.length + 1).replaceAll('\\', '/');
+
+  const releases = readReleases(join(repoRoot, 'CHANGELOG.md'), problems);
+  const releasesByVersion = new Map(releases.map((release) => [release.version, release]));
+  // Benchmark results are the project's own measurements. The allowlist makes
+  // that a data rule, so even a merged mistake cannot put an outsider's run on
+  // the leaderboard.
+  const maintainersPath = join(galleryRoot, 'MAINTAINERS');
+  const maintainers = new Set(
+    existsSync(maintainersPath)
+      ? readFileSync(maintainersPath, 'utf8')
+          .split('\n')
+          .map((line) => line.trim().toLowerCase())
+          .filter((line) => line !== '' && !line.startsWith('#'))
+      : [],
+  );
+
+  const prompts = readPrompts(join(galleryRoot, 'prompts'), problems, rel);
+  const promptsById = new Map(prompts.map((prompt) => [prompt.id, prompt]));
+
+  const generations: Generation[] = [];
+  const generationsDir = join(galleryRoot, 'generations');
+  for (const id of listDirs(generationsDir, problems, rel)) {
+    const dir = join(generationsDir, id);
+    const where = rel(join(dir, 'generation.yaml'));
+    const dirMatch = GENERATION_DIR.exec(id);
+    if (!dirMatch) {
+      problems.push({ level: 'error', where: rel(dir), message: 'folder must be named <yyyy-mm-dd>-<slug>, e.g. 2026-09-29-knight-slash' });
+      continue;
+    }
+    const data = readYaml(join(dir, 'generation.yaml'), generationSchema, where, problems);
+    if (!data) continue;
+
+    if (data.date !== dirMatch[1]) {
+      problems.push({ level: 'error', where, message: `date ${data.date} does not match the folder prefix ${dirMatch[1]}` });
+    }
+    const release = releasesByVersion.get(data.plugin);
+    if (!release) {
+      problems.push({
+        level: 'error',
+        where,
+        message: `plugin ${data.plugin} is not a released version in CHANGELOG.md (known: ${releases.map((r) => r.version).join(', ')})`,
+      });
+    } else if (release.date !== null && data.date < release.date) {
+      // A run cannot have used a build that did not exist yet; this is either
+      // a typo in one of the two fields or a dev build passed off as a release.
+      problems.push({ level: 'error', where, message: `dated ${data.date}, before plugin ${data.plugin} was released on ${release.date}` });
+    }
+
+    const files = checkFiles(dir, data.files, problems, rel);
+    if (!files) continue;
+
+    let score: Score | null = null;
+    let outdated = false;
+    if (data.benchmark) {
+      if (!data.author.github || !maintainers.has(data.author.github.toLowerCase())) {
+        problems.push({
+          level: 'error',
+          where,
+          message: 'benchmark runs are submitted by maintainers only (gallery/MAINTAINERS) — remove the benchmark block to submit a gallery generation',
+        });
+        continue;
+      }
+      const prompt = promptsById.get(data.benchmark.prompt);
+      if (!prompt) {
+        problems.push({ level: 'error', where, message: `benchmark prompt "${data.benchmark.prompt}" does not exist in gallery/prompts` });
+        continue;
+      }
+      const checked = checkBenchmark(data, prompt, where, problems);
+      if (!checked) continue;
+      score = checked.score;
+      outdated = checked.outdated;
+    }
+
+    const cover = files.find((file) => file.role === 'cover')!;
+    // The benchmark's model axis: the same set of models is the same row no
+    // matter which order the author listed them in.
+    const modelLabel = [...new Set(data.models)].sort().join(' + ');
+    generations.push({ ...data, id, files, cover, modelLabel, score, outdated });
+  }
+
+  generations.sort((a, b) => (a.date === b.date ? b.id.localeCompare(a.id) : b.date.localeCompare(a.date)));
+
+  const benchmarks = prompts.map((prompt) => buildBenchmark(prompt, generations, releases));
+  const leaderboard = buildLeaderboard(benchmarks);
+
+  return { gallery: { root: galleryRoot, releases, prompts, generations, benchmarks, leaderboard }, problems };
+}
+
+/** Loads the gallery for consumers that must not render bad data (the web build). */
+export function loadGallery(root?: string): Gallery {
+  const { gallery, problems } = inspectGallery(root);
+  const errors = problems.filter((problem) => problem.level === 'error');
+  if (errors.length > 0) throw new GalleryError(errors);
+  return gallery;
+}
+
+function readReleases(changelogPath: string, problems: Problem[]): PluginRelease[] {
+  if (!existsSync(changelogPath)) {
+    problems.push({ level: 'error', where: 'CHANGELOG.md', message: 'missing — plugin versions are validated against it' });
+    return [];
+  }
+  const releases: PluginRelease[] = [];
+  const heading = /^## \[(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\](?:\s+[—–-]\s+(\d{4}-\d{2}-\d{2}))?/gm;
+  const text = readFileSync(changelogPath, 'utf8');
+  for (const match of text.matchAll(heading)) {
+    releases.push({ version: match[1]!, date: match[2] ?? null });
+  }
+  releases.sort((a, b) => compareVersions(b.version, a.version));
+  return releases;
+}
+
+function readPrompts(dir: string, problems: Problem[], rel: (path: string) => string): Prompt[] {
+  const prompts: Prompt[] = [];
+  for (const id of listDirs(dir, problems, rel)) {
+    const promptDir = join(dir, id);
+    if (!PROMPT_DIR.test(id)) {
+      problems.push({ level: 'error', where: rel(promptDir), message: 'prompt folder must be a lowercase slug' });
+      continue;
+    }
+    const data = readYaml(join(promptDir, 'prompt.yaml'), promptSchema, rel(join(promptDir, 'prompt.yaml')), problems);
+    if (data) prompts.push({ ...data, id });
+  }
+  return prompts.sort((a, b) => a.title.localeCompare(b.title));
+}
+
+function readYaml<S extends z.ZodType>(path: string, schema: S, where: string, problems: Problem[]): z.output<S> | null {
+  if (!existsSync(path)) {
+    problems.push({ level: 'error', where, message: 'file is missing' });
+    return null;
+  }
+  let raw: unknown;
+  try {
+    raw = parseYaml(readFileSync(path, 'utf8'));
+  } catch (error) {
+    problems.push({ level: 'error', where, message: `not valid YAML: ${(error as Error).message}` });
+    return null;
+  }
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const at = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';
+      problems.push({ level: 'error', where, message: `${at}${issue.message}` });
+    }
+    return null;
+  }
+  return parsed.data;
+}
+
+function checkFiles(
+  dir: string,
+  entries: GenerationFileEntry[],
+  problems: Problem[],
+  rel: (path: string) => string,
+): StoredFile[] | null {
+  const listed = new Set(entries.map((entry) => entry.path));
+  let ok = true;
+
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (listed.has(entry.name)) continue;
+    if (UNLISTED_ALLOWED.has(entry.name) && entry.isFile()) continue;
+    problems.push({ level: 'error', where: rel(join(dir, entry.name)), message: 'not listed in generation.yaml files — list it or remove it' });
+    ok = false;
+  }
+
+  const files: StoredFile[] = [];
+  for (const entry of entries) {
+    const absolutePath = join(dir, entry.path);
+    const where = rel(absolutePath);
+    // lstat, not stat: a symlink would pass as whatever it points at and the
+    // site build would publish that file — anything in the repository.
+    const info = existsSync(absolutePath) ? lstatSync(absolutePath) : null;
+    if (!info || info.isSymbolicLink() || !info.isFile()) {
+      problems.push({ level: 'error', where, message: info?.isSymbolicLink() ? 'is a symlink — commit the file itself' : 'listed in generation.yaml but missing' });
+      ok = false;
+      continue;
+    }
+    const bytes = info.size;
+    if (bytes > MAX_FILE_BYTES) {
+      problems.push({ level: 'error', where, message: `${mib(bytes)} MiB is over the ${mib(MAX_FILE_BYTES)} MiB limit (GitHub rejects files over 100 MiB)` });
+      ok = false;
+    } else if (bytes > WARN_FILE_BYTES) {
+      problems.push({ level: 'warning', where, message: `${mib(bytes)} MiB — GitHub warns above 50 MiB; export a smaller preview if you can` });
+    }
+    const extension = entry.path.slice(entry.path.lastIndexOf('.') + 1).toLowerCase();
+    const mismatch = checkMagic(absolutePath, extension);
+    if (mismatch) {
+      problems.push({ level: 'error', where, message: mismatch });
+      ok = false;
+    }
+    files.push({ ...entry, absolutePath, bytes, extension });
+  }
+  return ok ? files : null;
+}
+
+/** Catches a renamed or truncated file before it reaches the gallery. */
+function checkMagic(path: string, extension: string): string | null {
+  const head = Buffer.alloc(8);
+  const fd = openSync(path, 'r');
+  let read: number;
+  try {
+    read = readSync(fd, head, 0, 8, 0);
+  } finally {
+    closeSync(fd);
+  }
+  switch (extension) {
+    case 'png':
+      return read === 8 && head.equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) ? null : 'not a PNG file';
+    case 'gif':
+      return read >= 4 && head.toString('latin1', 0, 4) === 'GIF8' ? null : 'not a GIF file';
+    case 'webp':
+      return read >= 4 && head.toString('latin1', 0, 4) === 'RIFF' ? null : 'not a WebP file';
+    case 'aseprite':
+    case 'ase':
+      // Aseprite header: u32 file size, then the u16 magic 0xA5E0 (little endian).
+      return read >= 6 && head.readUInt16LE(4) === 0xa5e0 ? null : 'not an Aseprite file (magic 0xA5E0 missing)';
+    case 'json':
+      try {
+        JSON.parse(readFileSync(path, 'utf8'));
+        return null;
+      } catch {
+        return 'not valid JSON';
+      }
+    default:
+      return null;
+  }
+}
+
+function checkBenchmark(
+  data: GenerationFile,
+  prompt: Prompt,
+  where: string,
+  problems: Problem[],
+): { score: Score; outdated: boolean } | null {
+  const benchmark = data.benchmark!;
+  if (benchmark.revision > prompt.revision) {
+    problems.push({ level: 'error', where, message: `prompt "${prompt.id}" is at revision ${prompt.revision}; revision ${benchmark.revision} does not exist yet` });
+    return null;
+  }
+  const outdated = benchmark.revision < prompt.revision;
+  let ok = true;
+
+  if (outdated) {
+    problems.push({
+      level: 'warning',
+      where,
+      message: `ran revision ${benchmark.revision} of "${prompt.id}" (current: ${prompt.revision}) — shown, but not ranked`,
+    });
+  } else {
+    if (data.steps.length !== prompt.steps.length) {
+      problems.push({ level: 'error', where, message: `"${prompt.id}" has ${prompt.steps.length} step(s); this run lists ${data.steps.length}` });
+      ok = false;
+    }
+    data.steps.forEach((step, index) => {
+      const expected = prompt.steps[index];
+      if (expected && normalise(step.text) !== normalise(expected.text)) {
+        problems.push({
+          level: 'error',
+          where,
+          message: `steps.${index}.text differs from step ${index + 1} of "${prompt.id}" — a benchmark run must send the prompt verbatim`,
+        });
+        ok = false;
+      }
+    });
+  }
+
+  const criteria = new Set(prompt.criteria.map((criterion) => criterion.id));
+  const answered = new Set<string>();
+  for (const result of benchmark.results) {
+    if (!outdated && !criteria.has(result.criterion)) {
+      problems.push({ level: 'error', where, message: `unknown criterion "${result.criterion}" for "${prompt.id}"` });
+      ok = false;
+    }
+    if (answered.has(result.criterion)) {
+      problems.push({ level: 'error', where, message: `criterion "${result.criterion}" is answered twice` });
+      ok = false;
+    }
+    answered.add(result.criterion);
+  }
+  if (!outdated) {
+    const missing = [...criteria].filter((id) => !answered.has(id));
+    if (missing.length > 0) {
+      problems.push({ level: 'error', where, message: `unanswered criteria: ${missing.join(', ')} — record a fail rather than leaving one out` });
+      ok = false;
+    }
+  }
+
+  if (!ok) return null;
+  const passed = benchmark.results.filter((result) => result.pass).length;
+  return { score: { passed, total: benchmark.results.length }, outdated };
+}
+
+function buildLeaderboard(benchmarks: Benchmark[]): LeaderboardEntry[] {
+  const suiteCriteria = benchmarks.reduce((sum, benchmark) => sum + benchmark.prompt.criteria.length, 0);
+  const byModel = new Map<string, LeaderboardEntry>();
+  for (const benchmark of benchmarks) {
+    for (const cell of benchmark.cells) {
+      let entry = byModel.get(cell.modelLabel);
+      if (!entry) {
+        entry = { modelLabel: cell.modelLabel, score: 0, benchmarks: 0, runs: 0, best: {} };
+        byModel.set(cell.modelLabel, entry);
+      }
+      entry.runs += cell.runs.length;
+      // A model can hold several cells on one benchmark (one per plugin version);
+      // its standing there is its best one.
+      const held = entry.best[benchmark.prompt.id];
+      if (!held || ratio(cell.best) > ratio(held.best)) entry.best[benchmark.prompt.id] = cell;
+    }
+  }
+  const entries = [...byModel.values()];
+  for (const entry of entries) {
+    const cells = Object.values(entry.best);
+    entry.benchmarks = cells.length;
+    const passed = cells.reduce((sum, cell) => sum + cell.best.passed, 0);
+    entry.score = suiteCriteria === 0 ? 0 : passed / suiteCriteria;
+  }
+  return entries.sort((a, b) => b.score - a.score || b.benchmarks - a.benchmarks || a.modelLabel.localeCompare(b.modelLabel));
+}
+
+function buildBenchmark(prompt: Prompt, generations: Generation[], releases: PluginRelease[]): Benchmark {
+  const runs = generations.filter((generation) => generation.benchmark?.prompt === prompt.id);
+  const current = runs.filter((run) => !run.outdated);
+  const outdatedRuns = runs.filter((run) => run.outdated);
+
+  const cellsByKey = new Map<string, BenchmarkCell>();
+  for (const run of current) {
+    const key = `${run.modelLabel}\u0000${run.plugin}`;
+    let cell = cellsByKey.get(key);
+    if (!cell) {
+      cell = { modelLabel: run.modelLabel, plugin: run.plugin, runs: [], best: { passed: 0, total: 0 } };
+      cellsByKey.set(key, cell);
+    }
+    cell.runs.push(run);
+  }
+  const cells = [...cellsByKey.values()];
+  for (const cell of cells) {
+    cell.runs.sort((a, b) => ratio(b.score!) - ratio(a.score!) || b.date.localeCompare(a.date));
+    cell.best = cell.runs[0]!.score!;
+  }
+
+  const releaseOrder = new Map(releases.map((release, index) => [release.version, index]));
+  const versions = [...new Set(cells.map((cell) => cell.plugin))].sort(
+    (a, b) => (releaseOrder.get(a) ?? Infinity) - (releaseOrder.get(b) ?? Infinity),
+  );
+
+  const bestByModel = new Map<string, number>();
+  for (const cell of cells) {
+    bestByModel.set(cell.modelLabel, Math.max(bestByModel.get(cell.modelLabel) ?? 0, ratio(cell.best)));
+  }
+  const models = [...bestByModel.keys()].sort((a, b) => bestByModel.get(b)! - bestByModel.get(a)! || a.localeCompare(b));
+
+  return { prompt, versions, models, cells, outdatedRuns };
+}
+
+function listDirs(dir: string, problems: Problem[], rel: (path: string) => string): string[] {
+  if (!existsSync(dir)) return [];
+  const dirs: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) dirs.push(entry.name);
+    else if (!STRAY_ALLOWED.has(entry.name)) {
+      problems.push({ level: 'error', where: rel(join(dir, entry.name)), message: 'only folders belong here — put files inside a generation or prompt folder' });
+    }
+  }
+  return dirs.sort();
+}
+
+/** YAML block scalars add a trailing newline and Windows checkouts add CRs; neither is a different prompt. */
+function normalise(text: string): string {
+  return text.replaceAll('\r\n', '\n').trim();
+}
+
+function ratio(score: Score): number {
+  return score.total === 0 ? 0 : score.passed / score.total;
+}
+
+function mib(bytes: number): string {
+  return (bytes / 1024 / 1024).toFixed(1);
+}
+
+/** Semver precedence (§11); used to order the benchmark's version axis. */
+export function compareVersions(a: string, b: string): number {
+  const split = (version: string) => {
+    const dash = version.indexOf('-');
+    return dash === -1 ? ([version, undefined] as const) : ([version.slice(0, dash), version.slice(dash + 1)] as const);
+  };
+  const [coreA, preA] = split(a);
+  const [coreB, preB] = split(b);
+  const partsA = coreA.split('.').map(Number);
+  const partsB = coreB.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    const diff = (partsA[i] ?? 0) - (partsB[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  if (preA === preB) return 0;
+  if (preA === undefined) return 1;
+  if (preB === undefined) return -1;
+  const idsA = preA.split('.');
+  const idsB = preB.split('.');
+  for (let i = 0; i < Math.max(idsA.length, idsB.length); i++) {
+    const x = idsA[i];
+    const y = idsB[i];
+    if (x === undefined) return -1;
+    if (y === undefined) return 1;
+    const numericX = /^\d+$/.test(x);
+    const numericY = /^\d+$/.test(y);
+    if (numericX && numericY) {
+      const diff = Number(x) - Number(y);
+      if (diff !== 0) return diff;
+    } else if (numericX !== numericY) {
+      return numericX ? -1 : 1;
+    } else if (x !== y) {
+      return x < y ? -1 : 1;
+    }
+  }
+  return 0;
+}

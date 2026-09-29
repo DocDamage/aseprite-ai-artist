@@ -111,7 +111,7 @@ sides are pinned to the same numeric fixtures — `tests/color.test.ts` and the
 "Lua CIELAB agrees with the TypeScript port" check in `tests/extension.test.lua`
 assert the same white/black L\*, the same ΔE bounds, the same grey-snaps-to-grey
 case and the same hue-shift direction. The Lua half runs only under
-`npm run test:extension`, not in CI (CI has no Aseprite), so a drift is caught
+`pnpm run test:extension`, not in CI (CI has no Aseprite), so a drift is caught
 locally rather than on a pull request.
 
 ## Known limits

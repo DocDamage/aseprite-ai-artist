@@ -190,6 +190,7 @@ Reach for these directly when you know exactly which step you want.
 | 🔍 **`review`** | you want the truth. Mechanical checks plus eyes-on checks, reported with evidence — including rules you set, like "the sword never covers the face". | `/aseprite:review why does this look off?` |
 | 🩹 **`fix`** | something exists and needs changing without wrecking what's already right. | `/aseprite:fix make him look more menacing` |
 | 📦 **`export`** | it's done and has to leave Aseprite — spritesheets with JSON atlases, GIFs, scaled PNGs, nine-slice panels and pivot points for your engine. | `/aseprite:export spritesheet for Godot` |
+| 🗂️ **`submit`** | you want your sprite in the public gallery or the benchmark. Exports the files, writes an honest `generation.yaml`, checks it and opens the pull request — after asking you. | `/aseprite:submit` |
 
 ### 🧑‍🎨 The specialists
 
@@ -207,8 +208,8 @@ agent does the work — they just keep the main conversation lighter.
 ## 🏆 Which model should hold the brush?
 
 Not a benchmark — an honest log of what drew the art on this page. Models we
-haven't tried are marked untested rather than guessed at. For a repeatable,
-scored task instead of a log entry, see [the knight benchmark](docs/evals/knight-benchmark.md).
+haven't tried are marked untested rather than guessed at. For repeatable,
+scored runs instead of a log entry, see [the gallery and benchmark](#-the-gallery-and-the-benchmark).
 
 | Model | What it drew | How it went |
 |---|---|---|
@@ -216,7 +217,7 @@ scored task instead of a log entry, see [the knight benchmark](docs/evals/knight
 | **Claude Fable 5.1** | the robot at the easel, below | Very strong. One session, no review passes needed. |
 | **Codex CLI** `gpt-5.6-terra`, high reasoning | the harbour below, and the mascot | Strong, but it took five rounds of critique. |
 | **Claude Opus 5** | the server, the rulebook, every review pass | The planner and the critic. Its own drawing attempt got scrapped. |
-| Gemini 3 Pro, Sonnet 5, Cursor, others | — | Untested. Run one and send us the sprite! |
+| Gemini 3 Pro, Sonnet 5, Cursor, others | — | Untested. Run one and [send us the sprite](gallery/README.md)! |
 
 <div align="center">
 <img src="docs/media/mascot.png" alt="The mascot" width="96"><br>
@@ -314,13 +315,34 @@ loop from feeling mechanical.</sub>
 | ⚓ Night harbour (`docs/media/harbour.gif`) | Codex CLI, `gpt-5.6-terra`, high reasoning |
 | 🐾 Mascot (`docs/media/mascot.png`) | Codex CLI, `gpt-5.6-terra`, high reasoning |
 
+## 🗂️ The gallery and the benchmark
+
+Every sprite people make with the plugin can go into [`gallery/`](gallery/):
+the `.aseprite` source, a cover, the animation, and exactly how it was made —
+the prompts in order, the model behind each step, the harness and the plugin
+version. The benchmark is built from the same store: a fixed prompt like
+[the knight](gallery/prompts/knight/prompt.yaml) gets one block, with every
+model × plugin version scored against written criteria.
+
+Both are published as a site built from [`apps/web`](apps/web/). To add your
+own run, finish the sprite and ask your agent for `/aseprite:submit` — it
+exports the files, writes `generation.yaml`, checks it and opens the pull
+request. The rules are in [gallery/README.md](gallery/README.md); the design is
+[ADR-0006](docs/adr/0006-gallery-and-benchmark.md).
+
 ## 🛠️ Development
 
+The repository is a pnpm workspace run by turborepo: the plugin is the root
+package, [`gallery/`](gallery/) holds the generations, and [`apps/web`](apps/web/)
+is the site.
+
 ```bash
-npm install && npm run build
-npm test                 # TypeScript
-npm run test:pure        # Lua that needs no editor — what CI runs
-npm run test:extension   # the real handlers, headless, against a real sprite
+pnpm install && pnpm run build
+pnpm test                 # TypeScript
+pnpm run test:pure        # Lua that needs no editor — what CI runs
+pnpm run test:extension   # the real handlers, headless, against a real sprite
+pnpm gallery:check        # every generation and benchmark prompt, as CI checks them
+pnpm web:dev              # the gallery site on localhost
 ```
 
 `test:extension` needs Aseprite installed, so CI can't run it. Before changing

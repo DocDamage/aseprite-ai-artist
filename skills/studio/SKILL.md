@@ -65,6 +65,7 @@ workflow it names and follow that — do not do the step from memory.
 | Files for an engine or for sharing | `aseprite:review` if not already done → `aseprite:export` |
 | Words on the art — a label, score, title card | `aseprite:draw` (its Text section) → `aseprite:review` |
 | Nine-slice UI panels, pivots or hotspots for an engine | `aseprite:export` (slices) |
+| Share the finished work in the community gallery | `aseprite:review` if not already done → `aseprite:submit` |
 
 If a request fits no row, it is usually a direct tool call ("rename the layer",
 "add a frame"): make it, `look` if pixels changed, and say what you did.

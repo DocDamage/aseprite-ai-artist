@@ -6,6 +6,46 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **`aseprite:submit` skill.** Turns a finished sprite into a gallery pull
+  request: exports the `.aseprite`, cover, GIF and filmstrip with `export`,
+  writes `generation.yaml` with the prompts verbatim and the model per step,
+  scores benchmark criteria only from evidence it looked at, runs
+  `pnpm gallery:check`, and opens the PR with `gh` — after asking.
+- **The gallery (`gallery/`).** A store of generations, each with its files,
+  prompt sequence, models, harness and plugin version, validated by one zod
+  schema (`pnpm gallery:check`, also in CI). The benchmark is derived from it:
+  prompt × model × plugin version, scored against the prompt's criteria. The
+  knight benchmark moved to `gallery/prompts/knight/prompt.yaml`.
+  [ADR-0006](docs/adr/0006-gallery-and-benchmark.md).
+- **The site (`apps/web`).** SvelteKit + shadcn-svelte with components ported
+  from 8bitcn/ui and icons from pixelarticons: the benchmark as one block per
+  prompt with a model × version matrix, a filterable gallery, a page per
+  generation with downloads and copy-the-prompt buttons. Deploys to Vercel
+  from `main` only. Generation files are linked from GitHub at the deployed
+  commit rather than copied into the deployment.
+- **Pebbly, the mascot** — a pebble with a paintbrush sprouting from its head,
+  drawn with the plugin itself: a 48×48 eight-frame idle for the site, and a
+  brushless 12×9 pebble for the logo and favicon. It is the gallery's first
+  generation.
+
+### Fixed
+
+- **`export` ops `spritesheet` and `frames` honour `scale`.** Both accepted it
+  and wrote 1× files. They now export from a nearest-neighbour upscaled scratch
+  copy — the source sprite is untouched and the copy is closed — so the atlas
+  JSON describes the scaled texture. Needs `install-extension` and an Aseprite
+  restart to take effect.
+
+### Changed
+
+- The repository is a pnpm workspace driven by turborepo. The plugin stays the
+  root package and the published tarball is unchanged; contributors run
+  `pnpm install` instead of `npm install`. The root `package-lock.json` stays,
+  for the plugin launcher's first-run `npm install` on git installs, and CI
+  fails when it drifts.
+
 ## [0.3.2] — 2026-09-29
 
 ### Changed
