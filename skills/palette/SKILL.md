@@ -69,6 +69,11 @@ near-identical browns.
    two colours that were doing different jobs is the risk here; look for a form
    that has gone flat.
 
+**Or start over from the art:** `palette op="extract"` replaces the palette
+with one quantized from the sprite's own colours (RGB sprites only,
+`maxColors` default 16) — useful when the sprite came from a reference image
+imported at full colour and never had a curated palette to snap onto.
+
 ## Contrast
 
 Value contrast carries readability, not hue contrast. Check by running

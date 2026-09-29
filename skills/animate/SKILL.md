@@ -62,6 +62,28 @@ while there are four frames to fix rather than eight.
 Only once the keys read. Spacing is your easing: poses close together read slow,
 far apart read fast.
 
+```
+look op="onion" frame=3
+```
+
+Use onion skinning to judge an in-between against its neighbours without
+stepping through frames one at a time — it composites the target at full
+opacity over ghosted neighbours, oldest-first.
+
+For secondary motion — a bob, a breath, a float — `cel op="tween"` or
+`cel op="oscillate"` fill in the in-between cels for you instead of hand-key
+by hand-key:
+
+```
+cel op="oscillate" layer="hair-back" fromFrame=1 toFrame=8 amplitudeY=1 period=8
+```
+
+**Caveat:** easing rounds each frame's offset to the nearest pixel, and on
+small amplitudes (1–2px) that rounding can make two adjacent frames land on
+the same value and then jump — a stutter, not a stumble. Prefer hand keys for
+primary motion (the walk, the strike); reach for `tween`/`oscillate` for
+motion nobody is meant to consciously notice.
+
 ### 6. Set timing
 
 ```

@@ -203,7 +203,8 @@ agent does the work — they just keep the main conversation lighter.
 ## 🏆 Which model should hold the brush?
 
 Not a benchmark — an honest log of what drew the art on this page. Models we
-haven't tried are marked untested rather than guessed at.
+haven't tried are marked untested rather than guessed at. For a repeatable,
+scored task instead of a log entry, see [the knight benchmark](docs/evals/knight-benchmark.md).
 
 | Model | What it drew | How it went |
 |---|---|---|
@@ -228,6 +229,29 @@ haven't tried are marked untested rather than guessed at.
 - **Turn reasoning up** before you blame the model. A 32×32 grid is a spatial
   problem.
 
+## 🆕 New in 0.3
+
+- **Onion skin.** Ask the agent to check an in-between and it sees the frame
+  over faded copies of its neighbours, the way you would in the editor.
+- **Tweens and bobbing.** A cape can drift, a lantern can sway, a ghost can
+  float — the agent fills the in-between frames with an easing curve or a sine
+  wave instead of placing each one by hand. Still one Ctrl+Z.
+- **Text.** Labels, score counters and title cards in a crisp pixel font drawn
+  for this project. The agent can measure a line before drawing it, so a label
+  lands centred the first time.
+- **Slices for engines.** Nine-patch centres and pivot points go straight into
+  the spritesheet's JSON, ready for Godot or Unity.
+- **Palette from the art.** "This has gotten muddy" → the agent builds a tight
+  palette out of what's actually on the canvas.
+- **Rigs with twins.** `left/arm` and `right/arm` can share a name; the agent
+  says which one it means instead of guessing.
+- **Also:** inside or outside outlines, copying a layer into another open
+  sprite, animation checks like "the sword never covers the face", and a
+  [knight benchmark](docs/evals/knight-benchmark.md) to compare models on.
+
+Upgrading? Run `npx @pebbly/aseprite-ai-artist install-extension` again and
+restart Aseprite — the new abilities live in the extension too.
+
 ## 💡 Why this one
 
 🌍 **It works everywhere, not just in Claude Code.** Most Aseprite MCP projects
@@ -241,7 +265,8 @@ ground at a sixth of the cost — and makes batching the default, so one `draw`
 call is one undo step for you.
 
 👀 **It has to look at its own work.** `look` gives the agent an upscaled
-preview, a one-glyph-per-pixel text grid, a filmstrip and a frame-to-frame diff.
+preview, a one-glyph-per-pixel text grid, a filmstrip, an onion skin and a
+frame-to-frame diff.
 `validate` then checks the sprite mechanically before anything is called done.
 
 🛡️ **It can't quietly wreck your file.** With Aseprite detached, every tool

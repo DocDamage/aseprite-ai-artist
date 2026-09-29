@@ -45,6 +45,11 @@ says otherwise.
 The JSON atlas is written beside the PNG and carries per-frame rectangles and
 per-tag ranges.
 
+**9-patch panels and hotspots** — `sprite_manage op="slice_create"` names a
+region with an optional `center` (the stretchable middle, for 9-slicing) or
+`pivot`. Create slices before exporting; a `spritesheet` export carries them
+into its JSON atlas alongside the per-frame rectangles.
+
 **Animation preview for a human:**
 
 ```

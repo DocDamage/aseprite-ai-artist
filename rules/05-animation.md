@@ -60,3 +60,12 @@ together = slow; far apart = fast. That is the whole trick.
 - Do limbs keep the same thickness?
 - Does the light stay in the same place?
 - Does the cycle loop — is frame N a plausible predecessor of frame 1?
+
+## Tooling notes
+
+`look` op `onion` composites a frame over its ghosted neighbours, for judging
+spacing and in-betweens without stepping through frames one at a time. `cel`
+ops `tween` and `oscillate` fill in in-between cels for secondary motion (a
+bob, a breath, a float) — but on small amplitudes their rounding to whole
+pixels can stutter, so hand-key the primary motion and save them for motion
+nobody is meant to consciously notice.

@@ -61,6 +61,14 @@ Pick one style from `rules://04-outlines-and-edges` and apply it consistently.
 Selective outlining — outside only — is usually right. `transform` op `outline`
 does the mechanical part; hand-place where you want it broken.
 
+#### Text
+
+`draw` op kind `text` lays out a string from a bitmap font and draws it in the
+same batch as everything else. Pass `measureOnly: true` with only `text` ops
+first to get the ink bounds back without touching the sprite — that is how
+you centre a label or size a panel around it before committing to a position.
+See [TOOLS.md](../../docs/TOOLS.md#font-format) for the font format.
+
 ### 7. Verify precisely
 
 ```

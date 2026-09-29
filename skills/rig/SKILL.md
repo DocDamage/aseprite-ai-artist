@@ -26,6 +26,10 @@ shadow       ← ground contact, if the style has one
 Add `weapon`, `cape`, `hair-front`, `hair-back` as the design needs. Keep names
 stable — every later call refers to them by name.
 
+Two limbs with the same name — `arm-near` inside two different groups, say —
+make later calls ambiguous: passing just the name fails, naming every match,
+until you pass a `group/child` path (e.g. `torso/arm-near`) instead.
+
 ## Building it fresh
 
 One batch, one undo step:
