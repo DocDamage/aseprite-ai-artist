@@ -40,9 +40,10 @@ export function registerPaletteTools(server: McpServer, live: LiveClient): void 
         "• 'load' — read a .gpl/.hex/.pal/.png palette file from disk.\n" +
         "• 'ramp' — generate a hue-shifted ramp from a base colour and append it. Shadows rotate toward blue, highlights toward orange; a ramp that only changes brightness is the clearest tell of machine-made pixel art.\n" +
         "• 'analyze' — report ramp structure, contrast, near-duplicate entries and colours used in the art that are not in the palette.\n" +
+        "• 'extract' — replace the palette with one quantized from the art itself (RGB sprites only). Use to derive a curated palette from a reference image imported at full colour.\n" +
         "Decide the palette before drawing. Retro-fitting one onto finished art means repainting.",
       inputSchema: {
-        op: z.enum(["get", "set", "preset", "load", "ramp", "analyze"]),
+        op: z.enum(["get", "set", "preset", "load", "ramp", "analyze", "extract"]),
         sprite: targetShape.sprite,
         preset: z.string().optional().describe("Preset key for op 'preset'."),
         path: z.string().optional().describe("Palette file for op 'load'."),
@@ -74,6 +75,13 @@ export function registerPaletteTools(server: McpServer, live: LiveClient): void 
           .describe(
             "When replacing a palette, repaint existing pixels to the nearest new colour instead of leaving them off-palette.",
           ),
+        maxColors: z
+          .number()
+          .int()
+          .min(2)
+          .max(256)
+          .default(16)
+          .describe("For op 'extract': target palette size."),
       },
       outputSchema: {
         op: z.string(),
@@ -187,6 +195,17 @@ export function registerPaletteTools(server: McpServer, live: LiveClient): void 
             return ok(
               { op: "analyze", sprite: state.sprite, colors: state.colors, analysis: analyze(state) },
               describeAnalysis(analyze(state)),
+            );
+          }
+
+          case "extract": {
+            const data = await live.call<{ sprite: string; colors: string[] }>("palette.extract", {
+              sprite: args.sprite,
+              maxColors: args.maxColors,
+            });
+            return ok(
+              { op: "extract", ...data },
+              `Extracted a ${data.colors.length}-colour palette from the art: ${data.colors.join(" ")}`,
             );
           }
 

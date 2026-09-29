@@ -1245,6 +1245,344 @@ check("validate skips hidden layers and says that it did", function()
   end)
 end)
 
+-- New behaviour added alongside the op contract: find_layer's group/child
+-- path resolution, look.onion, cel tween/oscillate, sprite_manage slices,
+-- palette.extract, transform outline side/diagonals, validate 'expect', and
+-- layer duplicate toSprite.
+
+check("find_layer refuses an ambiguous bare name but resolves a group path", function()
+  withMockSprite(8, 8, ColorMode.RGB, function(mock)
+    call("layer.apply", { batch = {
+      { op = "create", name = "armA" },
+      { op = "create", name = "armB" },
+    } })
+    call("layer.apply", { batch = { { op = "group", name = "left", names = { "armA" } } } })
+    call("layer.apply", { batch = { { op = "group", name = "right", names = { "armB" } } } })
+    call("layer.apply", { batch = {
+      { op = "rename", name = "armA", newName = "arm" },
+      { op = "rename", name = "armB", newName = "arm" },
+    } })
+
+    local reply = A.handleCommand({
+      id = "t", cmd = "layer.apply",
+      args = { batch = { { op = "set", name = "arm", visible = false } } },
+    })
+    assert(reply.ok == false, "a bare name matching two layers must be refused")
+    assertEq(reply.error.code, "invalid_args", "error code")
+    assert(reply.error.message:find("ambiguous"), "message should say ambiguous: " .. tostring(reply.error.message))
+    assert(reply.error.message:find("left/arm"), "message should list the left/arm path")
+    assert(reply.error.message:find("right/arm"), "message should list the right/arm path")
+
+    call("layer.apply", { batch = { { op = "set", name = "left/arm", visible = false } } })
+    local leftArm, rightArm = nil, nil
+    for _, group in ipairs(mock.layers) do
+      if group.isGroup then
+        for _, l in ipairs(group.layers) do
+          if group.name == "left" then leftArm = l end
+          if group.name == "right" then rightArm = l end
+        end
+      end
+    end
+    assert(leftArm and not leftArm.isVisible, "left/arm should now be hidden")
+    assert(rightArm and rightArm.isVisible, "right/arm must be untouched")
+  end)
+end)
+
+check("cel op 'tween' interpolates position with easing and creates missing cels", function()
+  withMockSprite(8, 8, ColorMode.RGB, function(mock)
+    local layer = mock.layers[1]
+    call("draw.batch", { layer = layer.name, frame = 1,
+      ops = { { kind = "pixels", color = "#ff004d", points = { { x = 1, y = 1 } } } } })
+    call("frame.apply", { op = "add", count = 3 })
+    assert(layer:cel(2) == nil, "precondition: frame 2 starts empty")
+
+    local result = call("cel.apply", {
+      op = "tween", layer = layer.name, fromFrame = 1, toFrame = 4,
+      property = "position", to = { x = 4, y = 4 }, easing = "linear",
+    })
+    assertEq(#result.frames, 4, "frames touched")
+    assertEq(result.frames[1].x, 0, "fromFrame keeps its start position")
+    -- linear, span 3: frame 2 is t=1/3 -> 4*1/3=1.33 -> floor(+0.5)=1; frame 3 is t=2/3 -> 2.67 -> 3
+    assertEq(result.frames[2].x, 1, "linear interpolation at frame 2")
+    assertEq(result.frames[3].x, 3, "linear interpolation at frame 3")
+    assertEq(result.frames[4].x, 4, "toFrame lands exactly on `to`")
+    assertEq(result.frames[4].y, 4, "toFrame lands exactly on `to`")
+
+    assert(layer:cel(2) ~= nil, "tween should have created the missing frame-2 cel")
+    assert(layer:cel(3) ~= nil, "tween should have created the missing frame-3 cel")
+    assert(layer:cel(2).image:getPixel(1, 1) ~= 0, "the created cel should copy the source pixels")
+  end)
+end)
+
+check("cel op 'tween' interpolates opacity and refuses toFrame <= fromFrame", function()
+  withMockSprite(8, 8, ColorMode.RGB, function(mock)
+    local layer = mock.layers[1]
+    call("draw.batch", { layer = layer.name, frame = 1,
+      ops = { { kind = "pixels", color = "#ff004d", points = { { x = 1, y = 1 } } } } })
+    call("frame.apply", { op = "add", count = 1 })
+
+    local result = call("cel.apply", {
+      op = "tween", layer = layer.name, fromFrame = 1, toFrame = 2,
+      property = "opacity", to = 0, easing = "linear",
+    })
+    assertEq(result.frames[1].opacity, 255, "fromFrame keeps its start opacity")
+    assertEq(result.frames[2].opacity, 0, "toFrame lands exactly on `to`")
+
+    local reply = A.handleCommand({ id = "t", cmd = "cel.apply", args = {
+      op = "tween", layer = layer.name, fromFrame = 2, toFrame = 2,
+      property = "opacity", to = 0,
+    } })
+    assert(reply.ok == false, "toFrame equal to fromFrame must be refused")
+    assertEq(reply.error.code, "invalid_args", "error code")
+  end)
+end)
+
+check("cel op 'oscillate' adds a sinusoidal position offset and creates missing cels", function()
+  withMockSprite(8, 8, ColorMode.RGB, function(mock)
+    local layer = mock.layers[1]
+    call("draw.batch", { layer = layer.name, frame = 1,
+      ops = { { kind = "pixels", color = "#ff004d", points = { { x = 2, y = 2 } } } } })
+    call("frame.apply", { op = "add", count = 3 })
+
+    local result = call("cel.apply", {
+      op = "oscillate", layer = layer.name, fromFrame = 1, toFrame = 4,
+      amplitudeX = 4, amplitudeY = 0, period = 4, phase = 0,
+    })
+    assertEq(#result.frames, 4, "frames touched")
+    assertEq(result.frames[1].x, 0, "i=0: sin(0) offset is 0")
+    assertEq(result.frames[2].x, 4, "i=1: sin(pi/2) offset is +amplitude")
+    assertEq(result.frames[3].x, 0, "i=2: sin(pi) offset is 0")
+    assertEq(result.frames[4].x, -4, "i=3: sin(3pi/2) offset is -amplitude")
+    assert(layer:cel(2) ~= nil and layer:cel(3) ~= nil and layer:cel(4) ~= nil,
+      "oscillate should have created every missing cel")
+  end)
+end)
+
+check("cel op 'oscillate' refuses a period below 2", function()
+  withMockSprite(8, 8, ColorMode.RGB, function(mock)
+    local layer = mock.layers[1]
+    call("draw.batch", { layer = layer.name, frame = 1,
+      ops = { { kind = "pixels", color = "#ff004d", points = { { x = 2, y = 2 } } } } })
+    call("frame.apply", { op = "add", count = 1 })
+    local reply = A.handleCommand({ id = "t", cmd = "cel.apply", args = {
+      op = "oscillate", layer = layer.name, fromFrame = 1, toFrame = 2, period = 1,
+    } })
+    assert(reply.ok == false, "a period below 2 must be refused")
+    assertEq(reply.error.code, "invalid_args", "error code")
+  end)
+end)
+
+check("look.onion composites ghosts oldest-first and leaves the site untouched", function()
+  local out = app.fs.joinPath(app.fs.tempPath, "ai-artist-test-onion.png")
+  withMockSprite(8, 8, ColorMode.RGB, function(mock)
+    local layer = mock.layers[1]
+    call("draw.batch", { layer = layer.name, frame = 1,
+      ops = { { kind = "pixels", color = "#ff004d", points = { { x = 1, y = 1 } } } } })
+    call("frame.apply", { op = "add", count = 3 })
+    call("draw.batch", { layer = layer.name, frame = 3,
+      ops = { { kind = "pixels", color = "#29adff", points = { { x = 5, y = 5 } } } } })
+
+    local beforeLayer = app.layer and app.layer.name or nil
+    local beforeFrame = app.frame and app.frame.frameNumber or nil
+    local openBefore = #app.sprites
+
+    local result = call("look.onion", { frame = 2, framesBefore = 1, framesAfter = 1, path = out })
+    assertEq(result.frame, 2, "target frame")
+    assertEq(#result.frames, 3, "3 frames composited")
+    assertEq(result.frames[1], 1, "first frame in the composite")
+    assertEq(result.frames[2], 2, "target frame is included")
+    assertEq(result.frames[3], 3, "last frame in the composite")
+    assert(app.fs.isFile(out), "onion png was not written")
+    assertEq(#app.sprites, openBefore, "the scratch sprite was not closed")
+    assertEq(app.layer and app.layer.name or nil, beforeLayer, "active layer changed")
+    assertEq(app.frame and app.frame.frameNumber or nil, beforeFrame, "active frame changed")
+  end)
+  os.remove(out)
+end)
+
+check("sprite.manage slice_create/update/delete manage slices with center and pivot", function()
+  withMockSprite(16, 16, ColorMode.RGB, function(mock)
+    local created = call("sprite.manage", {
+      op = "slice_create", name = "icon",
+      bounds = { x = 1, y = 1, width = 8, height = 8 },
+      center = { x = 1, y = 1, width = 6, height = 6 },
+      pivot = { x = 4, y = 4 },
+    })
+    assertEq(created.slice.name, "icon", "slice name")
+    assertEq(created.slice.center.width, 6, "center width")
+    assertEq(created.slice.pivot.x, 4, "pivot x")
+    assertEq(#mock.slices, 1, "slice was not actually added to the sprite")
+
+    local dupReply = A.handleCommand({ id = "t", cmd = "sprite.manage", args = {
+      op = "slice_create", name = "icon", bounds = { x = 0, y = 0, width = 4, height = 4 },
+    } })
+    assert(dupReply.ok == false, "creating a slice with an existing name must be refused")
+    assertEq(dupReply.error.code, "invalid_args", "error code")
+
+    local updated = call("sprite.manage", { op = "slice_update", name = "icon", pivot = { x = 5, y = 5 } })
+    assertEq(updated.slice.pivot.x, 5, "pivot was updated")
+    assertEq(updated.slice.center.width, 6, "an untouched field should survive an update")
+
+    local info = call("sprite.info", { includeSlices = true })
+    assertEq(#info.slices, 1, "sprite.info slice count")
+    assertEq(info.slices[1].pivot.x, 5, "sprite.info should report the updated pivot")
+    assertEq(info.slices[1].center.width, 6, "sprite.info should report the center")
+
+    call("sprite.manage", { op = "slice_delete", name = "icon" })
+    assertEq(#mock.slices, 0, "slice was not actually removed")
+
+    local missingReply = A.handleCommand({ id = "t", cmd = "sprite.manage", args = { op = "slice_delete", name = "icon" } })
+    assert(missingReply.ok == false, "deleting an already-gone slice must be refused, not no-op")
+    assertEq(missingReply.error.code, "invalid_args", "error code")
+  end)
+end)
+
+check("palette.extract quantizes the art into a fresh palette bounded by maxColors", function()
+  withMockSprite(16, 16, ColorMode.RGB, function(mock)
+    call("draw.batch", {
+      paletteLock = false,
+      ops = {
+        { kind = "rect", rect = { x = 0, y = 0, width = 8, height = 8 }, fill = "#ff0000" },
+        { kind = "rect", rect = { x = 8, y = 0, width = 8, height = 8 }, fill = "#00ff00" },
+        { kind = "rect", rect = { x = 0, y = 8, width = 8, height = 8 }, fill = "#0000ff" },
+      },
+    })
+    local result = call("palette.extract", { maxColors = 4 })
+    assert(#result.colors > 0, "extract found no colours")
+    assert(#result.colors <= 4, "extract exceeded maxColors")
+  end)
+end)
+
+check("palette.extract refuses a non-RGB sprite", function()
+  withMockSprite(8, 8, ColorMode.INDEXED, function()
+    local reply = A.handleCommand({ id = "t", cmd = "palette.extract", args = {} })
+    assert(reply.ok == false, "extract on an indexed sprite reported success")
+    assertEq(reply.error.code, "invalid_args", "error code")
+  end)
+end)
+
+check("transform outline 'side' and 'diagonals' each produce a distinct result", function()
+  withMockSprite(16, 16, ColorMode.RGB, function(mock)
+    local layer = mock.layers[1]
+    -- A plus/cross: the centre pixel's orthogonal neighbours are all opaque
+    -- (4-neighbour 'inside' does not touch it) but its diagonal corners are
+    -- transparent (8-neighbour 'inside' does) -- the shape that tells all 4
+    -- combinations apart from each other.
+    local plus = {
+      { x = 5, y = 4 }, { x = 4, y = 5 }, { x = 5, y = 5 }, { x = 6, y = 5 }, { x = 5, y = 6 },
+    }
+    local seen = {}
+    for _, combo in ipairs({
+      { side = "outside", diagonals = false },
+      { side = "outside", diagonals = true },
+      { side = "inside", diagonals = false },
+      { side = "inside", diagonals = true },
+    }) do
+      call("cel.apply", { op = "clear", layer = layer.name, frame = 1 })
+      call("draw.batch", { layer = layer.name, frame = 1, ops = { { kind = "pixels", color = "#ff004d", points = plus } } })
+      local result = call("transform.apply", {
+        op = "outline", layer = layer.name, frame = 1, color = "#29adff",
+        side = combo.side, diagonals = combo.diagonals,
+      })
+      assert(not seen[result.pixelsChanged],
+        "side=" .. combo.side .. " diagonals=" .. tostring(combo.diagonals) ..
+        " produced the same pixelsChanged (" .. result.pixelsChanged .. ") as an earlier combination")
+      seen[result.pixelsChanged] = true
+    end
+  end)
+end)
+
+check("transform outline defaults match the pre-existing side='outside',diagonals=false behaviour", function()
+  withMockSprite(16, 16, ColorMode.RGB, function(mock)
+    local layer = mock.layers[1]
+    call("draw.batch", { layer = layer.name, frame = 1, ops = { { kind = "pixels", color = "#ff004d", points = { { x = 4, y = 4 } } } } })
+    local explicit = call("transform.apply", {
+      op = "outline", layer = layer.name, frame = 1, color = "#29adff", side = "outside", diagonals = false,
+    })
+    call("cel.apply", { op = "clear", layer = layer.name, frame = 1 })
+    call("draw.batch", { layer = layer.name, frame = 1, ops = { { kind = "pixels", color = "#ff004d", points = { { x = 4, y = 4 } } } } })
+    local defaulted = call("transform.apply", { op = "outline", layer = layer.name, frame = 1, color = "#29adff" })
+    assertEq(defaulted.pixelsChanged, explicit.pixelsChanged, "omitting side/diagonals should match side='outside',diagonals=false")
+    assertEq(defaulted.bounds.width, explicit.bounds.width, "omitting side/diagonals should grow the cel the same way")
+  end)
+end)
+
+check("validate.run 'expect' flags frames outside layerFrames and overlapping mustNotOverlap layers", function()
+  withMockSprite(16, 16, ColorMode.RGB, function(mock)
+    local layerA = mock.layers[1].name
+    call("layer.apply", { batch = { { op = "create", name = "b" } } })
+    call("draw.batch", { layer = layerA, frame = 1, ops = { { kind = "pixels", color = "#ff004d", points = { { x = 5, y = 5 } } } } })
+    call("frame.apply", { op = "add", count = 3 })
+
+    local mismatch = call("validate.run", { expect = { layerFrames = { [layerA] = { { 2, 4 } } } } })
+    local findings = {}
+    for _, f in ipairs(mismatch.findings) do
+      if f.check == "animation" and f.layer == layerA then findings[#findings + 1] = f end
+    end
+    assertEq(#findings, 4, "1 unexpected (frame 1) + 3 missing (frames 2-4)")
+    for _, f in ipairs(findings) do assertEq(f.check, "animation", "check name") end
+
+    local matched = call("validate.run", { expect = { layerFrames = { [layerA] = { { 1, 1 } } } } })
+    local matchedCount = 0
+    for _, f in ipairs(matched.findings) do
+      if f.check == "animation" and f.layer == layerA then matchedCount = matchedCount + 1 end
+    end
+    assertEq(matchedCount, 0, "a correct expectation should report nothing")
+
+    call("draw.batch", { layer = "b", frame = 1, ops = { { kind = "pixels", color = "#29adff", points = { { x = 5, y = 5 } } } } })
+    local overlap = call("validate.run", { expect = { mustNotOverlap = { { layerA, "b" } } } })
+    local overlapFindings = {}
+    for _, f in ipairs(overlap.findings) do
+      if f.check == "layers" and f.frame == 1 then overlapFindings[#overlapFindings + 1] = f end
+    end
+    assert(#overlapFindings > 0, "the shared opaque pixel on frame 1 should have been reported")
+    assertEq(overlapFindings[1].at.x, 5, "overlap coordinate x")
+    assertEq(overlapFindings[1].at.y, 5, "overlap coordinate y")
+  end)
+end)
+
+check("layer op 'duplicate' with toSprite copies cels, suffixes name clashes, reports dropped frames", function()
+  local previous = app.sprite
+  local source = Sprite(8, 8, ColorMode.RGB)
+  app.sprite = source
+  local sourceLayerName = source.layers[1].name
+  call("draw.batch", { layer = sourceLayerName, frame = 1,
+    ops = { { kind = "pixels", color = "#ff004d", points = { { x = 1, y = 1 } } } } })
+  call("frame.apply", { op = "add", count = 3 })
+  for f = 2, 4 do call("cel.apply", { op = "create", layer = sourceLayerName, frame = f }) end
+
+  -- A brand-new sprite's default layer is also named the same as a source's
+  -- default layer, which is exactly the name clash 'duplicate' has to suffix.
+  local target = Sprite(8, 8, ColorMode.RGB)
+
+  local ok, err = pcall(function()
+    local dup = call("layer.apply", {
+      sprite = "#" .. source.id, op = "duplicate", name = sourceLayerName, toSprite = "#" .. target.id,
+    })
+    local record = dup.duplicated and dup.duplicated[1]
+    assert(record, "duplicate with toSprite should report a duplicated[] entry")
+    assertEq(record.sourceLayer, sourceLayerName, "sourceLayer")
+    assertEq(record.framesDropped, 3, "3 of 4 source frames exceed the target's single frame")
+    assert(record.name ~= sourceLayerName, "the copy must be renamed on a name clash")
+    assertEq(record.toSprite, "#" .. target.id, "toSprite reports the stable id")
+
+    local found, count = nil, 0
+    for _, l in ipairs(target.layers) do
+      if l.name == sourceLayerName then count = count + 1 end
+      if l.name == record.name then found = l end
+    end
+    assertEq(count, 1, "the original layer in the target must be untouched")
+    assert(found, "the renamed copy should actually exist in the target")
+    assert(found:cel(1) ~= nil, "the copy should carry the source's frame-1 cel")
+    assert(found:cel(2) == nil, "frames beyond the target's frame count must not appear")
+  end)
+
+  pcall(function() source:close() end)
+  pcall(function() target:close() end)
+  if previous then pcall(function() app.sprite = previous end) end
+  if not ok then error(err, 0) end
+end)
+
 sprite:close()
 
 print("")

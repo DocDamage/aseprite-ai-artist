@@ -1,7 +1,16 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { LiveClient } from "../bridge/client.js";
+import { LiveError } from "../lib/protocol.js";
+import { layoutText, loadFont, type TextAnchor } from "../lib/text.js";
 import { fail, hexColor, ok, targetShape } from "./kit.js";
+
+const textAnchor = z.enum([
+  "top_left", "top", "top_right",
+  "left", "center", "right",
+  "bottom_left", "bottom", "bottom_right",
+  "baseline_left", "baseline", "baseline_right",
+]) satisfies z.ZodType<TextAnchor>;
 
 const pointWithColor = z.object({
   x: z.number().int(),
@@ -112,6 +121,25 @@ const drawOp = z.discriminatedUnion("kind", [
     flipVertical: z.boolean().default(false),
     skipTransparent: z.boolean().default(true),
   }),
+  z.object({
+    kind: z.literal("text"),
+    text: z.string().min(1).describe("Multiline via \\n."),
+    x: z.number().int(),
+    y: z.number().int(),
+    color: hexColor,
+    font: z.string().default("pixel5x7").describe("Name in knowledge/fonts, without the .json extension."),
+    anchor: textAnchor
+      .default("top_left")
+      .describe("Resolved against the glyph ink box, not the full advance box — outline and shadow never shift it."),
+    letterSpacing: z.number().int().default(1),
+    lineSpacing: z.number().int().default(1),
+    bold: z.number().int().min(0).max(3).default(0).describe("Grid-cell passes grown rightward; 0 is regular weight."),
+    outlineColor: hexColor.optional(),
+    outlineDiagonals: z.boolean().default(true).describe("8-neighbour outline instead of 4."),
+    shadowColor: hexColor.optional(),
+    shadowOffset: z.object({ x: z.number().int(), y: z.number().int() }).default({ x: 1, y: 1 }),
+    scale: z.number().int().min(1).max(8).default(1),
+  }),
 ]);
 
 export function registerDrawTools(server: McpServer, live: LiveClient): void {
@@ -120,10 +148,11 @@ export function registerDrawTools(server: McpServer, live: LiveClient): void {
     {
       title: "Draw",
       description:
-        "Apply a batch of drawing operations to one cel, as a single undoable action. Ops: pixels, line, polyline, rect, ellipse, fill, replace, dither, gradient, clear, blit. " +
+        "Apply a batch of drawing operations to one cel, as a single undoable action. Ops: pixels, line, polyline, rect, ellipse, fill, replace, dither, gradient, clear, blit, text. " +
         "Batch aggressively — a whole sprite in one call is normal and correct, and it means the user can undo your work with one Ctrl+Z. " +
         "Set `paletteLock` (default true) to snap every colour to the sprite's palette by perceptual distance before anything is written, so you cannot silently widen a curated palette. " +
-        "Ops run in array order, so paint fills before outlines and outlines before highlights.",
+        "Ops run in array order, so paint fills before outlines and outlines before highlights. " +
+        "'text' is laid out here from a bitmap font and expanded to plain pixels before it reaches Aseprite — pass `measureOnly: true` with only 'text' ops to get each one's ink bounds without touching the sprite, e.g. to centre a label first.",
       inputSchema: {
         ...targetShape,
         ops: z.array(drawOp).min(1).max(512).describe("Applied in order, in one transaction."),
@@ -145,20 +174,40 @@ export function registerDrawTools(server: McpServer, live: LiveClient): void {
           .string()
           .optional()
           .describe("Name shown in Aseprite's undo history. Describe the intent, e.g. 'shade helmet'."),
+        measureOnly: z
+          .boolean()
+          .default(false)
+          .describe(
+            "Every op must be 'text'. Returns each one's ink bounds without calling Aseprite at all — use to size a panel or centre a label before actually drawing it.",
+          ),
       },
       outputSchema: {
-        sprite: z.string(),
-        layer: z.string(),
-        frame: z.number().int(),
-        opsApplied: z.number().int(),
-        pixelsChanged: z.number().int(),
+        sprite: z.string().optional(),
+        layer: z.string().optional(),
+        frame: z.number().int().optional(),
+        opsApplied: z.number().int().optional(),
+        pixelsChanged: z.number().int().optional(),
         colorsSnapped: z
           .array(z.object({ from: z.string(), to: z.string(), deltaE: z.number() }))
+          .optional()
           .describe("Colours palette-lock moved, and how far. A large ΔE means the palette lacks that colour."),
         bounds: z
           .object({ x: z.number().int(), y: z.number().int(), width: z.number().int(), height: z.number().int() })
           .nullish()
           .describe("Bounding box actually touched."),
+        measureOnly: z.boolean().optional(),
+        textBounds: z
+          .array(
+            z.object({
+              index: z.number().int().describe("Position of this op in the `ops` array."),
+              bounds: z
+                .object({ x: z.number().int(), y: z.number().int(), width: z.number().int(), height: z.number().int() })
+                .nullish()
+                .describe("Ink bounds of the laid-out text; null for text with no ink (e.g. all spaces)."),
+            }),
+          )
+          .optional()
+          .describe("Only present when `measureOnly` was set."),
       },
       annotations: {
         readOnlyHint: false,
@@ -169,9 +218,41 @@ export function registerDrawTools(server: McpServer, live: LiveClient): void {
     },
     async (args) => {
       try {
-        const data = await live.call<Record<string, unknown>>("draw.batch", args, {
-          expect: ["opsApplied", "pixelsChanged", "layer", "frame"],
-        });
+        if (args.measureOnly) {
+          if (args.ops.some((op) => op.kind !== "text")) {
+            return fail(
+              new LiveError(
+                "invalid_args",
+                "measureOnly only accepts 'text' ops — nothing else has ink bounds to measure without drawing.",
+              ),
+            );
+          }
+          const textOps = args.ops as Extract<(typeof args.ops)[number], { kind: "text" }>[];
+          const textBounds = textOps.map((op, index) => ({
+            index,
+            bounds: layoutText({ ...op, font: loadFont(op.font) }).inkBounds,
+          }));
+          return ok(
+            { measureOnly: true, textBounds },
+            `Measured ${textBounds.length} text op(s) without touching the sprite.`,
+          );
+        }
+
+        const expandedOps: Record<string, unknown>[] = [];
+        for (const op of args.ops) {
+          if (op.kind === "text") {
+            const layout = layoutText({ ...op, font: loadFont(op.font) });
+            if (layout.pixels.length > 0) expandedOps.push({ kind: "pixels", points: layout.pixels });
+          } else {
+            expandedOps.push(op);
+          }
+        }
+
+        const data = await live.call<Record<string, unknown>>(
+          "draw.batch",
+          { ...args, ops: expandedOps, measureOnly: undefined },
+          { expect: ["opsApplied", "pixelsChanged", "layer", "frame"] },
+        );
         const snapped = (data.colorsSnapped as { from: string; to: string; deltaE: number }[]) ?? [];
         const far = snapped.filter((s) => s.deltaE > 12);
         const summary = [
@@ -250,6 +331,16 @@ export function registerDrawTools(server: McpServer, live: LiveClient): void {
         angle: z.number().default(90).describe("Degrees, clockwise. For 'rotate'."),
         factor: z.number().int().min(1).max(16).default(2).describe("For 'scale'."),
         color: hexColor.optional().describe("Outline colour, for 'outline'."),
+        side: z
+          .enum(["outside", "inside"])
+          .default("outside")
+          .describe(
+            "For 'outline'. 'outside' paints transparent pixels touching opaque ones, growing the cel by one pixel each way. 'inside' recolours opaque pixels that touch transparency instead, same size in and out.",
+          ),
+        diagonals: z
+          .boolean()
+          .default(false)
+          .describe("For 'outline'. Treat diagonal neighbours as touching too (8-neighbour instead of 4)."),
         thickness: z.number().int().positive().max(8).default(1),
         allowLossy: z
           .boolean()

@@ -113,6 +113,21 @@ export function registerCraftTools(server: McpServer, live: LiveClient): void {
           .boolean()
           .default(false)
           .describe("Treat style warnings as failures. Use when the user asked for a specific discipline."),
+        expect: z
+          .object({
+            layerFrames: z
+              .record(z.array(z.tuple([z.number().int().positive(), z.number().int().positive()])))
+              .optional()
+              .describe("Per layer, the [from,to] frame ranges (1-based, inclusive) it should hold ink in."),
+            mustNotOverlap: z
+              .array(z.tuple([z.string(), z.string()]))
+              .optional()
+              .describe("Layer name pairs whose opaque pixels must never intersect on the same frame."),
+          })
+          .optional()
+          .describe(
+            "The animation contract you already know. Runs independently of `checks`, whenever given: flags art outside a layer's expected frame ranges (or a missing cel inside one), and any frame where two named layers' opaque pixels overlap.",
+          ),
       },
       outputSchema: {
         sprite: z.string(),

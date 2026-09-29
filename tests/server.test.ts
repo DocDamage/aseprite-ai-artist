@@ -129,6 +129,49 @@ test("a mutating tool returns a structured not_connected error, not a hang", asy
   await close();
 });
 
+test("draw measureOnly with a text op returns textBounds and never calls the (absent) bridge", async () => {
+  const { client, close } = await connected();
+  const result = await client.callTool({
+    name: "draw",
+    arguments: {
+      measureOnly: true,
+      ops: [{ kind: "text", text: "Hi", x: 10, y: 10, color: "#ffffff" }],
+    },
+  });
+  // No bridge is running (autoSpawnBridge: false); if measureOnly reached
+  // live.call anyway this would fail with a structured not_connected error
+  // instead of answering, since nothing is listening on the plugin port.
+  assert.notEqual(result.isError, true, "measureOnly must not touch the live bridge");
+  const structured = result.structuredContent as {
+    measureOnly: boolean;
+    textBounds: { index: number; bounds: { x: number; y: number; width: number; height: number } | null }[];
+  };
+  assert.equal(structured.measureOnly, true);
+  assert.equal(structured.textBounds.length, 1);
+  assert.equal(structured.textBounds[0]?.index, 0);
+  // "Hi" in the bundled pixel5x7 font at top_left(10,10): known ink bounds.
+  assert.deepEqual(structured.textBounds[0]?.bounds, { x: 10, y: 10, width: 8, height: 6 });
+  await close();
+});
+
+test("draw measureOnly rejects a batch that mixes a non-text op", async () => {
+  const { client, close } = await connected();
+  const result = await client.callTool({
+    name: "draw",
+    arguments: {
+      measureOnly: true,
+      ops: [
+        { kind: "text", text: "Hi", x: 0, y: 0, color: "#ffffff" },
+        { kind: "pixels", color: "#ffffff", points: [{ x: 0, y: 0 }] },
+      ],
+    },
+  });
+  assert.equal(result.isError, true);
+  const structured = result.structuredContent as { code?: string };
+  assert.equal(structured.code, "invalid_args");
+  await close();
+});
+
 test("preflight answers instead of failing when Aseprite is absent", async () => {
   const { client, close } = await connected();
   const result = await client.callTool({ name: "preflight", arguments: {} });

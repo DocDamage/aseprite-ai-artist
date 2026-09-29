@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 
 local PROTOCOL_VERSION = 1
-local EXTENSION_VERSION = "0.2.1"
+local EXTENSION_VERSION = "0.3.0"
 
 -- Optional capabilities. The wire version stays 1 across builds; new command
 -- families are gated on these flags plus the loud unsupported_command reply,
@@ -241,19 +241,71 @@ local function find_layer(sprite, name)
     if #sprite.layers == 0 then fault("invalid_args", "Sprite has no layers.") end
     return sprite.layers[#sprite.layers]
   end
-  local function search(layers)
-    for _, l in ipairs(layers) do
-      if l.name == name then return l end
-      if l.isGroup then
-        local found = search(l.layers)
-        if found then return found end
-      end
+
+  -- Full slash-joined path from the sprite root, walked from the match
+  -- itself via .parent rather than built during the search: Aseprite may
+  -- hand back a fresh Layer wrapper on every property read, so identity
+  -- built in one tree walk cannot be trusted to survive into another.
+  local function layer_path(l)
+    local parts = { l.name }
+    local p = l.parent
+    -- A root layer's `.parent` is the Sprite itself, not nil, and Sprite has
+    -- no `.isGroup` field -- indexing it throws "Field isGroup does not
+    -- exist" rather than answering false. Stop the walk there by identity
+    -- before that field read ever happens.
+    while p and p ~= sprite and p.isGroup do
+      table.insert(parts, 1, p.name)
+      p = p.parent
     end
-    return nil
+    return table.concat(parts, "/")
   end
-  local found = search(sprite.layers)
-  if not found then fault("invalid_args", "No layer named '" .. tostring(name) .. "'.") end
-  return found
+
+  local function ambiguous(matches)
+    local labels = {}
+    for _, l in ipairs(matches) do labels[#labels + 1] = layer_path(l) end
+    fault("invalid_args", "Layer name '" .. name .. "' is ambiguous: " ..
+      table.concat(labels, ", ") .. ". Pass a group path.")
+  end
+
+  -- (a) An exact match on the plain layer name, searched across the whole
+  -- tree regardless of nesting -- the common case, free of any '/' parsing.
+  local function search_by_name(layers, out)
+    for _, l in ipairs(layers) do
+      if l.name == name then out[#out + 1] = l end
+      if l.isGroup then search_by_name(l.layers, out) end
+    end
+    return out
+  end
+  local exact = search_by_name(sprite.layers, {})
+  if #exact == 1 then return exact[1] end
+  if #exact > 1 then ambiguous(exact) end
+
+  -- (b) name has a '/': treat it as a group/child path. A group's own name
+  -- may itself contain '/', so this cannot just split on every slash -- it
+  -- tries the longest remaining prefix against real layer names at each
+  -- level and backtracks to shorter ones, exploring every segmentation a
+  -- '/'-containing group name would allow. Collecting every match this way
+  -- (rather than stopping at the first) is what makes a genuinely ambiguous
+  -- path -- one real tree structure that a '/'-containing name could also
+  -- explain a different way -- surface as an error instead of a silent pick.
+  if name:find("/", 1, true) then
+    local function resolve(layers, remainder, out)
+      for _, l in ipairs(layers) do
+        local n = l.name
+        if remainder == n then
+          out[#out + 1] = l
+        elseif #remainder > #n and remainder:sub(1, #n) == n and remainder:sub(#n + 1, #n + 1) == "/" then
+          if l.isGroup then resolve(l.layers, remainder:sub(#n + 2), out) end
+        end
+      end
+      return out
+    end
+    local matches = resolve(sprite.layers, name, {})
+    if #matches == 1 then return matches[1] end
+    if #matches > 1 then ambiguous(matches) end
+  end
+
+  fault("invalid_args", "No layer named '" .. tostring(name) .. "'.")
 end
 
 local function find_frame(sprite, number)
@@ -754,6 +806,29 @@ local function flatten_layers(layers, parent, out)
   return out
 end
 
+local function find_slice_by_name(sprite, name)
+  for _, sl in ipairs(sprite.slices) do
+    if sl.name == name then return sl end
+  end
+  return nil
+end
+
+local function slice_summary(sl)
+  local out = {
+    name = sl.name,
+    bounds = { x = sl.bounds.x, y = sl.bounds.y, width = sl.bounds.width, height = sl.bounds.height },
+  }
+  -- Slice.center/Slice.pivot answer nil when nine-slicing/pivot is inactive
+  -- for that slice, so these are conditionally-present keys, not zeroed ones.
+  if sl.center then
+    out.center = { x = sl.center.x, y = sl.center.y, width = sl.center.width, height = sl.center.height }
+  end
+  if sl.pivot then
+    out.pivot = { x = sl.pivot.x, y = sl.pivot.y }
+  end
+  return out
+end
+
 H["sprite.info"] = function(args)
   local s = find_sprite(args.sprite)
   local layers = flatten_layers(s.layers, nil, {})
@@ -801,8 +876,7 @@ H["sprite.info"] = function(args)
   if args.includeSlices then
     local slices = {}
     for i, sl in ipairs(s.slices) do
-      slices[i] = { name = sl.name, bounds = {
-        x = sl.bounds.x, y = sl.bounds.y, width = sl.bounds.width, height = sl.bounds.height } }
+      slices[i] = slice_summary(sl)
     end
     result.slices = slices
   end
@@ -905,6 +979,50 @@ H["sprite.manage"] = function(args)
       end
     end)
     return { sprite = sprite_display_name(s), width = s.width, height = s.height }
+  end
+
+  if op == "slice_create" then
+    local name = need(args.name, "name")
+    if find_slice_by_name(s, name) then
+      fault("invalid_args", "A slice named '" .. name .. "' already exists.")
+    end
+    local bounds = need(args.bounds, "bounds")
+    local sl
+    transact("AI: create slice", function()
+      sl = s:newSlice(Rectangle(bounds.x, bounds.y, bounds.width, bounds.height))
+      sl.name = name
+      if args.center then
+        sl.center = Rectangle(args.center.x, args.center.y, args.center.width, args.center.height)
+      end
+      if args.pivot then sl.pivot = Point(args.pivot.x, args.pivot.y) end
+      if args.color then sl.color = hex_to_color(args.color) end
+    end)
+    return { sprite = sprite_display_name(s), slice = slice_summary(sl) }
+  end
+
+  if op == "slice_update" then
+    local name = need(args.name, "name")
+    local sl = find_slice_by_name(s, name)
+    if not sl then fault("invalid_args", "No slice named '" .. name .. "'.") end
+    transact("AI: update slice", function()
+      if args.bounds then
+        sl.bounds = Rectangle(args.bounds.x, args.bounds.y, args.bounds.width, args.bounds.height)
+      end
+      if args.center then
+        sl.center = Rectangle(args.center.x, args.center.y, args.center.width, args.center.height)
+      end
+      if args.pivot then sl.pivot = Point(args.pivot.x, args.pivot.y) end
+      if args.color then sl.color = hex_to_color(args.color) end
+    end)
+    return { sprite = sprite_display_name(s), slice = slice_summary(sl) }
+  end
+
+  if op == "slice_delete" then
+    local name = need(args.name, "name")
+    local sl = find_slice_by_name(s, name)
+    if not sl then fault("invalid_args", "No slice named '" .. name .. "'.") end
+    transact("AI: delete slice", function() s:deleteSlice(sl) end)
+    return { sprite = sprite_display_name(s), name = name }
   end
 
   fault("unsupported_command", "sprite.manage does not support op '" .. tostring(op) .. "'.")
@@ -1020,6 +1138,68 @@ H["look.filmstrip"] = function(args)
     sprite = sprite_display_name(s),
     frames = count, scale = scale,
     width = stripW * scale, height = stripH * scale,
+  }
+end
+
+H["look.onion"] = function(args)
+  local s = find_sprite(args.sprite)
+  local target = find_frame(s, args.frame)
+  local path = need(args.path, "path")
+
+  local before = args.framesBefore
+  if before == nil then before = 1 end
+  local after = args.framesAfter
+  if after == nil then after = 1 end
+  if before < 0 or before > 8 then fault("invalid_args", "framesBefore must be between 0 and 8.") end
+  if after < 0 or after > 8 then fault("invalid_args", "framesAfter must be between 0 and 8.") end
+  local ghostOpacity = args.ghostOpacity
+  if ghostOpacity == nil then ghostOpacity = 90 end
+  if ghostOpacity < 0 or ghostOpacity > 255 then fault("invalid_args", "ghostOpacity must be between 0 and 255.") end
+
+  local region = args.region and clamp_region(s, args.region) or
+    { x = 0, y = 0, width = s.width, height = s.height }
+
+  local from = math.max(1, target.frameNumber - before)
+  local to = math.min(#s.frames, target.frameNumber + after)
+
+  -- Ghosts oldest-first, at ghostOpacity; the target frame goes on top, at
+  -- full opacity, drawn last so it always wins the composite regardless of
+  -- where in the frame range it falls.
+  local composite = Image(s.width, s.height, s.colorMode)
+  local frames_used = {}
+  for n = from, to do
+    if n ~= target.frameNumber then
+      local ghost = Image(s.width, s.height, s.colorMode)
+      ghost:drawSprite(s, s.frames[n])
+      composite:drawImage(ghost, Point(0, 0), ghostOpacity)
+    end
+    frames_used[#frames_used + 1] = n
+  end
+  composite:drawSprite(s, target)
+
+  local cropped = Image(region.width, region.height, s.colorMode)
+  cropped:drawImage(composite, Point(-region.x, -region.y))
+
+  local scale = pick_scale(region.width, region.height, args.scale)
+  -- The scratch sprite is created inside preserving_site, and closed before
+  -- preserving_site restores the user's own site, on every path -- success
+  -- or a thrown fault, since preserving_site re-raises after restoring.
+  preserving_site(function()
+    local out = Sprite(region.width, region.height, s.colorMode)
+    if s.colorMode == ColorMode.INDEXED then out:setPalette(s.palettes[1]) end
+    out.cels[1].image = cropped
+    if scale > 1 then out:resize(region.width * scale, region.height * scale) end
+    out:saveCopyAs(path)
+    out:close()
+  end)
+
+  return {
+    sprite = sprite_display_name(s),
+    frame = target.frameNumber,
+    frames = frames_used,
+    sourceWidth = region.width, sourceHeight = region.height,
+    width = region.width * scale, height = region.height * scale,
+    scale = scale,
   }
 end
 
@@ -1321,7 +1501,14 @@ local BLEND = {
   addition = BlendMode.ADDITION, subtract = BlendMode.SUBTRACT, divide = BlendMode.DIVIDE,
 }
 
-local function apply_layer_op(s, op)
+local function layer_name_taken(sprite, name)
+  for _, l in ipairs(flatten_layers(sprite.layers, nil, {})) do
+    if l.name == name then return true end
+  end
+  return false
+end
+
+local function apply_layer_op(s, op, cross_sprite)
   local kind = op.op
   if kind == "create" then
     local layer = op.parent and (function()
@@ -1352,7 +1539,41 @@ local function apply_layer_op(s, op)
   elseif kind == "reorder" then layer.stackIndex = need(op.index, "index")
   elseif kind == "activate" then app.layer = layer
   elseif kind == "duplicate" then
-    preserving_site(function() app.layer = layer; app.command.DuplicateLayer() end)
+    if op.toSprite then
+      -- Cross-sprite duplicate: DuplicateLayer only understands one sprite,
+      -- so copy structure and every cel by frame index instead. Frames past
+      -- the target's own frame count have nowhere to go and are dropped,
+      -- reported rather than silently discarded.
+      local target = find_sprite(op.toSprite)
+      local newLayer = target:newLayer()
+      local name = layer.name
+      local suffix = 1
+      while layer_name_taken(target, name) do
+        suffix = suffix + 1
+        name = layer.name .. " " .. suffix
+      end
+      newLayer.name = name
+      newLayer.opacity = layer.opacity or 255
+      if layer.blendMode then newLayer.blendMode = layer.blendMode end
+      newLayer.isVisible = layer.isVisible
+
+      local dropped = 0
+      for _, cel in ipairs(layer.cels) do
+        if cel.frameNumber <= #target.frames then
+          target:newCel(newLayer, target.frames[cel.frameNumber], cel.image:clone(), cel.position)
+        else
+          dropped = dropped + 1
+        end
+      end
+
+      cross_sprite[#cross_sprite + 1] = {
+        sourceLayer = layer.name, name = name,
+        -- '#<id>', not the display name: untitled documents all share "Sprite".
+        toSprite = "#" .. tostring(target.id), framesDropped = dropped,
+      }
+    else
+      preserving_site(function() app.layer = layer; app.command.DuplicateLayer() end)
+    end
   elseif kind == "merge" then
     preserving_site(function() app.layer = layer; app.command.MergeDownLayer() end)
   elseif kind == "ungroup" then
@@ -1384,16 +1605,19 @@ H["layer.apply"] = function(args)
   end
 
   local ops = batch or { args }
+  local cross_sprite = {}
   transact("AI: layers", function()
-    for _, op in ipairs(ops) do apply_layer_op(s, op) end
+    for _, op in ipairs(ops) do apply_layer_op(s, op, cross_sprite) end
   end)
 
-  return {
+  local result = {
     sprite = sprite_display_name(s),
     applied = #ops,
     layers = flatten_layers(s.layers, nil, {}),
     activeLayer = app.layer and app.layer.name or nil,
   }
+  if #cross_sprite > 0 then result.duplicated = cross_sprite end
+  return result
 end
 
 --- The layer LinkCels should act on: the active one when it belongs to this
@@ -1542,8 +1766,16 @@ H["cel.apply"] = function(args)
 
   if op == "list" then
     local cels = {}
-    for _, l in ipairs(flatten_layers(s.layers, nil, {})) do
-      local layer = find_layer(s, l.name)
+    -- Walk layer objects directly: re-resolving each by name would refuse as
+    -- soon as two groups hold same-named children (left/arm, right/arm).
+    local leaves = {}
+    local function collect(layers)
+      for _, l in ipairs(layers) do
+        if l.isGroup then collect(l.layers) else leaves[#leaves + 1] = l end
+      end
+    end
+    collect(s.layers)
+    for _, layer in ipairs(leaves) do
       if not layer.isGroup then
         for _, c in ipairs(layer.cels) do
           cels[#cels + 1] = {
@@ -1565,6 +1797,7 @@ H["cel.apply"] = function(args)
   local layer = find_layer(s, args.layer)
   local frame = find_frame(s, args.frame)
   local applied = 0
+  local frames_touched = nil
 
   transact("AI: cels", function()
     if op == "create" then
@@ -1631,12 +1864,114 @@ H["cel.apply"] = function(args)
       preserving_site(function()
         app.layer = layer; app.frame = frame; app.command.UnlinkCel(); applied = 1
       end)
+    elseif op == "tween" then
+      local fromFrame = find_frame(s, need(args.fromFrame, "fromFrame"))
+      local toFrame = find_frame(s, need(args.toFrame, "toFrame"))
+      if toFrame.frameNumber <= fromFrame.frameNumber then
+        fault("invalid_args", "cel op 'tween' needs toFrame > fromFrame.")
+      end
+      local property = need(args.property, "property")
+      if property ~= "position" and property ~= "opacity" then
+        fault("invalid_args", "cel op 'tween' property must be 'position' or 'opacity'.")
+      end
+      local to = need(args.to, "to")
+      local easing = args.easing or "linear"
+
+      local srcCel = get_cel(s, layer, fromFrame, false)
+      if not srcCel then
+        fault("invalid_args", "No cel on '" .. layer.name .. "' frame " .. fromFrame.frameNumber .. " to tween from.")
+      end
+      local start
+      if property == "position" then
+        start = { x = srcCel.position.x, y = srcCel.position.y }
+      else
+        start = srcCel.opacity
+      end
+      local baseImage, basePosition = srcCel.image, srcCel.position
+
+      local function ease(t)
+        if easing == "linear" then return t
+        elseif easing == "ease_in" then return t * t
+        elseif easing == "ease_out" then return 1 - (1 - t) * (1 - t)
+        elseif easing == "ease_in_out" then
+          if t < 0.5 then return 2 * t * t end
+          return 1 - ((-2 * t + 2) ^ 2) / 2
+        elseif easing == "smoothstep" then return t * t * (3 - 2 * t)
+        else fault("invalid_args", "Unknown easing '" .. tostring(easing) .. "'.") end
+      end
+
+      local span = toFrame.frameNumber - fromFrame.frameNumber
+      frames_touched = {}
+      for fn = fromFrame.frameNumber, toFrame.frameNumber do
+        local frameObj = s.frames[fn]
+        local cel = get_cel(s, layer, frameObj, false)
+        -- Missing in-between cels are created from the fromFrame image, not
+        -- linked to it -- a linked cel would move/fade every linked frame at
+        -- once, undoing the whole point of a tween.
+        if not cel then cel = s:newCel(layer, frameObj, baseImage:clone(), basePosition) end
+
+        if property == "position" then
+          local x, y
+          if fn == fromFrame.frameNumber then x, y = start.x, start.y
+          elseif fn == toFrame.frameNumber then x, y = to.x, to.y
+          else
+            local t = ease((fn - fromFrame.frameNumber) / span)
+            x = math.floor(start.x + (to.x - start.x) * t + 0.5)
+            y = math.floor(start.y + (to.y - start.y) * t + 0.5)
+          end
+          cel.position = Point(x, y)
+          frames_touched[#frames_touched + 1] = { frame = fn, x = x, y = y }
+        else
+          local v
+          if fn == fromFrame.frameNumber then v = start
+          elseif fn == toFrame.frameNumber then v = to
+          else
+            local t = ease((fn - fromFrame.frameNumber) / span)
+            v = math.floor(start + (to - start) * t + 0.5)
+          end
+          cel.opacity = v
+          frames_touched[#frames_touched + 1] = { frame = fn, opacity = v }
+        end
+      end
+      applied = #frames_touched
+    elseif op == "oscillate" then
+      local fromFrame = find_frame(s, need(args.fromFrame, "fromFrame"))
+      local toFrame = find_frame(s, need(args.toFrame, "toFrame"))
+      if toFrame.frameNumber <= fromFrame.frameNumber then
+        fault("invalid_args", "cel op 'oscillate' needs toFrame > fromFrame.")
+      end
+      local amplitudeX = args.amplitudeX or 0
+      local amplitudeY = args.amplitudeY or 0
+      local period = args.period or (toFrame.frameNumber - fromFrame.frameNumber + 1)
+      if period < 2 then fault("invalid_args", "cel op 'oscillate' period must be >= 2.") end
+      local phase = args.phase or 0
+
+      local baseCel = get_cel(s, layer, fromFrame, false)
+      if not baseCel then
+        fault("invalid_args", "No cel on '" .. layer.name .. "' frame " .. fromFrame.frameNumber .. " to oscillate from.")
+      end
+      local baseX, baseY, baseImage = baseCel.position.x, baseCel.position.y, baseCel.image
+
+      frames_touched = {}
+      for fn = fromFrame.frameNumber, toFrame.frameNumber do
+        local i = fn - fromFrame.frameNumber
+        local ox = math.floor(amplitudeX * math.sin(2 * math.pi * (i / period + phase)) + 0.5)
+        local oy = math.floor(amplitudeY * math.sin(2 * math.pi * (i / period + phase)) + 0.5)
+        local frameObj = s.frames[fn]
+        local cel = get_cel(s, layer, frameObj, false)
+        if not cel then cel = s:newCel(layer, frameObj, baseImage:clone(), baseCel.position) end
+        cel.position = Point(baseX + ox, baseY + oy)
+        frames_touched[#frames_touched + 1] = { frame = fn, x = cel.position.x, y = cel.position.y }
+      end
+      applied = #frames_touched
     else
       fault("unsupported_command", "cel op '" .. tostring(op) .. "' is not supported.")
     end
   end)
 
-  return { sprite = sprite_display_name(s), applied = applied }
+  local result = { sprite = sprite_display_name(s), applied = applied }
+  if frames_touched then result.frames = frames_touched end
+  return result
 end
 
 --------------------------------------------------------------------------------
@@ -1760,6 +2095,31 @@ H["palette.stats"] = function(args)
   table.sort(off, function(a, b) return a.pixels > b.pixels end)
 
   return { sprite = sprite_display_name(s), colors = colors, usage = usage, offPalette = off }
+end
+
+H["palette.extract"] = function(args)
+  local s = find_sprite(args.sprite)
+  if s.colorMode ~= ColorMode.RGB then
+    fault("invalid_args", "palette op 'extract' only works on RGB sprites.")
+  end
+  local maxColors = args.maxColors or 16
+  if maxColors < 2 or maxColors > 256 then
+    fault("invalid_args", "maxColors must be between 2 and 256.")
+  end
+
+  transact("AI: extract palette", function()
+    preserving_site(function()
+      app.sprite = s
+      local ok = pcall(function()
+        app.command.ColorQuantization{ ui = false, maxColors = maxColors, withAlpha = false }
+      end)
+      if not ok then
+        fault("unsupported_command", "This Aseprite build has no ColorQuantization command.")
+      end
+    end)
+  end)
+
+  return { sprite = sprite_display_name(s), colors = palette_hexes(s) }
 end
 
 --------------------------------------------------------------------------------
@@ -1940,24 +2300,56 @@ H["transform.apply"] = function(args)
       changed = scaled.width * scaled.height
     elseif op == "outline" then
       local value = color_to_pixel(s, hex_to_color(need(args.color, "color")))
-      local grown = Image(img.width + 2, img.height + 2, img.colorMode)
-      grown:drawImage(img, Point(1, 1))
-      local result = grown:clone()
-      for y = 0, grown.height - 1 do
-        for x = 0, grown.width - 1 do
-          if pixel_to_hex(s, grown:getPixel(x, y)) == nil then
-            local touching = false
-            for _, d in ipairs({ { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }) do
-              local nx, ny = x + d[1], y + d[2]
-              if nx >= 0 and ny >= 0 and nx < grown.width and ny < grown.height
-                 and pixel_to_hex(s, grown:getPixel(nx, ny)) ~= nil then touching = true end
+      local side = args.side or "outside"
+      if side ~= "outside" and side ~= "inside" then
+        fault("invalid_args", "transform op 'outline' side must be 'outside' or 'inside'.")
+      end
+      local diagonals = args.diagonals or false
+      local neighbors = diagonals
+        and { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } }
+        or { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }
+
+      if side == "inside" then
+        -- Recolour opaque pixels that touch transparency (or the canvas
+        -- edge, transparency's counterpart outside the image). Same size in,
+        -- same size out -- unlike 'outside' this never grows the cel.
+        local result = img:clone()
+        for y = 0, img.height - 1 do
+          for x = 0, img.width - 1 do
+            if pixel_to_hex(s, img:getPixel(x, y)) ~= nil then
+              local touching = false
+              for _, d in ipairs(neighbors) do
+                local nx, ny = x + d[1], y + d[2]
+                if nx < 0 or ny < 0 or nx >= img.width or ny >= img.height
+                   or pixel_to_hex(s, img:getPixel(nx, ny)) == nil then touching = true end
+              end
+              if touching then result:drawPixel(x, y, value); changed = changed + 1 end
             end
-            if touching then result:drawPixel(x, y, value); changed = changed + 1 end
           end
         end
+        cel.image = result
+      else
+        -- 'outside' (the pre-existing default): paint transparent pixels
+        -- touching opaque ones, on a canvas grown by one pixel each way.
+        local grown = Image(img.width + 2, img.height + 2, img.colorMode)
+        grown:drawImage(img, Point(1, 1))
+        local result = grown:clone()
+        for y = 0, grown.height - 1 do
+          for x = 0, grown.width - 1 do
+            if pixel_to_hex(s, grown:getPixel(x, y)) == nil then
+              local touching = false
+              for _, d in ipairs(neighbors) do
+                local nx, ny = x + d[1], y + d[2]
+                if nx >= 0 and ny >= 0 and nx < grown.width and ny < grown.height
+                   and pixel_to_hex(s, grown:getPixel(nx, ny)) ~= nil then touching = true end
+              end
+              if touching then result:drawPixel(x, y, value); changed = changed + 1 end
+            end
+          end
+        end
+        cel.image = result
+        cel.position = Point(cel.position.x - 1, cel.position.y - 1)
       end
-      cel.image = result
-      cel.position = Point(cel.position.x - 1, cel.position.y - 1)
     else
       fault("unsupported_command", "transform op '" .. tostring(op) .. "' is not supported.")
     end
@@ -2330,6 +2722,9 @@ H["export.run"] = function(args)
         innerPadding = args.padding or 0,
         trim = args.trim or false,
         splitTags = args.byTag or false,
+        -- ui=false does not suppress the overwrite prompt; left on, a repeat
+        -- export blocks on a modal nobody is watching and the call times out.
+        askOverwrite = false,
       }
       if args.includeJson ~= false then
         local json_path = path:gsub("%.%w+$", "") .. ".json"
@@ -3136,6 +3531,82 @@ H["validate.run"] = function(args)
     if (s.filename or "") == "" then
       add_finding(findings, "export_readiness", "warning",
         "Sprite has never been saved, so there is nothing on disk to hand to a game project.")
+    end
+  end
+
+  -- `expect` is orthogonal to `checks`: it names the animation contract the
+  -- caller already knows (which layer should hold ink on which frames, which
+  -- pairs must never share a pixel), so it always runs when given, regardless
+  -- of which named checks were requested.
+  if args.expect then
+    local expect = args.expect
+
+    if expect.layerFrames then
+      for layerName, ranges in pairs(expect.layerFrames) do
+        local layer = find_layer(s, layerName)
+        if not layer.isGroup then
+          local in_range = {}
+          for _, r in ipairs(ranges) do
+            for f = r[1], r[2] do in_range[f] = true end
+          end
+          for fn = 1, #s.frames do
+            local cel = layer:cel(s.frames[fn])
+            local nonEmpty = cel ~= nil and not cell_is_empty(cel.image, s)
+            if in_range[fn] then
+              if not nonEmpty then
+                add_finding(findings, "animation", "warning",
+                  "Layer '" .. layerName .. "' expected art on frame " .. fn ..
+                  " but the cel is missing or empty.",
+                  { layer = layerName, frame = fn })
+              end
+            elseif nonEmpty then
+              add_finding(findings, "animation", "warning",
+                "Layer '" .. layerName .. "' has art on frame " .. fn ..
+                ", outside its expected range(s).",
+                { layer = layerName, frame = fn })
+            end
+          end
+        end
+      end
+    end
+
+    if expect.mustNotOverlap then
+      for _, pair in ipairs(expect.mustNotOverlap) do
+        local la = find_layer(s, pair[1])
+        local lb = find_layer(s, pair[2])
+        if not la.isGroup and not lb.isGroup then
+        for fn = 1, #s.frames do
+          local frameObj = s.frames[fn]
+          local celA = la:cel(frameObj)
+          local celB = lb:cel(frameObj)
+          if celA and celB then
+            local ax0, ay0 = celA.position.x, celA.position.y
+            local bx0, by0 = celB.position.x, celB.position.y
+            local ax1, ay1 = ax0 + celA.image.width, ay0 + celA.image.height
+            local bx1, by1 = bx0 + celB.image.width, by0 + celB.image.height
+            local ox0, oy0 = math.max(ax0, bx0), math.max(ay0, by0)
+            local ox1, oy1 = math.min(ax1, bx1), math.min(ay1, by1)
+            local at = nil
+            for y = oy0, oy1 - 1 do
+              for x = ox0, ox1 - 1 do
+                if pixel_is_opaque(s, celA.image:getPixel(x - ax0, y - ay0))
+                   and pixel_is_opaque(s, celB.image:getPixel(x - bx0, y - by0)) then
+                  at = { x = x, y = y }
+                  break
+                end
+              end
+              if at then break end
+            end
+            if at then
+              add_finding(findings, "layers", "error",
+                "Layers '" .. pair[1] .. "' and '" .. pair[2] ..
+                "' have overlapping opaque pixels on frame " .. fn .. ".",
+                { at = at, frame = fn })
+            end
+          end
+        end
+        end
+      end
     end
   end
 

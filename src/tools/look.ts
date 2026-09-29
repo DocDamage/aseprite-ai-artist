@@ -26,14 +26,36 @@ export function registerLookTools(server: McpServer, live: LiveClient): void {
         "• 'preview' — a nearest-neighbour upscaled PNG of the active frame (~1024px long edge). Use for overall read: silhouette, colour, whether it looks like the thing.\n" +
         "• 'ascii' — an exact text grid, one glyph per pixel with a colour legend and coordinate rulers. Use to verify precise pixel positions and values, to count cells, or on any client without vision. Capped at 64×64; pass a region to crop.\n" +
         "• 'filmstrip' — every frame composited into one image. The only reliable way to review an animation, since a vision model reads just the first frame of a GIF.\n" +
+        "• 'onion' — the target frame at full opacity over ghosted neighbouring frames, oldest-first. Use to check in-betweens and spacing while animating, without stepping through frames one at a time.\n" +
         "• 'diff' — a pixel-level text diff between two frames: '.' unchanged, '-' erased, glyph = the new colour. Use it to confirm exactly what an edit touched.\n" +
         "Draw, then look, then fix. Do not report a sprite finished without looking at it.",
       inputSchema: {
-        op: z.enum(["preview", "ascii", "filmstrip", "diff"]).default("preview"),
+        op: z.enum(["preview", "ascii", "filmstrip", "diff", "onion"]).default("preview"),
         sprite: targetShape.sprite,
         frame: targetShape.frame,
         fromFrame: z.number().int().positive().optional().describe("Diff: the earlier frame."),
         toFrame: z.number().int().positive().optional().describe("Diff: the later frame."),
+        framesBefore: z
+          .number()
+          .int()
+          .min(0)
+          .max(8)
+          .default(1)
+          .describe("Onion: ghost frames before the target."),
+        framesAfter: z
+          .number()
+          .int()
+          .min(0)
+          .max(8)
+          .default(1)
+          .describe("Onion: ghost frames after the target."),
+        ghostOpacity: z
+          .number()
+          .int()
+          .min(0)
+          .max(255)
+          .default(90)
+          .describe("Onion: opacity of the ghosted (non-target) frames."),
         region: z
           .object({
             x: z.number().int(),
@@ -67,7 +89,13 @@ export function registerLookTools(server: McpServer, live: LiveClient): void {
         legend: z.record(z.string()).optional().describe("glyph → #rrggbb."),
         changedPixels: z.number().int().optional(),
         totalPixels: z.number().int().optional(),
-        frames: z.number().int().optional(),
+        changedBounds: z
+          .object({ x: z.number().int(), y: z.number().int(), width: z.number().int(), height: z.number().int() })
+          .nullish()
+          .describe("Diff: tight bounding box of every changed pixel. Null when nothing changed."),
+        percentChanged: z.number().optional().describe("Diff: changed / total * 100."),
+        frames: z.number().int().optional().describe("Filmstrip: frame count."),
+        framesUsed: z.array(z.number().int()).optional().describe("Onion: 1-based frame numbers composited."),
         columns: z.number().int().optional(),
         rows: z.number().int().optional(),
       },
@@ -110,8 +138,46 @@ export function registerLookTools(server: McpServer, live: LiveClient): void {
                 legend: view.legend,
                 changedPixels: view.changed,
                 totalPixels: view.total,
+                changedBounds: view.changedBounds,
+                percentChanged: view.percentChanged,
               },
-              `Frame ${from} → ${to}: ${view.changed} of ${view.total} pixels changed.\n\n${view.text}\n\nLegend: ${formatLegend(view.legend)}\n'.' unchanged  '-' erased`,
+              `Frame ${from} → ${to}: ${view.changed} of ${view.total} pixels changed (${view.percentChanged}%).\n\n${view.text}\n\nLegend: ${formatLegend(view.legend)}\n'.' unchanged  '-' erased`,
+            );
+          }
+
+          case "onion": {
+            const out = tempPng("onion");
+            const meta = await live.call<{
+              sprite: string;
+              frame: number;
+              frames: number[];
+              sourceWidth: number;
+              sourceHeight: number;
+              width: number;
+              height: number;
+              scale: number;
+            }>("look.onion", {
+              sprite: args.sprite,
+              frame: args.frame,
+              framesBefore: args.framesBefore,
+              framesAfter: args.framesAfter,
+              ghostOpacity: args.ghostOpacity,
+              region: args.region,
+              path: out,
+              scale: args.scale,
+            });
+            const image = await readAndClean(out);
+            return okWithImage(
+              {
+                op: "onion",
+                sprite: meta.sprite,
+                width: meta.sourceWidth,
+                height: meta.sourceHeight,
+                scale: meta.scale,
+                framesUsed: meta.frames,
+              },
+              image,
+              `Onion skin of frame ${meta.frame}: ghosts ${meta.frames.filter((f) => f !== meta.frame).join(", ") || "none"}, target at full opacity, ${meta.scale}× upscale.`,
             );
           }
 

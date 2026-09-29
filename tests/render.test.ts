@@ -45,6 +45,29 @@ test("renderDiff marks unchanged, erased and repainted pixels distinctly", () =>
   assert.equal(diff.changed, 2);
   assert.equal(diff.total, 3);
   assert.deepEqual(diff.legend, { A: "#ff0000" });
+  assert.deepEqual(diff.changedBounds, { x: 1, y: 0, width: 2, height: 1 });
+  assert.equal(diff.percentChanged, Math.round((2 / 3) * 10000) / 100);
+});
+
+test("renderDiff reports a null changedBounds and 0% when nothing changed", () => {
+  const same = region(2, 2, [1, 1, 1, 1], ["#ff0000"]);
+  const diff = renderDiff(same, same);
+  assert.equal(diff.changed, 0);
+  assert.equal(diff.changedBounds, null);
+  assert.equal(diff.percentChanged, 0);
+});
+
+test("renderDiff's changedBounds is absolute, tracking the region's origin", () => {
+  const before = region(3, 3, new Array(9).fill(0), []);
+  const after = region(3, 3, new Array(9).fill(0), []);
+  before.x = 10;
+  before.y = 20;
+  after.x = 10;
+  after.y = 20;
+  after.colors = ["#00000000", "#ff0000"];
+  after.grid = [0, 0, 0, 0, 1, 0, 0, 0, 0]; // only the centre pixel changes
+  const diff = renderDiff(before, after);
+  assert.deepEqual(diff.changedBounds, { x: 11, y: 21, width: 1, height: 1 });
 });
 
 test("renderDiff refuses mismatched sizes instead of silently truncating", () => {

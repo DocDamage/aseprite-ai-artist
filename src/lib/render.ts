@@ -118,6 +118,10 @@ export interface DiffView {
   legend: Record<string, string>;
   changed: number;
   total: number;
+  /** Tight bounding box of every changed pixel, absolute coordinates. Null when nothing changed. */
+  changedBounds: { x: number; y: number; width: number; height: number } | null;
+  /** `changed / total * 100`, rounded to two decimals. */
+  percentChanged: number;
 }
 
 /**
@@ -140,6 +144,10 @@ export function renderDiff(before: PixelRegion, after: PixelRegion): DiffView {
 
   const lines: string[] = [];
   let changed = 0;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
 
   for (let row = 0; row < before.height; row++) {
     let line = "";
@@ -154,6 +162,10 @@ export function renderDiff(before: PixelRegion, after: PixelRegion): DiffView {
         continue;
       }
       changed++;
+      if (col < minX) minX = col;
+      if (col > maxX) maxX = col;
+      if (row < minY) minY = row;
+      if (row > maxY) maxY = row;
       if (afterIdx === 0) {
         line += "-";
         continue;
@@ -177,11 +189,24 @@ export function renderDiff(before: PixelRegion, after: PixelRegion): DiffView {
     lines.push(line);
   }
 
+  const total = before.width * before.height;
+  const changedBounds =
+    changed === 0
+      ? null
+      : {
+          x: before.x + minX,
+          y: before.y + minY,
+          width: maxX - minX + 1,
+          height: maxY - minY + 1,
+        };
+
   return {
     text: lines.join("\n"),
     legend,
     changed,
-    total: before.width * before.height,
+    total,
+    changedBounds,
+    percentChanged: Math.round((changed / total) * 10000) / 100,
   };
 }
 

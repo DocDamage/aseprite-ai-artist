@@ -34,6 +34,10 @@ const layerOp = z.object({
   opacity: z.number().int().min(0).max(255).optional(),
   blendMode: blendMode.optional(),
   names: z.array(z.string()).optional().describe("For 'merge' and bulk 'group'."),
+  toSprite: z
+    .string()
+    .optional()
+    .describe("For 'duplicate': copy the layer into another OPEN sprite instead of this one."),
 });
 
 export function registerStructureTools(server: McpServer, live: LiveClient): void {
@@ -44,6 +48,7 @@ export function registerStructureTools(server: McpServer, live: LiveClient): voi
       description:
         "Manage layers. Ops: 'list', 'create', 'rename', 'delete', 'reorder', 'set' (visibility/opacity/blend/lock), 'group', 'ungroup', 'merge', 'duplicate', 'activate'. " +
         "Pass `batch` to run several in one undoable action — building a rig in one call is the normal use. " +
+        "'duplicate' takes an optional `toSprite` to copy the layer's cels into another OPEN sprite instead of this one, by frame index; frames past the target's frame count are dropped and reported. " +
         "A character that will be animated wants its parts on separate layers (head, torso, arm-far, arm-near, leg-far, leg-near) before any frames exist; splitting baked pixels apart later is far more work.",
       inputSchema: {
         op: layerOpName.optional().describe("Single operation. Use `batch` instead for several."),
@@ -57,6 +62,10 @@ export function registerStructureTools(server: McpServer, live: LiveClient): voi
         opacity: z.number().int().min(0).max(255).optional(),
         blendMode: blendMode.optional(),
         names: z.array(z.string()).optional().describe("For 'merge' and bulk 'group'."),
+        toSprite: z
+          .string()
+          .optional()
+          .describe("For 'duplicate': copy the layer into another OPEN sprite instead of this one."),
         batch: z
           .array(layerOp)
           .max(128)
@@ -83,6 +92,17 @@ export function registerStructureTools(server: McpServer, live: LiveClient): voi
           .optional(),
         applied: z.number().int().optional(),
         activeLayer: z.string().nullish().optional(),
+        duplicated: z
+          .array(
+            z.object({
+              sourceLayer: z.string(),
+              name: z.string().describe("Name it got in the target sprite; suffixed on a name clash."),
+              toSprite: z.string().describe("Target as '#<id>' — stable even when several documents share a name."),
+              framesDropped: z.number().int().describe("Cels whose frame index exceeded the target's frame count."),
+            }),
+          )
+          .optional()
+          .describe("Present when a 'duplicate' op in this call used `toSprite`."),
       },
       annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
     },
@@ -194,10 +214,13 @@ export function registerStructureTools(server: McpServer, live: LiveClient): voi
     {
       title: "Cels",
       description:
-        "Manage cels — one layer's image on one frame. Ops: 'list', 'create', 'clear', 'delete', 'move', 'copy', 'link', 'unlink', 'set' (position/opacity). " +
-        "'move' is how you shift a whole limb between frames without redrawing it; 'link' shares one image across frames so a static part of a cycle stays in sync.",
+        "Manage cels — one layer's image on one frame. Ops: 'list', 'create', 'clear', 'delete', 'move', 'copy', 'link', 'unlink', 'set' (position/opacity), 'tween', 'oscillate'. " +
+        "'move' is how you shift a whole limb between frames without redrawing it; 'link' shares one image across frames so a static part of a cycle stays in sync. " +
+        "'tween' interpolates position or opacity between two frames with an easing curve; 'oscillate' adds a sinusoidal position offset over a frame range — both fill in any missing in-between cels from the start cel, in one transaction.",
       inputSchema: {
-        op: z.enum(["list", "create", "clear", "delete", "move", "copy", "link", "unlink", "set"]),
+        op: z.enum([
+          "list", "create", "clear", "delete", "move", "copy", "link", "unlink", "set", "tween", "oscillate",
+        ]),
         ...targetShape,
         toFrame: z.number().int().positive().optional(),
         toLayer: z.string().optional(),
@@ -207,6 +230,25 @@ export function registerStructureTools(server: McpServer, live: LiveClient): voi
         dx: z.number().int().optional().describe("Relative move."),
         dy: z.number().int().optional(),
         opacity: z.number().int().min(0).max(255).optional(),
+        fromFrame: z.number().int().positive().optional().describe("For 'tween'/'oscillate': the start frame."),
+        property: z.enum(["position", "opacity"]).optional().describe("For 'tween'."),
+        to: z
+          .union([z.object({ x: z.number().int(), y: z.number().int() }), z.number().int().min(0).max(255)])
+          .optional()
+          .describe("For 'tween': end value — {x,y} for property 'position', 0-255 for 'opacity'."),
+        easing: z
+          .enum(["linear", "ease_in", "ease_out", "ease_in_out", "smoothstep"])
+          .default("linear")
+          .describe("For 'tween'."),
+        amplitudeX: z.number().int().default(0).describe("For 'oscillate'."),
+        amplitudeY: z.number().int().default(0).describe("For 'oscillate'."),
+        period: z
+          .number()
+          .int()
+          .min(2)
+          .optional()
+          .describe("For 'oscillate', in frames. Default: the whole fromFrame..toFrame span."),
+        phase: z.number().min(0).max(1).default(0).describe("For 'oscillate': 0-1 fraction of one period."),
       },
       outputSchema: {
         sprite: z.string(),
@@ -225,6 +267,17 @@ export function registerStructureTools(server: McpServer, live: LiveClient): voi
           )
           .optional(),
         applied: z.number().int().optional(),
+        frames: z
+          .array(
+            z.object({
+              frame: z.number().int(),
+              x: z.number().int().optional(),
+              y: z.number().int().optional(),
+              opacity: z.number().int().optional(),
+            }),
+          )
+          .optional()
+          .describe("Only present for 'tween' and 'oscillate': one entry per frame touched, ascending."),
       },
       annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
     },
