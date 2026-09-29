@@ -6,6 +6,67 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-09-29
+
+### Added
+
+- **`look` op `onion`** — the target frame at full opacity over ghosted
+  neighbouring frames, oldest-first. For checking in-betweens and spacing
+  while animating without stepping through frames one at a time.
+- **`look` op `diff` reports `changedBounds` and `percentChanged`** alongside
+  the existing text grid, so a caller can read the size of a change without
+  parsing the glyphs.
+- **`draw` op kind `text`.** Lays out a string from a bitmap font
+  (`knowledge/fonts/`, one ships: `pixel5x7`) and expands it to plain pixels
+  in TypeScript before it reaches Aseprite, so it shares the batch's palette
+  lock and undo step. `measureOnly` returns each op's ink bounds without
+  touching the sprite, for centring a label or sizing a panel first. See
+  [ADR-0005](docs/adr/0005-bitmap-text.md).
+- **`cel` ops `tween` and `oscillate`.** `tween` interpolates a cel's
+  position or opacity between two frames with an easing curve; `oscillate`
+  adds a sinusoidal position offset over a frame range. Both fill in any
+  missing in-between cels from the start cel, in one transaction — for
+  secondary motion like a bob, a breath, or a float.
+- **`sprite_manage` ops `slice_create`, `slice_update`, `slice_delete`.**
+  Slices name a rectangular region of the canvas for an engine to read back:
+  a 9-patch panel's `center`, or a hotspot's `pivot`. `sprite_info`'s
+  `slices` array now reports `center`/`pivot` when set, and they carry
+  through into the spritesheet atlas on export.
+- **`palette` op `extract`.** Replaces the palette with one quantized from
+  the art itself (RGB sprites only) — for deriving a curated palette from a
+  reference image imported at full colour.
+- **`validate` input `expect`.** The animation contract you already know:
+  `layerFrames` flags art outside a layer's expected frame ranges (or a
+  missing cel inside one); `mustNotOverlap` flags any frame where two named
+  layers' opaque pixels intersect. Runs independently of `checks`.
+- **`transform` op `outline` gains `side` and `diagonals`.** `side: "inside"`
+  recolours opaque pixels touching transparency instead of growing the cel;
+  `diagonals` switches 4- to 8-neighbour. Default behaviour (`outside`,
+  4-neighbour) is unchanged.
+- **`layer` op `duplicate` gains `toSprite`.** Copies the layer's cels into
+  another OPEN sprite by frame index; frames past the target's frame count
+  are dropped and reported.
+- **`docs/evals/knight-benchmark.md`** — our own two-prompt benchmark (a
+  still 32×32 knight, a windup-to-follow-through sword slash) with a fixed
+  setup, a procedure, pass criteria and a results log.
+
+### Changed
+
+- **Every `layer` parameter accepts a `group/child` path**, and a name or
+  path that matches more than one layer now fails with `invalid_args` naming
+  every match, instead of silently resolving to one of them. Duplicate layer
+  names were always possible in Aseprite; only ambiguous lookups now error —
+  pass a group path to disambiguate.
+- **Users must reinstall the extension.** New ops (`onion`, `text`,
+  `tween`/`oscillate`, `slice_*`, `extract`) need the extension side of this
+  release: `npx @pebbly/aseprite-ai-artist install-extension`, then quit and
+  reopen Aseprite.
+
+### Fixed
+
+- **`export` op `spritesheet` no longer blocks on an overwrite prompt when
+  the target files already exist** (the call used to time out).
+
 ## [0.2.1] — 2026-09-28
 
 ### Fixed
