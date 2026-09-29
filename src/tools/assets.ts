@@ -1,27 +1,51 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { LiveClient } from "../bridge/client.js";
+import type { AsepriteLink } from "../bridge/link.js";
 import { fail, ok, targetShape } from "./kit.js";
 
-export function registerAssetTools(server: McpServer, live: LiveClient): void {
+export function registerAssetTools(server: McpServer, live: AsepriteLink): void {
   server.registerTool(
     "reference",
     {
       title: "Reference image",
       description:
         "Bring an external image into the sprite as a reference layer, so you can trace proportions or sample colours from it. Ops: 'import' (place an image on a locked, semi-transparent layer above the art), 'sample_palette' (read its dominant colours without importing), 'list', 'remove'. " +
-        "Importing at a different size uses nearest-neighbour; a photo scaled down to 32×32 is a starting point for a silhouette, never a finished sprite.",
+        "A concept sheet or storyboard arrives as one image: `region` crops one panel of it, and `grid` cuts it into panels and puts panel i on frame i of a single reference layer, so each animation frame is drawn over its own storyboard panel. " +
+        "Importing at a different size uses nearest-neighbour; a reference scaled down to 32×32 is a guide for proportion and pose, never a finished sprite.",
       inputSchema: {
         op: z.enum(["import", "sample_palette", "list", "remove"]),
         sprite: targetShape.sprite,
+        frame: targetShape.frame.describe(
+          "Import: the frame the image — or the first `grid` panel — lands on. Default: the active frame, or frame 1 with `grid`.",
+        ),
         path: z.string().optional().describe("Image file to read."),
         name: z.string().optional().describe("Layer name. Default: 'reference'."),
+        region: z
+          .object({
+            x: z.number().int().min(0),
+            y: z.number().int().min(0),
+            width: z.number().int().positive(),
+            height: z.number().int().positive(),
+          })
+          .optional()
+          .describe("Use only this rectangle of the SOURCE image, in its own pixels — one panel of a concept sheet. Applies to 'import' and 'sample_palette'."),
+        grid: z
+          .object({
+            columns: z.number().int().positive(),
+            rows: z.number().int().positive(),
+            count: z.number().int().positive().optional().describe("Panels actually used, read row-major. Default: columns × rows."),
+            gap: z.number().int().min(0).default(0).describe("Source pixels between panels."),
+          })
+          .optional()
+          .describe(
+            "Import a storyboard: split the (cropped) source into equal panels and place panel i on frame `frame`+i-1 of one reference layer. The sprite must already have enough frames.",
+          ),
         x: z.number().int().default(0),
         y: z.number().int().default(0),
         fit: z
           .enum(["none", "contain", "cover", "stretch"])
           .default("contain")
-          .describe("How to size the image against the canvas."),
+          .describe("How to size the image (or each panel) against the canvas."),
         opacity: z.number().int().min(0).max(255).default(128),
         colors: z.number().int().min(2).max(64).default(16).describe("For 'sample_palette'."),
       },
@@ -31,6 +55,8 @@ export function registerAssetTools(server: McpServer, live: LiveClient): void {
         layer: z.string().optional(),
         width: z.number().int().optional(),
         height: z.number().int().optional(),
+        panels: z.number().int().optional().describe("Import: how many panels were placed."),
+        frames: z.array(z.number().int()).optional().describe("Import: the frames that received a reference cel."),
         palette: z
           .array(z.object({ hex: z.string(), share: z.number() }))
           .optional()

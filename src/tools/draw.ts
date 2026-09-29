@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { LiveClient } from "../bridge/client.js";
+import type { AsepriteLink } from "../bridge/link.js";
 import { LiveError } from "../lib/protocol.js";
 import { layoutText, loadFont, type TextAnchor } from "../lib/text.js";
 import { fail, hexColor, ok, targetShape } from "./kit.js";
@@ -142,7 +142,7 @@ const drawOp = z.discriminatedUnion("kind", [
   }),
 ]);
 
-export function registerDrawTools(server: McpServer, live: LiveClient): void {
+export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
   server.registerTool(
     "draw",
     {

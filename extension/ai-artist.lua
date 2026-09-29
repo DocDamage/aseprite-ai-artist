@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 
 local PROTOCOL_VERSION = 1
-local EXTENSION_VERSION = "0.3.2"
+local EXTENSION_VERSION = "0.4.0"
 
 -- Optional capabilities. The wire version stays 1 across builds; new command
 -- families are gated on these flags plus the loud unsupported_command reply,
@@ -1199,6 +1199,94 @@ H["look.onion"] = function(args)
     frames = frames_used,
     sourceWidth = region.width, sourceHeight = region.height,
     width = region.width * scale, height = region.height * scale,
+    scale = scale,
+  }
+end
+
+--- Reference and art side by side, same frame, same scale: the picture the
+--- "find the largest mismatches, fix only those" loop needs. Looking at the art
+--- with a half-transparent reference over it hides exactly the differences
+--- that matter — proportion and silhouette — under a blend of both.
+H["look.compare"] = function(args)
+  local s = find_sprite(args.sprite)
+  local frame = find_frame(s, args.frame)
+  local path = need(args.path, "path")
+  local ref_layer = find_layer(s, args.reference or "reference")
+  local ref_cel = get_cel(s, ref_layer, frame, false)
+  if not ref_cel then
+    fault("invalid_args", "'" .. ref_layer.name .. "' has no cel on frame " .. frame.frameNumber ..
+      ". Import one there with reference op 'import' and `frame`, or a whole sheet with `grid`.")
+  end
+
+  local region = args.region and clamp_region(s, args.region) or
+    { x = 0, y = 0, width = s.width, height = s.height }
+  local w, h = region.width, region.height
+
+  -- Both halves come from a throwaway copy, so no layer in the user's document
+  -- is hidden or shown even for an instant. Rendering through drawSprite (not
+  -- drawImage of the cel) keeps an indexed sprite's palette right.
+  local ref = Image(s.width, s.height, ColorMode.RGB)
+  local art = Image(s.width, s.height, ColorMode.RGB)
+  preserving_site(function()
+    local copy = Sprite(s)
+    local ok, err = pcall(function()
+      local cref = find_layer(copy, args.reference or "reference")
+      -- The top-level layer that holds the reference: itself, or its group.
+      local root = cref
+      while root.parent.frames == nil do root = root.parent end
+      local root_index = root.stackIndex
+
+      local visible = {}
+      for i, l in ipairs(copy.layers) do
+        visible[i] = l.isVisible
+        l.isVisible = l.stackIndex == root_index
+      end
+      -- At full opacity: the layer is semi-transparent so it can be traced
+      -- over, which would wash it out here.
+      cref.isVisible = true
+      cref.opacity = 255
+      ref:drawSprite(copy, copy.frames[frame.frameNumber])
+
+      for i, l in ipairs(copy.layers) do l.isVisible = visible[i] end
+      copy:deleteLayer(cref)
+      for i = #copy.layers, 1, -1 do
+        local l = copy.layers[i]
+        if l.name:match("^reference") then copy:deleteLayer(l) end
+      end
+      art:drawSprite(copy, copy.frames[frame.frameNumber])
+    end)
+    copy:close()
+    if not ok then error(err, 0) end
+  end)
+
+  local gap = 1
+  local stripW = w * 2 + gap
+  local strip = Image(stripW, h, ColorMode.RGB)
+  strip:clear(app.pixelColor.rgba(64, 64, 72, 255))
+  -- SRC, not the default blend: a transparent pixel must stay transparent in
+  -- each half, so the grey shows only in the gap between them.
+  local left = Image(w, h, ColorMode.RGB)
+  left:drawImage(ref, Point(-region.x, -region.y))
+  local right = Image(w, h, ColorMode.RGB)
+  right:drawImage(art, Point(-region.x, -region.y))
+  strip:drawImage(left, Point(0, 0), 255, BlendMode.SRC)
+  strip:drawImage(right, Point(w + gap, 0), 255, BlendMode.SRC)
+
+  local scale = pick_scale(stripW, h, args.scale)
+  preserving_site(function()
+    local out = Sprite(stripW, h, ColorMode.RGB)
+    out.cels[1].image = strip
+    if scale > 1 then out:resize(stripW * scale, h * scale) end
+    out:saveCopyAs(path)
+    out:close()
+  end)
+
+  return {
+    sprite = sprite_display_name(s),
+    frame = frame.frameNumber,
+    reference = ref_layer.name,
+    sourceWidth = w, sourceHeight = h,
+    width = stripW * scale, height = h * scale,
     scale = scale,
   }
 end
@@ -2565,6 +2653,25 @@ H["reference.apply"] = function(args)
   source:close()
   app.sprite = restore
 
+  local function crop(img, r)
+    local out = Image(r.width, r.height, ColorMode.RGB)
+    out:drawImage(img, Point(-r.x, -r.y))
+    return out
+  end
+
+  -- One panel of a concept sheet, in source pixels. Checked rather than
+  -- clamped: a region that runs off the image means the agent misread the
+  -- sheet, and a silently shrunk crop would hand it the wrong panel.
+  if args.region then
+    local r = args.region
+    if r.x < 0 or r.y < 0 or r.width < 1 or r.height < 1 or r.x + r.width > sw or r.y + r.height > sh then
+      fault("invalid_args", string.format(
+        "region %d,%d %dx%d is outside the %dx%d source image.", r.x, r.y, r.width, r.height, sw, sh))
+    end
+    flat = crop(flat, r)
+    sw, sh = r.width, r.height
+  end
+
   if op == "sample_palette" then
     local counts, total = {}, 0
     for y = 0, sh - 1 do
@@ -2588,6 +2695,41 @@ H["reference.apply"] = function(args)
   end
 
   -- op == "import"
+  -- A storyboard or turnaround arrives as one image. `grid` cuts it into
+  -- panels, read row-major, and panel i lands on frame first+i-1 of ONE
+  -- reference layer — so frame N of the animation is traced over panel N.
+  local panels = { flat }
+  if args.grid then
+    local g = args.grid
+    local cols, rows = need(g.columns, "grid.columns"), need(g.rows, "grid.rows")
+    local gap = g.gap or 0
+    local count = g.count or cols * rows
+    if cols < 1 or rows < 1 or count < 1 or count > cols * rows then
+      fault("invalid_args", "grid needs columns ≥ 1, rows ≥ 1 and 1 ≤ count ≤ columns×rows.")
+    end
+    local pw = (sw - gap * (cols - 1)) // cols
+    local ph = (sh - gap * (rows - 1)) // rows
+    if pw < 1 or ph < 1 then
+      fault("invalid_args", string.format("A %dx%d grid with gap %d does not fit a %dx%d image.", cols, rows, gap, sw, sh))
+    end
+    panels = {}
+    for i = 0, count - 1 do
+      local c, r = i % cols, i // cols
+      panels[#panels + 1] = crop(flat, { x = c * (pw + gap), y = r * (ph + gap), width = pw, height = ph })
+    end
+    sw, sh = pw, ph
+  end
+
+  -- A single image goes on the active frame, as before; a sheet starts at
+  -- frame 1 unless told otherwise, because a storyboard IS the timeline.
+  local first = (args.grid and args.frame == nil) and s.frames[1] or find_frame(s, args.frame)
+  local last = first.frameNumber + #panels - 1
+  if last > #s.frames then
+    fault("invalid_args", string.format(
+      "The sheet has %d panels starting at frame %d, but the sprite has %d frame(s). " ..
+      "Add frames first (frame op 'add'), or pass grid.count.", #panels, first.frameNumber, #s.frames))
+  end
+
   local name = args.name or "reference"
   local fit = args.fit or "contain"
   local tw, th = sw, sh
@@ -2600,23 +2742,35 @@ H["reference.apply"] = function(args)
     else tw, th = s.width, s.height end
   end
 
-  local scaled = Image(tw, th, ColorMode.RGB)
-  for y = 0, th - 1 do
-    for x = 0, tw - 1 do
-      scaled:drawPixel(x, y, flat:getPixel(math.floor(x * sw / tw), math.floor(y * sh / th)))
+  local scaled = {}
+  for i, panel in ipairs(panels) do
+    local img = Image(tw, th, ColorMode.RGB)
+    for y = 0, th - 1 do
+      for x = 0, tw - 1 do
+        img:drawPixel(x, y, panel:getPixel(math.floor(x * sw / tw), math.floor(y * sh / th)))
+      end
     end
+    scaled[i] = img
   end
 
+  local frames = {}
   transact("AI: import reference", function()
     local layer = s:newLayer()
     layer.name = name
     layer.opacity = args.opacity or 128
     layer.isEditable = false   -- a reference the agent can accidentally paint on is a trap
     layer.stackIndex = #s.layers
-    s:newCel(layer, find_frame(s, args.frame), scaled, Point(args.x or 0, args.y or 0))
+    for i, img in ipairs(scaled) do
+      local n = first.frameNumber + i - 1
+      s:newCel(layer, s.frames[n], img, Point(args.x or 0, args.y or 0))
+      frames[#frames + 1] = n
+    end
   end)
 
-  return { sprite = sprite_display_name(s), op = op, layer = name, width = tw, height = th }
+  return {
+    sprite = sprite_display_name(s), op = op, layer = name,
+    width = tw, height = th, panels = #panels, frames = frames,
+  }
 end
 
 --------------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 import { strict as assert } from "node:assert";
+import { existsSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 // @ts-ignore — plain .mjs on purpose: omp loads it from a git clone with no build step.
 import extension, { isPixelMutation, loadSkillCommands, skillPrompt } from "../omp/aseprite-ai-artist.mjs";
@@ -38,7 +39,12 @@ const result = (toolName: string, isError = false) => ({
 
 test("every skill becomes an /aseprite:<workflow> command carrying its body", () => {
   const commands = loadSkillCommands();
-  assert.equal(commands.length, 13);
+  // Every skill directory on disk, not a hardcoded count: a new skill that the
+  // omp extension silently skipped is the bug this test exists to catch.
+  const onDisk = readdirSync(new URL("../skills/", import.meta.url)).filter((name) =>
+    existsSync(new URL(`../skills/${name}/SKILL.md`, import.meta.url)),
+  );
+  assert.deepEqual(commands.map((c: { name: string }) => c.name).sort(), onDisk.map((n) => `aseprite:${n}`).sort());
   assert.ok(commands.some((c: { name: string }) => c.name === "aseprite:studio"));
   const draw = commands.find((c: { name: string }) => c.name === "aseprite:draw");
   assert.ok(draw, "draw maps to aseprite:draw");

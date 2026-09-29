@@ -39,9 +39,9 @@ without making it.
 
 ### Workflow names
 
-Every client sees the same thirteen workflows under the same names:
+Every client sees the same fourteen workflows under the same names:
 `aseprite:studio` (the front door — give it any request and it picks and runs
-the rest), `aseprite:brief`, `aseprite:new`, `aseprite:palette`, `aseprite:draw`,
+the rest), `aseprite:brief`, `aseprite:concept`, `aseprite:new`, `aseprite:palette`, `aseprite:draw`,
 `aseprite:shade`, `aseprite:rig`, `aseprite:animate`, `aseprite:tileset`,
 `aseprite:review`, `aseprite:fix`, `aseprite:export`, `aseprite:submit`.
 
@@ -144,6 +144,28 @@ npx @pebbly/aseprite-ai-artist install codex cursor --project
 
 Writes into the current directory (`.codex/config.toml`, `.cursor/mcp.json`) so
 the setup travels with the repository.
+
+### Headless: no Aseprite window
+
+```bash
+npx @pebbly/aseprite-ai-artist install codex --headless --aseprite /path/to/aseprite
+```
+
+Writes `ASEPRITE_AI_HEADLESS=1` (and `ASEPRITE_PATH`) into the client config.
+The server then runs one batch Aseprite (`aseprite -b`) itself; neither the
+extension nor the bridge is involved. For the Claude Code and omp plugins, set
+`ASEPRITE_AI_HEADLESS=1` — and `ASEPRITE_PATH` if Aseprite is not in a standard
+place — in the environment the agent is started from.
+
+Without `--aseprite`/`ASEPRITE_PATH` the server looks in the standard and Steam
+install locations, then on `PATH`. `doctor` prints the one it would use:
+
+```
+✓ Aseprite executable   /Applications/Aseprite.app/Contents/MacOS/aseprite (used by --headless)
+```
+
+Documents live in memory until saved (`sprite_manage` `save`/`save_as`) or
+exported — the agent is told so by `preflight`.
 
 ## 3. Check it
 

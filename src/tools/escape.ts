@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { LiveClient } from "../bridge/client.js";
+import type { AsepriteLink } from "../bridge/link.js";
 import { fail, ok, targetShape } from "./kit.js";
 
 /**
@@ -12,7 +12,7 @@ import { fail, ok, targetShape } from "./kit.js";
  * turns it on, because it is arbitrary code execution inside the app that holds
  * the user's unsaved work.
  */
-export function registerEscapeTools(server: McpServer, live: LiveClient, enabled: boolean): void {
+export function registerEscapeTools(server: McpServer, live: AsepriteLink, enabled: boolean): void {
   if (!enabled) return;
 
   server.registerTool(

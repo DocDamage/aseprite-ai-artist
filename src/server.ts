@@ -3,6 +3,9 @@ import path from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { LiveClient } from "./bridge/client.js";
+import { HeadlessClient, editorGuard } from "./bridge/headless.js";
+import { LinkSelector } from "./bridge/selector.js";
+import { findAsepriteBinary } from "./extension.js";
 import { loadRules, loadSkills, serverInstructions } from "./lib/skills.js";
 import { packageRoot, packageVersion } from "./lib/version.js";
 import { registerAssetTools } from "./tools/assets.js";
@@ -27,11 +30,19 @@ export interface CreateServerOptions {
   prompts?: boolean;
   autoSpawnBridge?: boolean;
   root?: string;
+  /**
+   * Start against a batch Aseprite this server owns instead of the user's
+   * window. The session can still switch explicitly with `preflight mode=…`;
+   * nothing switches on its own (ADR-0008).
+   */
+  headless?: boolean;
+  /** Headless: the Aseprite executable. Default: ASEPRITE_PATH, then the usual install locations. */
+  asepritePath?: string;
 }
 
 export interface RunningServer {
   server: McpServer;
-  live: LiveClient;
+  live: LinkSelector;
 }
 
 export function createServer(opts: CreateServerOptions = {}): RunningServer {
@@ -39,13 +50,31 @@ export function createServer(opts: CreateServerOptions = {}): RunningServer {
   const skills = loadSkills(root);
   const rules = loadRules(root);
 
-  const live = new LiveClient({
-    controlPort: opts.controlPort,
-    pluginPort: opts.pluginPort,
-    autoSpawnBridge: opts.autoSpawnBridge ?? true,
-    // stderr is the only channel that will not corrupt a stdio MCP session.
-    log: (msg) => process.stderr.write(`[aseprite-ai-artist] ${msg}\n`),
-  });
+  // stderr is the only channel that will not corrupt a stdio MCP session.
+  const log = (msg: string) => process.stderr.write(`[aseprite-ai-artist] ${msg}\n`);
+  const live = new LinkSelector(
+    {
+      live: () =>
+        new LiveClient({
+          controlPort: opts.controlPort,
+          pluginPort: opts.pluginPort,
+          autoSpawnBridge: opts.autoSpawnBridge ?? true,
+          log,
+        }),
+      headless: () =>
+        new HeadlessClient({
+          asepritePath: opts.asepritePath ?? findAsepriteBinary(),
+          root,
+          // Watches the user's window without ever starting a bridge: its only
+          // job is to refuse a headless write to a file that window has open.
+          guard: editorGuard(
+            new LiveClient({ controlPort: opts.controlPort, pluginPort: opts.pluginPort, autoSpawnBridge: false }),
+          ),
+          log,
+        }),
+    },
+    opts.headless ? "headless" : "live",
+  );
 
   const server = new McpServer(
     {
@@ -57,7 +86,7 @@ export function createServer(opts: CreateServerOptions = {}): RunningServer {
       // Capabilities are left to the SDK to infer from what actually gets
       // registered. Declaring `prompts` by hand while no prompt exists
       // advertises a method that then answers -32601 Method not found.
-      instructions: serverInstructions(skills),
+      instructions: serverInstructions(skills, live.mode),
     },
   );
 

@@ -19,7 +19,7 @@ import {
   install,
   mergeAgentsFile,
 } from "./install.js";
-import { installExtension, findAsepriteConfigDir } from "./extension.js";
+import { installExtension, findAsepriteBinary, findAsepriteConfigDir } from "./extension.js";
 import { DEFAULT_CONTROL_PORT, DEFAULT_PLUGIN_PORT } from "./lib/protocol.js";
 import { packageVersion } from "./lib/version.js";
 import { linkLines } from "./lib/report.js";
@@ -82,6 +82,8 @@ async function main(): Promise<void> {
         allowLua: truthy(flags.allowLua ?? process.env.ASEPRITE_AI_ALLOW_LUA),
         // Plugin manifests set ASEPRITE_AI_PROMPTS=0; see ServerOptions.prompts.
         prompts: process.env.ASEPRITE_AI_PROMPTS !== "0",
+        headless: truthy(flags.headless ?? process.env.ASEPRITE_AI_HEADLESS),
+        asepritePath: typeof flags.aseprite === "string" ? flags.aseprite : undefined,
       });
     case "bridge":
       return runBridge({ pluginPort, controlPort });
@@ -98,12 +100,21 @@ async function main(): Promise<void> {
   }
 }
 
-async function serve(opts: { pluginPort: number; controlPort: number; allowLua: boolean; prompts: boolean }): Promise<void> {
+async function serve(opts: {
+  pluginPort: number;
+  controlPort: number;
+  allowLua: boolean;
+  prompts: boolean;
+  headless: boolean;
+  asepritePath: string | undefined;
+}): Promise<void> {
   const { server, live } = createServer({
     pluginPort: opts.pluginPort,
     controlPort: opts.controlPort,
     allowLua: opts.allowLua,
     prompts: opts.prompts,
+    headless: opts.headless,
+    asepritePath: opts.asepritePath,
   });
 
   const transport = new StdioServerTransport();
@@ -166,6 +177,7 @@ async function runInstall(positional: string[], flags: Flags): Promise<void> {
   const env: Record<string, string> = {};
   if (typeof flags.aseprite === "string") env.ASEPRITE_PATH = flags.aseprite;
   if (truthy(flags.allowLua)) env.ASEPRITE_AI_ALLOW_LUA = "1";
+  if (truthy(flags.headless)) env.ASEPRITE_AI_HEADLESS = "1";
 
   const opts = {
     scope: scope as "user" | "project",
@@ -235,6 +247,15 @@ async function doctor(opts: { pluginPort: number; controlPort: number }): Promis
     configDir
       ? `✓ Aseprite config dir   ${configDir}`
       : "✗ Aseprite config dir   not found — is Aseprite installed and has it been run once?",
+  );
+  // Headless mode needs the executable, not the config dir, and finds it on
+  // its own. Reported either way: "which Aseprite would --headless run" is the
+  // first question when it fails.
+  const binary = findAsepriteBinary();
+  lines.push(
+    binary
+      ? `✓ Aseprite executable   ${binary} (used by --headless)`
+      : "· Aseprite executable   not found — only needed for --headless; set ASEPRITE_PATH",
   );
 
   // Probe before spawning anything. "The bridge is up" and "the bridge is up
@@ -338,8 +359,9 @@ Options:
   --project            Write project-scoped config instead of user-scoped
   --dir <path>         Project directory (default: cwd)
   --agents [path]      Also write an AGENTS.md section (default: ./AGENTS.md)
-  --aseprite <path>    Path to the Aseprite executable
+  --aseprite <path>    Path to the Aseprite executable (headless mode; written as ASEPRITE_PATH by install)
   --allowLua           Enable the run_lua escape hatch (arbitrary code in Aseprite)
+  --headless           Run a batch Aseprite this server owns instead of driving an open window
   --plugin-port <n>    Port the Aseprite extension dials (default ${DEFAULT_PLUGIN_PORT})
   --control-port <n>   Port MCP servers dial (default ${DEFAULT_CONTROL_PORT})
   --dry-run            Print what would change, write nothing
@@ -349,6 +371,7 @@ Examples:
   npx @pebbly/aseprite-ai-artist install --all --agents
   npx @pebbly/aseprite-ai-artist install codex cursor --project
   npx @pebbly/aseprite-ai-artist doctor
+  npx @pebbly/aseprite-ai-artist serve --headless --aseprite /Applications/Aseprite.app/Contents/MacOS/aseprite
 `,
   );
 }

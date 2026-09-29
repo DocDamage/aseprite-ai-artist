@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { LiveClient } from "../bridge/client.js";
+import type { AsepriteLink } from "../bridge/link.js";
 import {
   PixelRegion,
   filmstripLayout,
@@ -16,7 +16,7 @@ import { fail, ok, okWithImage, targetShape } from "./kit.js";
  * The "see your own work" tool. Drawing without looking is how an agent ends up
  * confidently reporting a finished sprite that is a smear of misplaced pixels.
  */
-export function registerLookTools(server: McpServer, live: LiveClient): void {
+export function registerLookTools(server: McpServer, live: AsepriteLink): void {
   server.registerTool(
     "look",
     {
@@ -28,11 +28,13 @@ export function registerLookTools(server: McpServer, live: LiveClient): void {
         "• 'filmstrip' — every frame composited into one image. The only reliable way to review an animation, since a vision model reads just the first frame of a GIF.\n" +
         "• 'onion' — the target frame at full opacity over ghosted neighbouring frames, oldest-first. Use to check in-betweens and spacing while animating, without stepping through frames one at a time.\n" +
         "• 'diff' — a pixel-level text diff between two frames: '.' unchanged, '-' erased, glyph = the new colour. Use it to confirm exactly what an edit touched.\n" +
+        "• 'compare' — the reference layer (left, full opacity) beside the art without any reference layer (right), same frame, same scale. Use it when drawing from a concept or storyboard: name the few largest mismatches and fix only those.\n" +
         "Draw, then look, then fix. Do not report a sprite finished without looking at it.",
       inputSchema: {
-        op: z.enum(["preview", "ascii", "filmstrip", "diff", "onion"]).default("preview"),
+        op: z.enum(["preview", "ascii", "filmstrip", "diff", "onion", "compare"]).default("preview"),
         sprite: targetShape.sprite,
         frame: targetShape.frame,
+        reference: z.string().optional().describe("Compare: the reference layer. Default 'reference'."),
         fromFrame: z.number().int().positive().optional().describe("Diff: the earlier frame."),
         toFrame: z.number().int().positive().optional().describe("Diff: the later frame."),
         framesBefore: z
@@ -212,6 +214,42 @@ export function registerLookTools(server: McpServer, live: LiveClient): void {
             );
           }
 
+          case "compare": {
+            const out = tempPng("compare");
+            const meta = await live.call<{
+              sprite: string;
+              frame: number;
+              reference: string;
+              sourceWidth: number;
+              sourceHeight: number;
+              scale: number;
+            }>(
+              "look.compare",
+              {
+                sprite: args.sprite,
+                frame: args.frame,
+                reference: args.reference,
+                region: args.region,
+                path: out,
+                scale: args.scale,
+              },
+              { expect: ["frame", "reference", "sourceWidth", "sourceHeight", "scale"] },
+            );
+            const image = await readAndClean(out);
+            return okWithImage(
+              {
+                op: "compare",
+                sprite: meta.sprite,
+                width: meta.sourceWidth,
+                height: meta.sourceHeight,
+                scale: meta.scale,
+              },
+              image,
+              `Frame ${meta.frame}: '${meta.reference}' on the left, the art on the right, ${meta.scale}× upscale. ` +
+                "Name the largest mismatches — silhouette, proportion, pose, colour masses — and fix only those; pixel-level detail is the art's job, not the reference's.",
+            );
+          }
+
           default: {
             const out = tempPng("preview");
             const meta = await live.call<{
@@ -312,7 +350,7 @@ interface NamedRegion extends PixelRegion {
 }
 
 async function readRegion(
-  live: LiveClient,
+  live: AsepriteLink,
   args: {
     sprite?: string | undefined;
     layer?: string | undefined;

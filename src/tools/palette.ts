@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { LiveClient } from "../bridge/client.js";
+import type { AsepriteLink } from "../bridge/link.js";
 import { buildRamp, contrastRatio, parseHex, snapToPalette, toHex } from "../lib/color.js";
 import { fail, hexColor, ok, targetShape } from "./kit.js";
 
@@ -27,7 +27,7 @@ function presets(): Record<string, Preset> {
   return presetCache;
 }
 
-export function registerPaletteTools(server: McpServer, live: LiveClient): void {
+export function registerPaletteTools(server: McpServer, live: AsepriteLink): void {
   server.registerTool(
     "palette",
     {

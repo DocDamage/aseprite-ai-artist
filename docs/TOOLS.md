@@ -11,7 +11,7 @@ has to see them to recover.
 
 | Tool | Ops | Notes |
 |------|-----|-------|
-| `preflight` | — | Connection, capabilities, active sprite, and a one-line directive. **Call this first.** Always answers, never fails. |
+| `preflight` | — | Connection, capabilities, active sprite, `mode` (`live` or `headless`) and a one-line directive. **Call this first.** Always answers, never fails. `mode: "headless"\|"live"` switches the session's Aseprite (reported as `switched`); each side keeps its documents. In headless mode it starts the batch Aseprite and reports why when it cannot. |
 | `sprite_info` | — | Full document state: dimensions, colour mode, palette, layers with nesting, frames with durations, tags, slices (with 9-patch `center`/`pivot` when set), selection. |
 | `sprite_manage` | `list` `new` `open` `activate` `save` `save_as` `close` `resize_canvas` `set_properties` `slice_create` `slice_update` `slice_delete` | `close` refuses on unsaved changes unless `force`. Slices name a rectangle for an engine to read back: `bounds` always, plus an optional 9-patch `center` and a hotspot `pivot`; these land in the spritesheet atlas on export. |
 
@@ -19,7 +19,7 @@ has to see them to recover.
 
 | Tool | Ops | Notes |
 |------|-----|-------|
-| `look` | `preview` `ascii` `filmstrip` `diff` `onion` | The see-your-work tool. |
+| `look` | `preview` `ascii` `filmstrip` `diff` `onion` `compare` | The see-your-work tool. |
 | `read_pixels` | — | Structured pixel data: distinct colours plus a row-major index grid. |
 
 - **`preview`** — nearest-neighbour upscale to a ~1024px long edge (bounded so
@@ -37,6 +37,12 @@ has to see them to recover.
   0-255, default 90), oldest-first. For checking in-betweens and spacing while
   animating without stepping through frames one at a time. Reports
   `framesUsed`, the 1-based frame numbers composited.
+- **`compare`** — the reference layer (`reference`, default `"reference"`) at
+  full opacity on the left, the art with every reference layer removed on the
+  right, same frame and scale, one grey pixel between. For the loop that makes a
+  reference pay off: name the few largest mismatches, fix only those, compare
+  again. Rendered from a scratch copy, so no layer in the document is hidden
+  or shown to produce it.
 
 ## Drawing
 
@@ -104,7 +110,7 @@ frame where both layers' opaque pixels intersect.
 
 | Tool | Ops | Notes |
 |------|-----|-------|
-| `reference` | `import` `sample_palette` `list` `remove` | Imports on a locked, semi-transparent layer. |
+| `reference` | `import` `sample_palette` `list` `remove` | Imports on a locked, semi-transparent layer. `region` crops one panel of the source (source pixels, also for `sample_palette`); `grid` `{columns, rows, count?, gap?}` cuts a storyboard into panels and puts panel i on frame `frame`+i-1 of one layer — the sprite needs the frames first. |
 | `export` | `png` `gif` `spritesheet` `frames` `aseprite` | `spritesheet` writes a JSON atlas beside the PNG. |
 | `tileset` | `list` `create_layer` `get` `stamp` `pack` `export` | Needs the `tileset` feature. `pack` turns a painted mockup into a tileset plus a reconstructing tilemap; `export` writes Tiled (`.tsj` + `.tmj`), Godot 4 (`.tres`) or JSON, with the packed PNG. |
 

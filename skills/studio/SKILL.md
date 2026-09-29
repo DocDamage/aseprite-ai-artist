@@ -1,7 +1,7 @@
 ---
 name: studio
 title: Take any Aseprite request end to end
-description: The front door for any Aseprite or pixel-art request. Works out what the user actually wants, picks which workflows to run and in what order, hands parts to the specialist agents where the harness has them, and does not stop until the result has been looked at and reviewed. Use when a request spans several steps ("make me an animated knight for Godot") or when you are unsure which workflow applies.
+description: The front door for any Aseprite or pixel-art request. Works out what the user actually wants, picks which workflows to run and in what order — and whether to work in the user's open Aseprite window or a headless batch Aseprite (`--headless` / `--live` force it) — hands parts to the specialist agents where the harness has them, and does not stop until the result has been looked at and reviewed. Use when a request spans several steps ("make me an animated knight for Godot") or when you are unsure which workflow applies.
 ---
 
 # Take any Aseprite request end to end
@@ -13,9 +13,19 @@ workflow it names and follow that — do not do the step from memory.
 
 ## Procedure
 
-1. **`preflight`.** If not ready, stop and tell the user what to fix. Nothing
-   below works without a live Aseprite, and editing files on disk instead is
-   never an acceptable recovery.
+1. **Pick the Aseprite, then `preflight`.** Two places the work can happen:
+   **live**, the user's open window, which they watch and can undo; or
+   **headless**, a batch Aseprite this server runs with no window, where the
+   only results are your `look` previews and the files you save. Decide
+   before the first call, from the request — see *Live or headless* below —
+   and pass it: `preflight mode="headless"` or `preflight mode="live"`. When
+   the request says nothing either way, call `preflight` without `mode` and
+   keep the mode the server started in.
+
+   If not ready, stop and tell the user what to fix. Nothing below works
+   without Aseprite, and editing files on disk instead is never an acceptable
+   recovery. In headless there is no window: show previews as you go and save
+   (`sprite_manage` op `save_as`) before reporting.
 
 2. **Read the room.** `sprite_info` on whatever is open. An open sprite changes
    the plan: "make it bigger" means a sprite that exists, and its canvas and
@@ -31,33 +41,76 @@ workflow it names and follow that — do not do the step from memory.
    than once per stage: a user who asked for a whole animation does not want to
    approve every frame.
 
-5. **Run the chain.** For each stage, read its skill (`skill://<name>`) and
+5. **Design before drawing.** Anything new — a character, a prop, a scene, an
+   animation — goes through `aseprite:concept` before a pixel is placed: it
+   writes the art spec (scenario, palette, poses), turns it into a prompt for
+   an image model, and offers the user two ways on: generate a concept sheet or
+   storyboard with that prompt and send it back, or continue without one. That
+   offer rides in the brief's message when there is a brief, so the user still
+   answers once. If they will send references, stop and wait; when the images
+   arrive, `aseprite:concept` reads them into a PixelSpec and imports them. If
+   the user already supplied reference art, skip the prompt and go straight to
+   reading it.
+
+6. **Run the chain.** For each stage, read its skill (`skill://<name>`) and
    follow it. Hand a stage to a specialist agent when your harness has one (see
    below) — the agent reads the same rules, so the result is the same whether it
    runs or you do.
 
-6. **Look after every stage that changed pixels.** `look` op `preview` for the
-   read, op `ascii` when position matters. A stage is done when you have seen its
-   result, not when its tool reported success.
+7. **Look after every stage that changed pixels.** `look` op `preview` for the
+   read, op `ascii` when position matters, op `compare` when there is a
+   reference. A stage is done when you have seen its result, not when its tool
+   reported success.
 
-7. **Finish with `aseprite:review`** (or the `pixel-critic` agent) for anything you
+8. **Finish with `aseprite:review`** (or the `pixel-critic` agent) for anything you
    drew or changed. Fix what it finds with `aseprite:fix`, then review again. Two
    rounds is normal; if a third still finds the same problem, stop and tell the
    user what you could not solve instead of looping.
 
-8. **Report** in a few lines: what exists now (document, layers, tags, files
+9. **Report** in a few lines: what exists now (document, layers, tags, files
    written), what you decided on the user's behalf, what you compromised on and
-   why. Show it — a `look` preview or the exported file's path, not an adjective.
+   why — including where the sprite departs from the reference on purpose.
+   Show it — a `look` preview or the exported file's path, not an adjective.
+
+## Live or headless
+
+Read the flags first, then the request. The first row that matches decides.
+
+| The request | Mode |
+|-------------|------|
+| contains `--headless` (or says "headless", "без окна", "in the background", "don't open Aseprite") | **headless**, forced — do not second-guess it |
+| contains `--live` (or "in my Aseprite", "in the window", "so I can watch") | **live**, forced |
+| edits something open in the user's window — "this sprite", "the selected layer", "fix my knight" | **live** — the art is there, not on disk |
+| produces files and nothing else: a batch of assets, sprites generated into a folder, a CI or build step, a spritesheet from `.aseprite` files on disk, a run on a machine with no display | **headless** |
+| anything else — draw me a knight, animate this, a palette | no `mode`: keep what the server started in (live, unless the operator ran it with `--headless`) |
+
+Strip the flag from the request before reading the rest of it: `--headless a
+knight` is a request for a knight.
+
+Then the one rule that matters: **the mode is chosen from the request, never
+from a failure.** If live `preflight` says Aseprite is not attached, do not
+switch to headless to get the work done anyway — tell the user, and if the
+work would suit headless, offer it as one question ("Aseprite isn't open —
+open it, or should I work headless and save the files to …?"). Switch only on
+their answer. A user who wanted to watch in their window and got files
+instead has been ignored, and the `.aseprite` they had open is a file you were
+never meant to write.
+
+Switching mid-task is allowed when the user asks for it; each side keeps its
+own documents. Headless refuses to open or save a file the user's window has
+open (`file_open_in_editor`) — that refusal is the answer, not an obstacle to
+route around. Say which mode you used in the report.
 
 ## Routing
 
 | The user wants | Chain |
 |----------------|-------|
-| Something new, loosely described ("a knight") | `aseprite:brief` → `aseprite:new` → `aseprite:palette` if the palette is not settled → `aseprite:draw` → `aseprite:shade` → `aseprite:review` |
-| Something new, fully specified | `aseprite:new` → `aseprite:draw` → `aseprite:shade` → `aseprite:review` |
-| An animation of a character | the drawing chain above if nothing exists yet → `aseprite:rig` → `aseprite:animate` → `aseprite:review` |
-| An animation of a sprite that is already rigged | `aseprite:animate` → `aseprite:review` |
-| Tiles, terrain, level art | `aseprite:brief` if open-ended → `aseprite:tileset` → `aseprite:review` |
+| Something new, loosely described ("a knight") | `aseprite:brief` + `aseprite:concept` (one message) → `aseprite:new` → `aseprite:palette` if the palette is not settled → `aseprite:draw` → `aseprite:shade` → `aseprite:review` |
+| Something new, fully specified | `aseprite:concept` → `aseprite:new` → `aseprite:draw` → `aseprite:shade` → `aseprite:review` |
+| Pixel art of a picture the user supplied ("make this character a sprite") | `aseprite:brief` if size or palette is open → `aseprite:concept` from its reference step → `aseprite:new` → `aseprite:draw` → `aseprite:review` |
+| An animation of a character | the drawing chain above if nothing exists yet, with a storyboard in the concept prompt → `aseprite:rig` → `aseprite:animate` → `aseprite:review` |
+| An animation of a sprite that is already rigged | `aseprite:concept` for the storyboard (offer) → `aseprite:animate` → `aseprite:review` |
+| Tiles, terrain, level art | `aseprite:brief` if open-ended → `aseprite:concept` (an environment sheet) → `aseprite:tileset` → `aseprite:review` |
 | Colours changed, a retro look, a cleanup | `aseprite:palette` → `aseprite:review` |
 | Volume, light, "it looks flat" | `aseprite:shade` → `aseprite:review` |
 | A change to existing art ("make it more menacing", "fix the hands") | `aseprite:fix` → `aseprite:review` |
@@ -79,17 +132,23 @@ elsewhere, run the matching skill yourself.
 |-------|------------|------------|
 | `palette-smith` | proposing and justifying a palette | `aseprite:palette` |
 | `rig-builder` | planning and building the layer rig | `aseprite:rig` |
-| `animation-director` | key poses, timing and tags before frames are drawn | the planning half of `aseprite:animate` |
+| `animation-director` | key poses, timing and tags before frames are drawn — and the storyboard panels for the concept prompt | the planning half of `aseprite:animate` |
 | `pixel-critic` | a scored, located critique; read-only | `aseprite:review` |
 
-Give an agent the brief, the document name and the stage it owns — it starts
-with no memory of this conversation. Run agents one at a time: they all edit the
-same open document, and two at once will fight over the active layer and frame.
+Give an agent the brief, the PixelSpec if there is one, the document name and
+the stage it owns — it starts with no memory of this conversation. Run agents
+one at a time: they all edit the same open document, and two at once will fight
+over the active layer and frame.
 
 ## What this workflow must not do
 
 - **Skip the brief on an open-ended request** to seem fast. Guessed size and
   palette cost a full redraw when they are wrong.
+- **Skip the concept offer on something new** because drawing straight away
+  looks faster. The user decides whether to generate references; you decide
+  only how to phrase the prompt.
+- **Pixelize a reference** — downscale it onto the canvas and call it art. It is
+  a guide for shapes and poses; the pixels are still drawn.
 - **Ask about things a default covers.** Light from the upper-left is not worth
   a round trip.
 - **Declare done without `look` and a review.** A tool result saying pixels

@@ -6,8 +6,37 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-09-29
+
 ### Added
 
+- **Headless mode (`serve --headless`, `ASEPRITE_AI_HEADLESS=1`).** The server
+  runs one long-lived batch Aseprite (`aseprite -b` + `headless/runner.lua`)
+  instead of driving an open window — for CI, scripted asset builds and
+  machines without a display. Same tools and the same Lua command table;
+  documents stay in memory until `save`/`save_as`/`export`. Chosen at startup
+  or per session with `preflight mode="headless"|"live"` — `aseprite:studio`
+  picks it from the request, `--headless`/`--live` force it; never a fallback.
+  Refuses to open or write a file the user's attached
+  Aseprite window has open (`file_open_in_editor`). `preflight` reports
+  `mode`; `doctor` shows which executable headless would run; `install
+  --headless` writes the flag, `--aseprite` the path.
+  [ADR-0008](docs/adr/0008-headless-mode.md).
+- **`aseprite:concept` skill — design with an image model, draw with the
+  agent.** Writes the art spec (scenario, palette hexes, view, key poses),
+  turns it into a ready-to-paste prompt for a concept sheet or storyboard, and
+  offers the user one choice: send references back or continue without. Then
+  reads the reference into a PixelSpec and imports it. `studio`, `brief`,
+  `draw`, `animate`, `review`, `fix`, `animation-director` and `pixel-critic`
+  use it. [ADR-0009](docs/adr/0009-concept-first.md).
+- **`reference` op `import` takes `region`, `grid` and `frame`.** `region` crops
+  one panel of a sheet (also for `sample_palette`); `grid` cuts a storyboard into
+  panels and puts panel i on frame i of one reference layer. `frame` was read by
+  the extension but never reachable through the schema.
+- **`look` op `compare`.** The reference layer at full opacity beside the art
+  without any reference layer, same frame and scale — rendered from a scratch
+  copy, so nothing in the document changes. Needs `install-extension` and an
+  Aseprite restart.
 - **`aseprite:submit` skill.** Turns a finished sprite into a gallery pull
   request: exports the `.aseprite`, cover, GIF and filmstrip with `export`,
   writes `generation.yaml` with the prompts verbatim and the model per step,

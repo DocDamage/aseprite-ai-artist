@@ -48,7 +48,10 @@ export type ErrorCode =
   | "aseprite_error"
   | "timeout"
   | "refused"
-  | "too_large";
+  | "too_large"
+  | "headless_unavailable"
+  | "headless_exited"
+  | "file_open_in_editor";
 
 /** Sent by the extension right after it connects, and on demand. */
 export interface HelloFrame {
@@ -138,4 +141,19 @@ export function notConnected(detail?: string): LiveError {
       remediation: "Run `npx @pebbly/aseprite-ai-artist doctor` for a step-by-step check.",
     },
   );
+}
+
+/**
+ * Fields a caller declared it would read (`expect`) that the reply lacks.
+ * `null` counts as present: several commands legitimately answer
+ * `{sprite: null}` for "nothing is open". Absent is the failure — the field
+ * the caller was told to expect never arrived.
+ */
+export function missingFields(value: unknown, expect: readonly string[]): string[] {
+  if (expect.length === 0) return [];
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return [...expect];
+  }
+  const record = value as Record<string, unknown>;
+  return expect.filter((field) => !(field in record));
 }

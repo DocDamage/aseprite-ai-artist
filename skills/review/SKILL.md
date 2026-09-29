@@ -51,6 +51,11 @@ Work down `rules://07-review-checklist`:
 - **Banding** — long parallel stripes of adjacent ramp steps?
 - **Detail placement** — spent on the face and weapon, not the boots?
 
+If the sprite was drawn from a reference (`reference op="list"` is not empty),
+`look op="compare"` on each key frame too. A mismatch the PixelSpec lists as a
+deviation is a decision; any other large one — a limb in a different place, a
+silhouette that lost its defining shape — is a finding.
+
 ### 3. Look closely at anything that felt off
 
 ```

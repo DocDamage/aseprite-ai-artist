@@ -13,6 +13,18 @@ flattened sprite means redrawing every frame by hand.
 
 ## Procedure
 
+### 0. With a storyboard
+
+If `aseprite:concept` delivered a storyboard, its panels are the key poses —
+the plan in step 1 is written from them, not invented. Import it once the
+frames exist: `frame op="add" count=N-1`, then
+`reference op="import" path=… grid={columns: N, rows: 1}` puts panel i on
+frame i. Every frame then has its own reference, and `look op="compare"
+frame=i` checks that frame against its panel — do that for each key in
+step 4. The PixelSpec's per-frame notes and deviations still decide what
+survives at this size: a storyboard can suggest a 4px jump the timing
+cannot carry.
+
 ### 1. Plan the key poses
 
 Write them out before touching a frame. For a walk:
@@ -35,6 +47,8 @@ later. Attack: anticipation, strike, hold, recover.
 frame op="add" count=7
 ```
 
+Already done if a storyboard was imported in step 0 — the import needs them.
+
 ### 3. Block the key poses
 
 Move limbs by moving cels, not by redrawing:
@@ -55,7 +69,9 @@ look op="filmstrip"
 
 A vision model reads only the first frame of a GIF, so the filmstrip is the
 only way to actually see the motion. Check volume and height consistency here,
-while there are four frames to fix rather than eight.
+while there are four frames to fix rather than eight. With a storyboard,
+`look op="compare" frame=…` on each key as well: the pose should match its
+panel before any in-between is drawn from it.
 
 ### 5. Add in-betweens
 

@@ -21,8 +21,10 @@ import {
   ResultFrame,
   isBridgeState,
   isResult,
+  missingFields,
   notConnected,
 } from "../lib/protocol.js";
+import type { AsepriteLink } from "./link.js";
 
 const DEFAULT_TIMEOUT_MS = 20_000;
 const RECONNECT_BASE_MS = 250;
@@ -45,7 +47,9 @@ interface Pending {
   timer: NodeJS.Timeout;
 }
 
-export class LiveClient {
+export class LiveClient implements AsepriteLink {
+  readonly mode = "live" as const;
+
   private readonly controlPort: number;
   private readonly pluginPort: number;
   private readonly autoSpawn: boolean;
@@ -328,18 +332,4 @@ export class LiveClient {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
-}
-
-/**
- * `null` counts as present: several commands legitimately answer `{sprite: null}`
- * for "nothing is open". Absent is the failure — the field the caller was told
- * to expect never arrived.
- */
-function missingFields(value: unknown, expect: readonly string[]): string[] {
-  if (expect.length === 0) return [];
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return [...expect];
-  }
-  const record = value as Record<string, unknown>;
-  return expect.filter((field) => !(field in record));
 }

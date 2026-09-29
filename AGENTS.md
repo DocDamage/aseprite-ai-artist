@@ -8,7 +8,8 @@ Guidance for agents and humans changing this code. For using the tool, see the
 | Path | What |
 |------|------|
 | `src/` | The MCP server, bridge, control client and CLI (TypeScript) |
-| `extension/ai-artist.lua` | Everything that runs inside Aseprite |
+| `extension/ai-artist.lua` | Everything that runs inside Aseprite — every command handler, for both modes |
+| `headless/runner.lua` | Headless mode's stdin/stdout loop around the same extension, run by `aseprite -b` ([ADR-0008](docs/adr/0008-headless-mode.md)) |
 | `rules/` | Pixel-art craft, served as `rules://` resources |
 | `skills/` | Workflows, served as `skill://` resources and MCP prompts |
 | `agents/`, `hooks/` | Claude Code plugin surface; omp reads the same tree as a marketplace plugin |
@@ -46,6 +47,10 @@ Aseprite. If you need new behaviour, add an `op` to an existing noun.
 refuse with `not_connected` and `doNotFallBackToDisk`. An agent that "recovers"
 by editing the `.aseprite` file makes changes the user cannot see and their next
 save destroys. This is the single most important behaviour in the project.
+Headless mode ([ADR-0008](docs/adr/0008-headless-mode.md)) writes files because
+someone chose it — the operator at startup, or the user through `preflight
+mode="headless"`; nothing may ever switch into it as a recovery from a failed
+live call, and it refuses any file a live window has open.
 
 **Every mutation goes inside `app.transaction`.** One agent action must be one
 Ctrl+Z for the user.

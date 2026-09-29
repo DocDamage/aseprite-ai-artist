@@ -84,6 +84,42 @@ something else", and the something else is editing the `.aseprite` file on disk
 silently overwrites. A fast, structured, explicit refusal is the only failure
 mode that does not quietly destroy work.
 
+## Headless mode
+
+`serve --headless` (or `ASEPRITE_AI_HEADLESS=1`) swaps the link, not the tools.
+Every tool talks to an `AsepriteLink` (`src/bridge/link.ts`); the live one goes
+through the bridge, the headless one (`src/bridge/headless.ts`) owns a single
+`aseprite -b` running `headless/runner.lua`:
+
+```
+your agent ──stdio/MCP──▶ server ──stdin: {id,cmd,args}\n──▶ aseprite -b ─▶ runner.lua ─▶ extension/ai-artist.lua
+                                 ◀──stdout: "\x1eaia {…}"\n──
+```
+
+- **One process, kept alive.** Documents, the active site and undo history
+  live in memory between calls, exactly as in the editor. Nothing is on disk
+  until `save`/`save_as`/`export`.
+- **The same command table.** The runner `dofile`s the shipped extension; its
+  WebSocket transport is skipped because `app.isUIAvailable` is false. There
+  is no second implementation to drift.
+- **Framed replies.** Every reply line carries a `\x1eaia ` marker, because
+  `print` inside a handler and Aseprite's own warnings share stdout.
+- **An isolated user folder** (a scratch directory unless
+  `ASEPRITE_USER_FOLDER` is set), so a batch session never loads the user's
+  extensions or touches their recent files.
+- **A crash is reported, not papered over.** Calls in flight fail with
+  `headless_exited`; a crash between calls is reported by the next call before
+  a fresh process starts, because the documents it held are gone.
+- **The editor guard.** If the user's own Aseprite is attached through the
+  bridge, headless `open`, `save`, `save_as` and `export` op `aseprite` refuse a
+  path that window has open (`file_open_in_editor`).
+
+`serve --headless` picks the starting mode; after that a `LinkSelector`
+(`src/bridge/selector.ts`) switches only on `preflight mode=…`. Both links live
+for the rest of the server, so a switch loses no documents on either side. It
+is never entered as a recovery from a dropped live session. See
+[ADR-0008](adr/0008-headless-mode.md).
+
 ## Ports
 
 | Port | Owner | Purpose | Environment override |

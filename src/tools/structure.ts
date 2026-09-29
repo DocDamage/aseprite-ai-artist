@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { LiveClient } from "../bridge/client.js";
+import type { AsepriteLink } from "../bridge/link.js";
 import { fail, ok, targetShape } from "./kit.js";
 
 /**
@@ -40,7 +40,7 @@ const layerOp = z.object({
     .describe("For 'duplicate': copy the layer into another OPEN sprite instead of this one."),
 });
 
-export function registerStructureTools(server: McpServer, live: LiveClient): void {
+export function registerStructureTools(server: McpServer, live: AsepriteLink): void {
   server.registerTool(
     "layer",
     {

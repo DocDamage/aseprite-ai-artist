@@ -937,6 +937,104 @@ check("reference.apply imports, lists, samples and removes", function()
   os.remove(ref_path)
 end)
 
+--- A 12x4 strip of three 4x4 panels — red, blue, white — written to disk, the
+--- shape a storyboard sheet from an image model arrives in.
+local function write_strip(path)
+  withMockSprite(12, 4, ColorMode.RGB, function()
+    call("draw.batch", {
+      paletteLock = false,
+      ops = {
+        { kind = "rect", rect = { x = 0, y = 0, width = 4, height = 4 }, fill = "#ff004d" },
+        { kind = "rect", rect = { x = 4, y = 0, width = 4, height = 4 }, fill = "#29adff" },
+        { kind = "rect", rect = { x = 8, y = 0, width = 4, height = 4 }, fill = "#fff1e8" },
+      },
+    })
+    call("export.run", { op = "png", path = path })
+  end)
+end
+
+local function red_of(px) return app.pixelColor.rgbaR(px) end
+local function blue_of(px) return app.pixelColor.rgbaB(px) end
+
+check("reference.apply grid puts storyboard panel i on frame i", function()
+  local strip = app.fs.joinPath(app.fs.tempPath, "ai-artist-test-strip.png")
+  write_strip(strip)
+
+  withMockSprite(4, 4, ColorMode.RGB, function(mock)
+    mock:newEmptyFrame()
+    -- Two frames for three panels: refused, and nothing is imported.
+    local reply = A.handleCommand({ id = "t", cmd = "reference.apply",
+      args = { op = "import", path = strip, grid = { columns = 3, rows = 1 } } })
+    assertEq(reply.ok, false, "too few frames must be refused")
+    assertEq(reply.error.code, "invalid_args", "error code")
+    assertEq(#mock.layers, 1, "a refused import left a layer behind")
+
+    mock:newEmptyFrame()
+    local result = call("reference.apply", { op = "import", path = strip, grid = { columns = 3, rows = 1 } })
+    assertEq(result.panels, 3, "panels")
+    assertEq(#result.frames, 3, "frames reported")
+    local layer = mock.layers[#mock.layers]
+    assertEq(layer.name, "reference", "layer name")
+    local expected = { { 255, 77 }, { 41, 255 }, { 255, 232 } }
+    for n = 1, 3 do
+      local px = layer:cel(n).image:getPixel(0, 0)
+      assertEq(red_of(px), expected[n][1], "frame " .. n .. " red")
+      assertEq(blue_of(px), expected[n][2], "frame " .. n .. " blue")
+    end
+  end)
+
+  withMockSprite(4, 4, ColorMode.RGB, function(mock)
+    call("reference.apply", { op = "import", path = strip, region = { x = 4, y = 0, width = 4, height = 4 } })
+    local px = mock.layers[#mock.layers]:cel(1).image:getPixel(0, 0)
+    assertEq(blue_of(px), 255, "region should import the blue panel")
+    local sampled = call("reference.apply", { op = "sample_palette", path = strip,
+      region = { x = 8, y = 0, width = 4, height = 4 } })
+    assertEq(#sampled.palette, 1, "a one-panel region samples one colour")
+    assertEq(sampled.palette[1].hex, "#fff1e8", "sampled colour")
+  end)
+  os.remove(strip)
+end)
+
+check("look.compare shows the reference beside the art and changes nothing", function()
+  local strip = app.fs.joinPath(app.fs.tempPath, "ai-artist-test-strip.png")
+  local out = app.fs.joinPath(app.fs.tempPath, "ai-artist-test-compare.png")
+  write_strip(strip)
+
+  withMockSprite(4, 4, ColorMode.RGB, function(mock)
+    call("draw.batch", {
+      paletteLock = false,
+      ops = { { kind = "rect", rect = { x = 0, y = 0, width = 4, height = 4 }, fill = "#ff004d" } },
+    })
+    call("reference.apply", { op = "import", path = strip, region = { x = 4, y = 0, width = 4, height = 4 } })
+    local ref = mock.layers[#mock.layers]
+    local modified = mock.isModified
+
+    local meta = call("look.compare", { path = out, scale = 1 })
+    assertEq(meta.width, 9, "two 4px halves and a 1px gap")
+    assertEq(meta.reference, "reference", "reference layer")
+
+    local shot = app.open(out)
+    app.sprite = mock
+    local img = Image(shot.width, shot.height, ColorMode.RGB)
+    img:drawSprite(shot, shot.frames[1])
+    shot:close()
+    app.sprite = mock
+    -- Left: the reference at full opacity, not blended with the art under it.
+    assertEq(blue_of(img:getPixel(0, 0)), 255, "left half is the reference")
+    assertEq(red_of(img:getPixel(0, 0)), 41, "left half is not blended with the art")
+    -- Right: the art alone, with the half-transparent reference taken out.
+    assertEq(red_of(img:getPixel(5, 0)), 255, "right half is the art")
+    assertEq(blue_of(img:getPixel(5, 0)), 77, "right half has no reference over it")
+
+    assertEq(#mock.layers, 2, "compare must not add or remove layers")
+    assertEq(ref.opacity, 128, "compare must not change the reference opacity")
+    assertEq(ref.isVisible, true, "compare must not hide the reference")
+    assertEq(mock.isModified, modified, "compare must not mark the document modified")
+  end)
+  os.remove(strip)
+  os.remove(out)
+end)
+
 --------------------------------------------------------------------------------
 -- Transform ops that had no coverage
 --------------------------------------------------------------------------------

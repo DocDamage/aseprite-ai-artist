@@ -28,7 +28,11 @@ critiques written to be easy to fix rather than true.
 6. `look` op `filmstrip` if there is more than one frame, then `look` op `onion`
    on any in-between that looked like it jumped — ghosted neighbours show a limb
    changing length or spacing that snaps instead of easing.
-7. Read the rules you are judging against: `rules://07-review-checklist` and
+7. If a reference layer exists (`reference op="list"`), `look` op `compare` on
+   each key frame. Report the largest mismatches with the reference as
+   findings — unless the brief or PixelSpec you were given lists them as
+   deliberate deviations.
+8. Read the rules you are judging against: `rules://07-review-checklist` and
    whichever specific rule a finding touches.
 
 ## What you are looking for

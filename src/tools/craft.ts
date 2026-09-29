@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { LiveClient } from "../bridge/client.js";
+import type { AsepriteLink } from "../bridge/link.js";
 import { fail, hexColor, ok, targetShape } from "./kit.js";
 
 /**
@@ -12,7 +12,7 @@ import { fail, hexColor, ok, targetShape } from "./kit.js";
  * saturation; a highlight warms. That rule is applied here, in one place, so
  * every skill and every agent gets it for free.
  */
-export function registerCraftTools(server: McpServer, live: LiveClient): void {
+export function registerCraftTools(server: McpServer, live: AsepriteLink): void {
   server.registerTool(
     "recolor",
     {

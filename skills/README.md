@@ -18,6 +18,7 @@ names everywhere:
 |-------|----------|
 | `aseprite:studio` | Any request — picks, orders and runs the others; the default entry point |
 | `aseprite:brief` | The request is open-ended and needs decisions before drawing |
+| `aseprite:concept` | Anything new: art spec → image-model prompt for a concept sheet or storyboard → import it as a reference |
 | `aseprite:new` | Starting a fresh document |
 | `aseprite:palette` | Choosing, building or repairing colours |
 | `aseprite:draw` | The main drawing work |

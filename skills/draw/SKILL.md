@@ -17,6 +17,12 @@ just makes the wrongness harder to see and more expensive to fix.
 palette. Do not assume them — a wrong layer name means drawing into the user's
 finished art.
 
+If `aseprite:concept` produced a PixelSpec, it is the plan: its landmarks and
+bounding boxes are where the shapes go, its palette mapping is which colour
+each mass gets, its deviations are what you leave out. When a reference layer
+exists (`reference op="list"`), you are drawing over it — the steps below are
+the same, and step 3 gains a comparison.
+
 ### 2. Block in the silhouette
 
 One flat colour, no detail. Target the `base` layer. Everything in one `draw`
@@ -44,6 +50,14 @@ flat shape?** If not, fix it now. Shading a bad silhouette is wasted work.
 
 Watch for: symmetry that reads as a statue, tangents where an arm fuses into the
 torso, limbs all the same thickness.
+
+With a reference, `preview` blends the half-transparent reference into the
+art — use `look op="compare"` instead: reference left, art right. Name the
+three to five largest mismatches (silhouette, proportion, pose, where the
+colour masses sit), fix only those in one `draw` call, compare again. Stop when
+what is left is a deviation the PixelSpec lists. This loop repeats after
+materials (step 4) and after shading (step 5): the reference is a check on
+every stage, not only the first.
 
 ### 4. Separate the materials
 

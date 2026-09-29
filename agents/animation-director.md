@@ -15,7 +15,12 @@ character is a different size. Keys first, always.
 1. `preflight`, `sprite_info`. Check the sprite is rigged — if limbs are baked
    into one layer, say so and hand off to `rig-builder` first.
 2. Read `rules://05-animation`.
-3. Plan the cycle in writing. Get agreement. Then build.
+3. Plan the cycle in writing. Get agreement. Then build. If a storyboard is
+   imported (`reference op="list"`, one cel per frame), its panels are the key
+   poses — plan from them rather than inventing new ones, and say where the
+   timing or the pixel size forces a departure. Asked for storyboard panels
+   for an image-model prompt instead, write one line per frame, specific enough
+   to draw: what the body, the limbs and the prop are doing.
 4. Review with `look` op `filmstrip` — a vision model reads only the first frame
    of a GIF, so this is the only way to actually see motion. Then `look` op
    `onion` on each in-between to check its spacing against its neighbours.

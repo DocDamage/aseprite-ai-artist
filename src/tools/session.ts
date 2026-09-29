@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { LiveClient } from "../bridge/client.js";
+import type { LinkSelector } from "../bridge/selector.js";
 import { fail, ok, targetShape } from "./kit.js";
+import { LiveError } from "../lib/protocol.js";
 import { packageVersion } from "../lib/version.js";
 
 const boundsShape = z.object({
@@ -19,16 +20,26 @@ const sliceInfoShape = z.object({
   pivot: z.object({ x: z.number().int(), y: z.number().int() }).optional(),
 });
 
-export function registerSessionTools(server: McpServer, live: LiveClient): void {
+export function registerSessionTools(server: McpServer, live: LinkSelector): void {
   server.registerTool(
     "preflight",
     {
       title: "Preflight",
       description:
-        "Check that Aseprite is connected and report what this session can do. Call this FIRST in any pixel-art task and stop if `ready` is false — every editing tool writes into the user's open Aseprite window, and there is no useful fallback when that window is not there.",
-      inputSchema: {},
+        "Check that Aseprite is connected and report what this session can do. Call this FIRST in any pixel-art task and stop if `ready` is false — every editing tool writes into the user's open Aseprite window ('live') or into a batch Aseprite this server owns ('headless'), and there is no useful fallback when that Aseprite is not there. " +
+        "Pass `mode` to choose which one the session works with from now on — only because the user asked (e.g. --headless) or the request plainly needs no window (files for CI, a batch of assets). Never switch to get around a live session that is not ready: ask the user instead. Switching loses nothing; each side keeps its documents.",
+      inputSchema: {
+        mode: z
+          .enum(["live", "headless"])
+          .optional()
+          .describe("Switch the session to this Aseprite before checking. Omit to keep the current one."),
+      },
       outputSchema: {
         ready: z.boolean().describe("True only when Aseprite is attached and accepting commands."),
+        switched: z.boolean().describe("True when this call changed the session's mode."),
+        mode: z
+          .enum(["live", "headless"])
+          .describe("'live' = the user's open window. 'headless' = a batch Aseprite with no window; nothing is on disk until you save or export."),
         bridgeConnected: z.boolean(),
         pluginConnected: z.boolean(),
         asepriteVersion: z.string().nullish(),
@@ -48,11 +59,62 @@ export function registerSessionTools(server: McpServer, live: LiveClient): void 
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    async () => {
+    async (args) => {
+      const switched = args.mode ? live.use(args.mode) : false;
+      if (live.mode === "headless") {
+        // Starting the batch process is part of the answer: a missing or
+        // broken executable is reported here, in its own words, rather than
+        // on the first draw call.
+        try {
+          const site = await live.call<Record<string, unknown>>("session.site", {}, { expect: ["openSprites"] });
+          const sprite = activeSpriteOf(site);
+          const version = String(live.hello?.asepriteVersion);
+          return ok(
+            {
+              ready: true,
+              mode: "headless",
+              switched,
+              bridgeConnected: live.bridgeConnected,
+              pluginConnected: live.pluginConnected,
+              asepriteVersion: live.hello?.asepriteVersion ?? null,
+              extensionVersion: live.hello?.extensionVersion ?? null,
+              features: live.features,
+              activeSprite: sprite,
+              directive:
+                "Ready, headless: there is no window, so the user sees only what `look` shows and the files you write. " +
+                "Open or create a sprite with sprite_manage, and save it (op 'save'/'save_as') before you finish — unsaved work is lost when this server stops.",
+            },
+            sprite
+              ? `READY (headless) — Aseprite ${version}, active sprite ${sprite.name} (${sprite.width}×${sprite.height}). Nothing is on disk until you save.`
+              : `READY (headless) — Aseprite ${version}, no sprite open. Nothing is on disk until you save.`,
+          );
+        } catch (err) {
+          const remediation = err instanceof LiveError ? err.details.remediation : undefined;
+          const message = err instanceof Error ? err.message : String(err);
+          return ok(
+            {
+              ready: false,
+              mode: "headless",
+              switched,
+              bridgeConnected: live.bridgeConnected,
+              pluginConnected: false,
+              asepriteVersion: null,
+              extensionVersion: null,
+              features: [],
+              activeSprite: null,
+              directive: `${message}${remediation ? ` ${String(remediation)}` : ""} Tell the user; do not write the files by another route.`,
+            },
+            "NOT READY — the headless Aseprite could not start. Do not attempt to write sprite files yourself instead.",
+          );
+        }
+      }
+
       await live.waitForBridge(2_000);
       if (!live.pluginConnected) await live.waitForPlugin(1_500);
 
       const base = {
+        mode: "live" as const,
+        switched,
         bridgeConnected: live.bridgeConnected,
         pluginConnected: live.pluginConnected,
         asepriteVersion: live.hello?.asepriteVersion ?? null,
@@ -66,9 +128,11 @@ export function registerSessionTools(server: McpServer, live: LiveClient): void 
             ...base,
             ready: false,
             activeSprite: null,
-            directive: live.bridgeConnected
-              ? "The bridge is running but Aseprite is not attached. Ask the user to open Aseprite with the aseprite-ai-artist extension installed, then call preflight again."
-              : "The bridge is not running. Ask the user to run `npx @pebbly/aseprite-ai-artist doctor`.",
+            directive:
+              (live.bridgeConnected
+                ? "The bridge is running but Aseprite is not attached. Ask the user to open Aseprite with the aseprite-ai-artist extension installed, then call preflight again."
+                : "The bridge is not running. Ask the user to run `npx @pebbly/aseprite-ai-artist doctor`.") +
+              " If the work does not need their window, you may offer headless mode — ask; do not switch on your own.",
           },
           "NOT READY — Aseprite is not connected. Do not attempt to edit files on disk instead.",
         );
@@ -86,21 +150,12 @@ export function registerSessionTools(server: McpServer, live: LiveClient): void 
 
       try {
         const site = await live.call<Record<string, unknown>>("session.site", {}, { expect: ["openSprites"] });
-        const sprite = site.sprite as Record<string, unknown> | null;
+        const sprite = activeSpriteOf(site);
         return ok(
           {
             ...base,
             ready: true,
-            activeSprite: sprite
-              ? {
-                  name: String(sprite.name ?? "untitled"),
-                  width: Number(sprite.width ?? 0),
-                  height: Number(sprite.height ?? 0),
-                  colorMode: String(sprite.colorMode ?? "rgb"),
-                  frames: Number(sprite.frames ?? 0),
-                  layers: Number(sprite.layers ?? 0),
-                }
-              : null,
+            activeSprite: sprite,
             directive:
               stale +
               (sprite
@@ -108,7 +163,7 @@ export function registerSessionTools(server: McpServer, live: LiveClient): void 
                 : "Ready, but no sprite is open. Use sprite_manage with op 'new' or 'open' first."),
           },
           sprite
-            ? `READY — Aseprite ${base.asepriteVersion}, active sprite ${String(sprite.name)} (${String(sprite.width)}×${String(sprite.height)}).`
+            ? `READY — Aseprite ${base.asepriteVersion}, active sprite ${sprite.name} (${sprite.width}×${sprite.height}).`
             : "READY — Aseprite is connected but no sprite is open.",
         );
       } catch (err) {
@@ -288,6 +343,20 @@ export function registerSessionTools(server: McpServer, live: LiveClient): void 
       }
     },
   );
+}
+
+/** The `activeSprite` preflight reports, from a `session.site` reply. */
+function activeSpriteOf(site: Record<string, unknown>) {
+  const sprite = site.sprite as Record<string, unknown> | null | undefined;
+  if (!sprite) return null;
+  return {
+    name: String(sprite.name ?? "untitled"),
+    width: Number(sprite.width ?? 0),
+    height: Number(sprite.height ?? 0),
+    colorMode: String(sprite.colorMode ?? "rgb"),
+    frames: Number(sprite.frames ?? 0),
+    layers: Number(sprite.layers ?? 0),
+  };
 }
 
 function describeSprite(data: Record<string, unknown>): string {

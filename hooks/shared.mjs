@@ -29,6 +29,11 @@ function probe(port) {
  * people disable. Never rejects.
  */
 export async function bridgeStatusMessage() {
+  // Headless sessions have no bridge by design; probing for one would tell
+  // the model to go fix a setup that is not broken.
+  if (/^(1|true|yes)$/.test(process.env.ASEPRITE_AI_HEADLESS ?? "")) {
+    return "aseprite-ai-artist: headless mode — a batch Aseprite starts on the first tool call and there is no window. Call preflight first, and save with sprite_manage before finishing.";
+  }
   const controlPort = Number(process.env.ASEPRITE_AI_CONTROL_PORT || 9932);
   const bridge = await probe(controlPort);
   // The control port being open means the bridge is up, not that Aseprite has

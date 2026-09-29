@@ -78,6 +78,7 @@ Report what changed and what you deliberately left alone.
 | "less flat" | Shading exists but does not hue-shift, or has no light direction |
 | "muddy colours" | Too many near-duplicates — `palette op="extract"` on a copy, or `analyze` + `snap` |
 | "add a label / score / title" | `draw` kind `text`; measure with `measureOnly` first so it lands centred |
+| "closer to the reference / concept" | `look op="compare"`, list the three to five largest mismatches, fix only those |
 | "off / uncanny" | Run `aseprite:review`; name the specific cause |
 
 Reflect your reading back before acting on it. "More detail" on a 16×16 sprite

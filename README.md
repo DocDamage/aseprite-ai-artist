@@ -142,6 +142,40 @@ On Windows the bridge starts as a hidden background process, so no console
 window pops up while you draw. Both sockets bind `127.0.0.1` only, so Windows
 Firewall has nothing to ask about.
 
+## 🤖 No window? Headless mode
+
+For CI, scripted asset builds or a machine with no display, the server can run
+Aseprite itself, in batch mode, instead of driving an open window:
+
+```bash
+npx @pebbly/aseprite-ai-artist install codex --headless   # writes ASEPRITE_AI_HEADLESS=1
+npx @pebbly/aseprite-ai-artist serve --headless --aseprite /path/to/aseprite
+```
+
+Plugin installs (Claude Code, omp) turn it on with `ASEPRITE_AI_HEADLESS=1` in
+the environment the agent starts from. The executable comes from `--aseprite`,
+then `ASEPRITE_PATH`, then the usual install locations — `doctor` shows which
+one it found. No extension or bridge is needed.
+
+It is the same tools on the same command table: one long-lived `aseprite -b`
+keeps your documents open in memory between calls, so the active layer, frame
+and undo history behave exactly as in the editor. Two differences you will
+notice:
+
+- **Nothing is on disk until it is saved.** `sprite_manage` `save`/`save_as`
+  and `export` write files; everything else stays in memory and is gone when the
+  server stops. `preflight` says so, so the agent saves before it finishes.
+- **It never touches a file your Aseprite window has open.** If the editor is
+  attached and has that file open, headless `open`, `save` and `save_as` refuse —
+  otherwise your next save there would overwrite the work.
+
+`/aseprite:studio` picks the mode from the request — headless for a batch of
+files or a build step, the window for anything you want to watch — and
+`/aseprite:studio --headless …` (or `--live`) forces it. Under the hood that is
+`preflight mode="headless"`; each side keeps its own documents when you switch.
+It is never a fallback: if your window isn't attached, the agent asks rather
+than quietly going headless. Why, in [ADR-0008](docs/adr/0008-headless-mode.md).
+
 ## 🎨 The skills, and how to use them
 
 Skills are the workflows the agent follows — the order an experienced pixel
@@ -162,16 +196,28 @@ everything else. Hand it any request — big or small — and it:
 1. checks Aseprite is attached and reads what's already open;
 2. works out what you actually want and writes down the chain of skills it needs;
 3. asks you **once**, and only if the request is genuinely open-ended;
-4. runs each stage, handing parts to the specialists where your client has them;
-5. **looks** at the result after every stage that changed pixels;
-6. finishes with a review, fixes what it finds, and reports what exists now.
+4. for anything new, writes the design down first — scenario, palette, poses —
+   and hands you **a ready prompt for an image model**. Paste it into ChatGPT,
+   Gemini or Midjourney, send back the concept sheet or storyboard, and the agent
+   redraws it as pixel art frame by frame; or say "continue without" and it draws
+   from the written design alone;
+5. runs each stage, handing parts to the specialists where your client has them;
+6. **looks** at the result after every stage that changed pixels — side by side
+   with the reference when there is one;
+7. finishes with a review, fixes what it finds, and reports what exists now.
 
 ```
 /aseprite:studio an animated knight for my Godot game, 32×32, idle and walk
 ```
 
-Behind the scenes that becomes `brief → new → palette → draw → shade → rig →
-animate → review → export` — and you didn't have to know any of those names.
+Behind the scenes that becomes `brief → concept → new → palette → draw → shade →
+rig → animate → review → export` — and you didn't have to know any of those names.
+
+**Why the image model?** The model drawing pixels is at its worst when it must
+invent the character, the pose, the camera and the palette while placing every
+pixel. With a concept sheet the job becomes *reproduce this design at 32×32 in
+these six colours* — and the reference is a guide for shapes and poses, never
+pixels that get downscaled onto the canvas.
 
 ### The rest of the toolbox
 
@@ -180,6 +226,7 @@ Reach for these directly when you know exactly which step you want.
 | Skill | Use it when… | Try |
 |---|---|---|
 | 📝 **`brief`** | the idea is still vague. Settles size, palette, view, light and outline in one message before a pixel is drawn. | `/aseprite:brief a cosy tavern keeper` |
+| 🖼️ **`concept`** | anything new. Writes the art spec, gives you a prompt for a concept sheet or storyboard, then imports what you send back — one storyboard panel per frame. Also the way in when you already have reference art. | `/aseprite:concept a fire mage, 4-frame walk` |
 | 📄 **`new`** | you're starting fresh. Sets up canvas, colour mode, palette and layers so nothing fights you later. | `/aseprite:new 64×64 sprite, PICO-8` |
 | 🎨 **`palette`** | colour is the question — a retro look, hue-shifted ramps, cleaning up ninety near-identical browns, or building a tight palette out of the art itself. | `/aseprite:palette give this a Game Boy look` |
 | ✏️ **`draw`** | it's time to make the thing. Silhouette first, then materials, shading, outline, verify. Labels and title cards too, in a crisp pixel font — measured first, so they land centred. | `/aseprite:draw a fox curled up asleep` |
@@ -247,8 +294,9 @@ ground at a sixth of the cost — and makes batching the default, so one `draw`
 call is one undo step for you.
 
 👀 **It has to look at its own work.** `look` gives the agent an upscaled
-preview, a one-glyph-per-pixel text grid, a filmstrip, an onion skin and a
-frame-to-frame diff. `validate` then checks the sprite mechanically before
+preview, a one-glyph-per-pixel text grid, a filmstrip, an onion skin, a
+frame-to-frame diff and a side-by-side against the reference it is drawing
+from. `validate` then checks the sprite mechanically before
 anything is called done.
 
 🛡️ **It can't quietly wreck your file.** With Aseprite detached, every tool
