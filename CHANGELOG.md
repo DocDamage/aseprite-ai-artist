@@ -6,6 +6,21 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-09-29
+
+### Changed
+
+- **Skills, agents and rules now use the 0.3 tools.** `review`, `animate`,
+  `animation-director` and `pixel-critic` check in-betweens with `look` op
+  `onion` and close with `validate` `expect`; `fix` reads `changedBounds` and
+  routes labels to `draw` kind `text`; `palette-smith` knows `palette` op
+  `extract`; `rig-builder` addresses twin layers by group path and reuses parts
+  with `layer duplicate` `toSprite`; `studio` routes text and slice requests;
+  the outline and review rules cover `side`/`diagonals`, onion and overlap
+  checks.
+- **README** folds the 0.3 features into the skill guide instead of a separate
+  what's-new list, and tells upgraders to reinstall the extension.
+
 ## [0.3.0] — 2026-09-29
 
 ### Added
