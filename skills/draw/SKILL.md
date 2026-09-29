@@ -59,9 +59,12 @@ unless the sprite is 32px+ and genuinely needs more.
 
 Pick one style from `rules://04-outlines-and-edges` and apply it consistently.
 Selective outlining — outside only — is usually right. `transform` op `outline`
-does the mechanical part; hand-place where you want it broken.
+does the mechanical part: `side="outside"` grows the shape by a pixel,
+`side="inside"` recolours its edge and keeps the size; `diagonals=true` fills
+the corner pixels for square corners, off leaves them cut and softer.
+Hand-place where you want it broken.
 
-#### Text
+### 6b. Text, if the art has words
 
 `draw` op kind `text` lays out a string from a bitmap font and draws it in the
 same batch as everything else. Pass `measureOnly: true` with only `text` ops

@@ -6,6 +6,14 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.3.2] — 2026-09-29
+
+### Changed
+
+- `draw` skill: text is its own step instead of a subsection of outlining, and
+  the outline step explains `side` and `diagonals`. Fixed a garbled sentence in
+  the `animate` skill.
+
 ## [0.3.1] — 2026-09-29
 
 ### Changed
