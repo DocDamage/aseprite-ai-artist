@@ -2623,6 +2623,31 @@ end
 -- Export
 --------------------------------------------------------------------------------
 
+--- Run `fn` on the sprite to export: the sprite itself at scale 1, otherwise a
+--- throwaway copy resized nearest-neighbour. Both `frames` and `spritesheet` go
+--- through Aseprite commands that read the active sprite and have no scale of
+--- their own, so the only way to honour `scale` is to hand them a bigger sprite.
+--- The copy is made inside preserving_site (a scratch sprite created outside
+--- it would become the site that gets restored) and closed on every path.
+local function with_export_sprite(s, scale, fn)
+  if not scale or scale <= 1 then
+    app.sprite = s
+    return fn(s)
+  end
+  local result
+  preserving_site(function()
+    local copy = Sprite(s)
+    app.sprite = copy
+    local ok, err = pcall(function()
+      copy:resize(s.width * scale, s.height * scale)
+      result = fn(copy)
+    end)
+    copy:close()
+    if not ok then error(err, 0) end
+  end)
+  return result
+end
+
 H["export.run"] = function(args)
   local s = find_sprite(args.sprite)
   local op = need(args.op, "op")
@@ -2711,7 +2736,7 @@ H["export.run"] = function(args)
 
     elseif op == "frames" then
       -- Aseprite expands {frame} itself when the filename carries the token.
-      s:saveCopyAs(path)
+      with_export_sprite(s, args.scale, function(target) target:saveCopyAs(path) end)
       files[#files + 1] = path
 
     elseif op == "spritesheet" then
@@ -2735,7 +2760,9 @@ H["export.run"] = function(args)
         params.listSlices = true
         files[#files + 1] = json_path
       end
-      app.command.ExportSpriteSheet(params)
+      -- On a scaled copy the atlas describes the scaled texture, so frame
+      -- rectangles and the image an engine loads always agree.
+      with_export_sprite(s, args.scale, function() app.command.ExportSpriteSheet(params) end)
       files[#files + 1] = path
 
     else

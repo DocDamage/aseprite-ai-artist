@@ -1105,6 +1105,40 @@ check("export writes png, gif and a spritesheet with its atlas", function()
   for _, f in ipairs({ png, gif, sheet, atlas }) do os.remove(f) end
 end)
 
+check("spritesheet and frames honour scale, and leave the source sprite alone", function()
+  -- Regression: both ops accepted `scale` and ignored it — the schema promised
+  -- an upscale, the call succeeded, and the file came out at 1×.
+  local base = app.fs.joinPath(app.fs.tempPath, "ai-artist-test-scale")
+  local sheet, atlas = base .. "-sheet.png", base .. "-sheet.json"
+  local dir = base .. "-frames"
+  app.fs.makeAllDirectories(dir)
+  for _, existing in ipairs(app.fs.listFiles(dir)) do os.remove(app.fs.joinPath(dir, existing)) end
+
+  withMockSprite(8, 6, ColorMode.RGB, function(s)
+    call("draw.batch", { paletteLock = false,
+      ops = { { kind = "pixels", color = "#ff004d", points = { { x = 0, y = 0 } } } } })
+    call("frame.apply", { op = "add", count = 2 })
+    local open_before = #app.sprites
+
+    call("export.run", { op = "spritesheet", path = sheet, scale = 4, sheetType = "horizontal" })
+    local img = Image{ fromFile = sheet }
+    assertEq(img.width, 8 * 4 * 3, "sheet width is three frames at 4×")
+    assertEq(img.height, 6 * 4, "sheet height is one frame at 4×")
+    local frames = json.decode(io.open(atlas):read("a")).frames
+    assertEq(frames[1].frame.w, 8 * 4, "the atlas describes the scaled texture")
+
+    call("export.run", { op = "frames", path = app.fs.joinPath(dir, "f_{frame}.png"), scale = 3 })
+    local first = Image{ fromFile = app.fs.joinPath(dir, "f_0.png") }
+    assertEq(first.width, 8 * 3, "each frame file is 3×")
+
+    assertEq(s.width, 8, "the source sprite was not resized")
+    assertEq(#app.sprites, open_before, "the scratch copy was closed")
+  end)
+
+  for _, f in ipairs({ sheet, atlas }) do os.remove(f) end
+  for _, existing in ipairs(app.fs.listFiles(dir)) do os.remove(app.fs.joinPath(dir, existing)) end
+end)
+
 check("a failure inside a transaction reports a readable message", function()
   -- Regression: transact() used to retry the failing closure and report the
   -- second attempt's error. Aseprite can raise values that are not strings, so
