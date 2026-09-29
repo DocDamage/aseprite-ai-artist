@@ -19,22 +19,34 @@ models: [claude-opus-5-5]
 tags: [mascot, character, animation, icon, 48x48, 16x16, 12x12, pico-8]
 steps:
   - text: |-
+      Let's make a proper mascot instead of a knight.
+      It should be something genuinely unusual.
+    original: |-
       И давай нормального маскота сделаем, а не рыцаря
       Надо что-то прям необычное
     interventions:
       - >-
-        The agent proposed four concepts; the user picked "Pebbly — живой
-        камешек": a round pebble golem (after with-pebbly) with a brush
+        The agent proposed four concepts; the user picked "Pebbly, a living
+        pebble": a round pebble golem (after with-pebbly) with a brush
         sprouting from its head, dripping the PICO-8 palette, crosshair
         pupils; animation — it blinks, a drop falls and becomes a pixel.
       - The user agreed to open Aseprite so the plugin itself would draw it.
   - text: |-
+      The logo and favicon need a smaller grid. Otherwise they're too detailed and clash with the design.
+    original: |-
       Для лого и favicon надо меньше сетку сделать. Иначе слишком детализированные и выбиваются по дизайну
   - text: |-
+      No, I still don't like the logo and favicon.
+      Too much detail.
+    original: |-
       Не, мне лого и фавиконка все равно не нравятся
       Слишком много деталей
   - text: |-
+      Let's drop the brush from the logo and favicon entirely. Just make it a cute little pebble.
+    original: |-
       Давай вообще лого и фавиконку без кисти сделаем. Просто милый "булыжничек" пусть будет.
+references:
+  source: none
 files:
   - { path: pebbly.gif, role: cover, label: "Idle loop, 8×" }
   - { path: pebbly.aseprite, role: source, label: "Source document, six layers", step: 1 }

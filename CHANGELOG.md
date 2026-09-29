@@ -6,6 +6,20 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Gallery: `references` on every generation.** Required, no default:
+  `source` (`none`, `generated` by an image model, or `supplied` by the
+  author), `imageModels`, `kinds` (concept-sheet, storyboard, …) and the
+  optional image-model `prompt`, plus a `reference` file role. The benchmark
+  ranks concept-assisted runs on their own row (`model · concept by
+  gpt-image-2`), and the site shows the source on every generation page.
+  `aseprite:submit` fills it in.
+- **Gallery: `steps[].original`.** A prompt sent in another language can be
+  shown in English while the verbatim text is kept; benchmark runs cannot use
+  it. The Pebbly generation's prompts now read in English with the Russian
+  originals kept.
+
 ## [0.4.0] — 2026-09-29
 
 ### Added

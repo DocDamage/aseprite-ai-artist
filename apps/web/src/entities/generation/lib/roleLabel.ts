@@ -8,5 +8,6 @@ export const roleLabel: Record<FileView['role'], string> = {
 	filmstrip: 'Filmstrip',
 	sheet: 'Sprite sheet',
 	frame: 'Frame',
+	reference: 'Reference (concept / storyboard)',
 	other: 'Other'
 };

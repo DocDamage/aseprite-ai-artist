@@ -1,4 +1,4 @@
-import type { FileRole } from '@pebbly/gallery';
+import type { FileRole, GenerationFile } from '@pebbly/gallery';
 
 export interface Score {
 	passed: number;
@@ -26,6 +26,8 @@ export interface FileView {
 export interface StepView {
 	title?: string;
 	text: string;
+	/** The prompt as sent, when `text` is its English rendering. */
+	original?: string;
 	model?: string;
 	interventions: string[];
 }
@@ -54,6 +56,8 @@ export interface GenerationSummary {
 	harness: string;
 	models: string[];
 	modelLabel: string;
+	/** Whether an image model (or the author's own art) supplied the design; see ADR-0009. */
+	references: GenerationFile['references'];
 	tags: string[];
 	cover: FileView;
 	benchmark: { prompt: string; promptTitle: string; revision: number } | null;

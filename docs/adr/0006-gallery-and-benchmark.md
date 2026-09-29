@@ -12,6 +12,11 @@ want to share work that follows no benchmark at all.
 Results have three axes that must not be mixed: the plugin version, the prompt,
 and the model. A run is only comparable to another run on the same prompt text.
 
+*Amended 2026-09-29 by [ADR-0009](0009-concept-first.md):* the model axis also
+carries the reference pipeline. A run that drew from an image model's concept
+is an intended, declared benchmark run, ranked on its own row
+(`model · concept by <image model>`) and never merged into the pixel-only row.
+
 ## Decision
 
 - **One store, `gallery/`, a private workspace package.** Every run is a folder

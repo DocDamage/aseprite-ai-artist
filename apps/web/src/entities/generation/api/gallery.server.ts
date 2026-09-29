@@ -78,6 +78,7 @@ export function summary(generation: Generation, prompts: Prompt[]): GenerationSu
 		generation.author.github ?? '',
 		generation.harness,
 		...generation.models,
+		...generation.references.imageModels,
 		...generation.tags,
 		...generation.steps.map((step) => step.text),
 		prompt?.title ?? ''
@@ -93,6 +94,7 @@ export function summary(generation: Generation, prompts: Prompt[]): GenerationSu
 		harness: generation.harness,
 		models: generation.models,
 		modelLabel: generation.modelLabel,
+		references: generation.references,
 		tags: generation.tags,
 		cover: fileView(generation.id, generation.cover, sourceSizes(generation)),
 		benchmark: generation.benchmark
@@ -117,6 +119,7 @@ export function detail(generation: Generation, prompts: Prompt[]): GenerationDet
 		steps: generation.steps.map((step, index) => ({
 			...(promptSteps[index] ? { title: promptSteps[index].title } : {}),
 			text: step.text,
+			...(step.original === undefined ? {} : { original: step.original }),
 			...(step.model === undefined ? {} : { model: step.model }),
 			interventions: step.interventions
 		})),

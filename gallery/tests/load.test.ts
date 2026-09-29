@@ -34,6 +34,7 @@ function generation(overrides: Record<string, unknown> = {}) {
     harness: 'omp',
     models: ['model-x'],
     steps: [{ text: 'Draw a knight.' }, { text: 'Animate a slash.\n4 frames.\n' }],
+    references: { source: 'none' },
     files: [
       { path: 'cover.png', role: 'cover' },
       { path: 'knight.aseprite', role: 'source' },
@@ -207,6 +208,55 @@ test('the same models in any order share one benchmark row', () => {
     assert.equal(cells.length, 1);
     assert.equal(cells[0]!.modelLabel, 'model-x + model-y');
     assert.equal(cells[0]!.runs.length, 2);
+  } finally {
+    cleanup();
+  }
+});
+
+test('a run redrawn from an image model concept is ranked on its own row', () => {
+  const concept = { source: 'generated', imageModels: ['gpt-image-2'], kinds: ['concept-sheet'] };
+  const { root, cleanup } = makeRepo({
+    '2026-09-29-a': generation(),
+    '2026-09-29-b': generation({
+      references: concept,
+      benchmark: { prompt: 'knight', revision: 2, results: [{ criterion: 'a', pass: true }, { criterion: 'b', pass: true }] },
+    }),
+  });
+  try {
+    const result = inspectGallery(root);
+    assert.deepEqual(errorsOf(result), []);
+    const labels = result.gallery.benchmarks[0]!.cells.map((c) => c.modelLabel).sort();
+    // The concept-assisted perfect score must not become model-x's own score.
+    assert.deepEqual(labels, ['model-x', 'model-x · concept by gpt-image-2']);
+    const plain = result.gallery.benchmarks[0]!.cells.find((c) => c.modelLabel === 'model-x')!;
+    assert.deepEqual(plain.best, { passed: 1, total: 2 });
+  } finally {
+    cleanup();
+  }
+});
+
+test('references must say what was used, and only what was used', () => {
+  const { root, cleanup } = makeRepo({
+    '2026-09-29-a': generation({ references: undefined }),
+    '2026-09-29-b': generation({ references: { source: 'generated', kinds: ['storyboard'] } }),
+    '2026-09-29-c': generation({ references: { source: 'none', imageModels: ['gpt-image-2'] } }),
+    '2026-09-29-d': generation({ references: { source: 'supplied' } }),
+    '2026-09-29-e': generation({
+      references: { source: 'none' },
+      files: [
+        { path: 'cover.png', role: 'cover' },
+        { path: 'knight.aseprite', role: 'source' },
+        { path: 'cover.png', role: 'reference' },
+      ],
+    }),
+  });
+  try {
+    const errors = errorsOf(inspectGallery(root)).join('\n');
+    assert.match(errors, /references: Invalid input: expected object/);
+    assert.match(errors, /name the image model/);
+    assert.match(errors, /only listed when source is "generated"/);
+    assert.match(errors, /say what the reference was/);
+    assert.match(errors, /source is "none" but reference kinds or files/);
   } finally {
     cleanup();
   }

@@ -92,7 +92,27 @@ export const promptSchema = z
 // gallery/generations/<yyyy-mm-dd>-<slug>/generation.yaml
 // ---------------------------------------------------------------------------
 
-export const fileRoles = ['cover', 'source', 'animation', 'filmstrip', 'sheet', 'frame', 'other'] as const;
+export const fileRoles = ['cover', 'source', 'animation', 'filmstrip', 'sheet', 'frame', 'reference', 'other'] as const;
+
+/**
+ * Where the design came from. A sprite redrawn from an image model's concept
+ * sheet and one invented pixel by pixel are different runs of a different
+ * pipeline (docs/adr/0009-concept-first.md), and the benchmark ranks them apart.
+ *  - `none`      — the agent worked from words alone;
+ *  - `generated` — an image model produced concept art or a storyboard first;
+ *  - `supplied`  — the author handed over existing art (a sketch, a screenshot).
+ */
+export const referenceSources = ['none', 'generated', 'supplied'] as const;
+export const referenceKinds = ['concept-sheet', 'storyboard', 'sketch', 'screenshot', 'photo', 'other'] as const;
+
+export const referencesSchema = z.strictObject({
+  source: z.enum(referenceSources),
+  /** Image models exactly as their product names them, e.g. gpt-image-2. Required for `generated`. */
+  imageModels: z.array(line).default([]),
+  kinds: z.array(z.enum(referenceKinds)).default([]),
+  /** The image-model prompt verbatim, when the author has it — it is part of how the run was made. */
+  prompt: prose.optional(),
+});
 
 export const generationFileSchema = z.strictObject({
   /** Relative to the generation's folder. No directories — keep a generation flat. */
@@ -111,8 +131,13 @@ export const generationFileSchema = z.strictObject({
 });
 
 export const generationStepSchema = z.strictObject({
-  /** The prompt exactly as sent. */
+  /** The prompt exactly as sent — or, when `original` is set, its English rendering. */
   text: prose,
+  /**
+   * The prompt exactly as sent, when `text` is a translation. The gallery reads
+   * in English, but the original stays: it is what the model actually saw.
+   */
+  original: prose.optional(),
   /** Which of `models` ran this step. Required when the generation lists more than one model. */
   model: line.optional(),
   /** Anything the author said mid-run (answers to clarifying questions). Honesty over tidiness. */
@@ -153,6 +178,8 @@ export const generationSchema = z
     /** Model ids exactly as the harness names them, e.g. claude-opus-4-1, gpt-5. */
     models: z.array(line).min(1),
     steps: z.array(generationStepSchema).min(1),
+    /** Required, with no default: "no image model was used" has to be a statement, not an omission. */
+    references: referencesSchema,
     tags: z.array(line).default([]),
     files: z.array(generationFileSchema).min(1),
     validate: z.array(validateReportSchema).default([]),
@@ -181,7 +208,36 @@ export const generationSchema = z
           message: 'several models are listed, so every step must name the one that ran it',
         });
       }
+      if (generation.benchmark && step.original !== undefined) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['steps', index, 'original'],
+          message: 'a benchmark run sends the prompt verbatim, so there is no original to translate from',
+        });
+      }
     });
+
+    const refs = generation.references;
+    const referenceFiles = generation.files.filter((file) => file.role === 'reference');
+    if (refs.source === 'generated' && refs.imageModels.length === 0) {
+      ctx.addIssue({ code: 'custom', path: ['references', 'imageModels'], message: 'name the image model that generated the reference' });
+    }
+    if (refs.source !== 'generated' && refs.imageModels.length > 0) {
+      ctx.addIssue({ code: 'custom', path: ['references', 'imageModels'], message: `image models are only listed when source is "generated", not "${refs.source}"` });
+    }
+    if (refs.source !== 'generated' && refs.prompt !== undefined) {
+      ctx.addIssue({ code: 'custom', path: ['references', 'prompt'], message: 'an image-model prompt only exists when source is "generated"' });
+    }
+    if (refs.source === 'none' && (refs.kinds.length > 0 || referenceFiles.length > 0)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['references', 'source'],
+        message: 'source is "none" but reference kinds or files with role "reference" are listed',
+      });
+    }
+    if (refs.source !== 'none' && refs.kinds.length === 0) {
+      ctx.addIssue({ code: 'custom', path: ['references', 'kinds'], message: 'say what the reference was (concept-sheet, storyboard, sketch, …)' });
+    }
 
     const paths = new Set<string>();
     generation.files.forEach((file, index) => {

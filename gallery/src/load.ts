@@ -58,7 +58,10 @@ export interface Generation extends Omit<GenerationFile, 'files'> {
   id: string;
   files: StoredFile[];
   cover: StoredFile;
-  /** Models in listed order joined with " + " — the benchmark's model axis. */
+  /**
+   * The benchmark's model axis: models in sorted order joined with " + ", plus
+   * the reference pipeline when there was one ("… · concept by gpt-image-2").
+   */
   modelLabel: string;
   /** Set when `benchmark` is present. */
   score: Score | null;
@@ -211,8 +214,17 @@ export function inspectGallery(root: string = DEFAULT_GALLERY_ROOT): LoadResult 
 
     const cover = files.find((file) => file.role === 'cover')!;
     // The benchmark's model axis: the same set of models is the same row no
-    // matter which order the author listed them in.
-    const modelLabel = [...new Set(data.models)].sort().join(' + ');
+    // matter which order the author listed them in. A run that redrew an image
+    // model's concept is a different pipeline, so it gets its own row rather
+    // than lifting (or sinking) the pixel-only score of the same agent model.
+    const refs = data.references;
+    const pipeline =
+      refs.source === 'generated'
+        ? ` · concept by ${[...new Set(refs.imageModels)].sort().join(' + ')}`
+        : refs.source === 'supplied'
+          ? ' · supplied reference'
+          : '';
+    const modelLabel = [...new Set(data.models)].sort().join(' + ') + pipeline;
     generations.push({ ...data, id, files, cover, modelLabel, score, outdated });
   }
 

@@ -44,8 +44,9 @@ message.
 | `harness` | You know which you run in: `claude-code`, `omp`, `codex`, `gemini-cli`, `cursor`… |
 | `models` | The model id exactly as the harness names it (`claude-opus-4-1`, `gpt-5`). Not a nickname. If different models ran different steps, list each once and name the model on every step. |
 | `plugin` | `preflight` returns `extensionVersion` — the plugin build attached to Aseprite. Use it. If its `directive` says the extension and the server differ, the run mixed two builds and has no single version: stop and tell the user to align them (`install-extension`, restart Aseprite) before submitting. If `extensionVersion` is null, run `npx @pebbly/aseprite-ai-artist --version`. It must be a **released** version listed in the repo's `CHANGELOG.md`; a dev or unreleased build cannot be submitted — say so. |
-| `steps[].text` | Every user prompt that shaped the work, **verbatim** and in order, copied from the conversation. Never paraphrase, translate or merge. |
+| `steps[].text` | Every user prompt that shaped the work, **verbatim** and in order, copied from the conversation. Never paraphrase or merge. A prompt sent in another language may be rendered in English here only if the verbatim text goes into `steps[].original` — never for a benchmark run. |
 | `steps[].interventions` | Each clarifying question you asked and the answer the user gave, plus any steering beyond the prompt. Empty if none. |
+| `references` | Where the design came from — required, never guessed. `source: none` when the work was drawn from words alone (the user chose "continue without" in `aseprite:concept`, or it was never offered). `generated` when an image model made a concept sheet or storyboard: ask which model if you do not know, list it in `imageModels`, the kinds in `kinds`, and put the image prompt you wrote in `prompt`. `supplied` when the user handed over their own art. Copy the reference image into the folder as a `reference` file when you have it. |
 | `date` | Today, `yyyy-mm-dd`. |
 | `tags` | A few lowercase words: `character`, `animation`, `32x32`. |
 
@@ -123,6 +124,10 @@ plugin: 0.3.2
 harness: claude-code
 models: [claude-opus-4-1]
 tags: [character, animation]
+references:
+  source: generated
+  imageModels: [gpt-image-2]
+  kinds: [concept-sheet]
 steps:
   - text: |-
       Draw me a 32×32 knight with a sword, standing still. One frame.

@@ -57,11 +57,20 @@ steps:                                   # required, ≥1, in the order they ran
     # model: claude-opus-4-1             # required on EVERY step when models has >1 entry,
     #                                    # and must be one of `models`
     interventions: []                    # what you said mid-run; see Honesty
+    # original: …                        # only when `text` is an English translation:
+    #                                    # the prompt exactly as sent (not in benchmark runs)
   - text: |-
       Starting from this knight, animate a sword slash: windup, then
       follow-through. 4 to 6 frames.
     interventions:
       - 'Asked "should the sword arc over the head?" — answered "yes".'
+references:                              # required — where the design came from
+  source: none                           # none | generated | supplied
+  # imageModels: [gpt-image-2]           # required when generated; only then
+  # kinds: [concept-sheet, storyboard]   # required unless none: concept-sheet, storyboard,
+  #                                      # sketch, screenshot, photo, other
+  # prompt: |-                           # optional, generated only: the image-model prompt verbatim
+  #   Pixel art character concept sheet of …
 tags: [character, animation]             # optional
 files:                                   # required, ≥1
   - path: knight-cover.png
@@ -102,8 +111,12 @@ benchmark:                               # only for benchmark runs
 
 - **Strict**: unknown fields are errors — a typo does not silently vanish.
 - **Roles**: `cover`, `source`, `animation`, `filmstrip`, `sheet`, `frame`,
-  `other`. Allowed extensions: `.aseprite`, `.ase`, `.png`, `.gif`, `.webp`,
+  `reference` (the concept sheet or storyboard the run drew from), `other`.
+  Allowed extensions: `.aseprite`, `.ase`, `.png`, `.gif`, `.webp`,
   `.json`, with a flat file name (letters, digits, `_`, `-`, `.`).
+- **References are stated, not implied**: `references` has no default.
+  `generated` needs `imageModels`; anything but `none` needs `kinds`; `none`
+  cannot list kinds or `reference` files.
 - **Exactly one `cover`**, a `.png`, `.gif` or `.webp`.
 - **At least one `.aseprite`/`.ase` with role `source`** — the gallery keeps the
   editable original, not just a picture of it.
@@ -116,7 +129,9 @@ benchmark:                               # only for benchmark runs
   the run's `date` cannot be earlier than that release.
 - **Benchmark axes** are prompt × models × plugin version. The same models in a
   different order are the same row; `harness` is recorded and shown but is not
-  an axis.
+  an axis. A run drawn from references is its own row — `claude-opus-5-5 ·
+  concept by gpt-image-2`, or `… · supplied reference` — so a concept-assisted
+  score never counts as the agent's pixel-only score.
 - **Benchmark block**: the prompt must exist, `revision` cannot be newer than
   the prompt's, and on the current revision **every criterion** of the prompt
   needs exactly one result — no skipping the ones that went badly.
@@ -126,24 +141,30 @@ benchmark:                               # only for benchmark runs
 These are what make the gallery and benchmark worth reading.
 
 1. **Prompts are verbatim.** `steps[].text` is the text sent, word for word —
-   no tidying, no translating, no "the gist". (The checker ignores only
-   surrounding whitespace and line endings when comparing against a benchmark
-   prompt.)
-2. **Do not steer silently.** Anything you typed to the model beyond the step
+   no tidying, no "the gist". The one exception is language: a prompt sent in
+   another language may be rendered in English in `text` if the original goes,
+   verbatim, in `original`. (The checker ignores only surrounding whitespace
+   and line endings when comparing against a benchmark prompt, and benchmark
+   runs cannot use `original`.)
+2. **Name the image model.** If an image model designed the character or the
+   storyboard, say so in `references`, and keep its output as a `reference`
+   file where you can. A redraw of a concept is a fine run; passing it off as
+   drawn from words is not.
+3. **Do not steer silently.** Anything you typed to the model beyond the step
    text — answers to clarifying questions, nudges, corrections — is recorded
    under that step's `interventions`. A run with many interventions is still
    welcome; a run that hides them is not.
-3. **No hand retouching under the model's name.** If you edited the sprite
+4. **No hand retouching under the model's name.** If you edited the sprite
    yourself, either do not submit it, or do not call it the model's work
    (say so in `description` and leave it out of benchmarks).
-4. **The cover is real output.** Pick it from what the run produced; do not
+5. **The cover is real output.** Pick it from what the run produced; do not
    crop, recolour or repaint it into something better than the file it
    represents.
-5. **Record what ran.** `plugin`, `harness` and `models` are exactly what was
+6. **Record what ran.** `plugin`, `harness` and `models` are exactly what was
    used, including when a step switched models.
-6. **Honest fails.** Benchmark criteria you judge failed stay failed, with a
+7. **Honest fails.** Benchmark criteria you judge failed stay failed, with a
    short `note`. A leaderboard full of ticks helps nobody.
-7. **One run per folder**, and the `.aseprite` source is the file that run
+8. **One run per folder**, and the `.aseprite` source is the file that run
    ended with.
 
 ## Benchmark runs
@@ -165,8 +186,11 @@ the prompt's fixed setup to the letter. Read
 (canvas, colour mode, palette, `rules`) and the `steps` text are the
 contract. In practice:
 
-- Use each step's text verbatim, and no other steering, reference images or
-  hand-made setup beyond what the prompt's `rules` allow.
+- Use each step's text verbatim, and no other steering or hand-made setup
+  beyond what the prompt's `rules` allow. Reference images are the one
+  declared exception: a run that drew from an image model's concept or
+  storyboard is allowed, must say so in `references`, and is ranked on its own
+  row (`… · concept by <model>`), never mixed into the agent's pixel-only row.
 - Respect the session boundaries the prompt defines (the knight's step 2 runs in
   a fresh session against a copy of step 1's result).
 - Set `benchmark.prompt` and `benchmark.revision`, and answer every criterion.

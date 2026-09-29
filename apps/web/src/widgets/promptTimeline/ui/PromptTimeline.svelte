@@ -35,6 +35,12 @@
 						<p class="text-muted-foreground mt-2 text-sm">Run by <span class="text-foreground font-medium">{step.model}</span></p>
 					{/if}
 					<p class="bg-muted/60 mt-3 px-3 py-2 leading-relaxed whitespace-pre-wrap">{step.text}</p>
+					{#if step.original}
+						<details class="mt-2 text-sm">
+							<summary class="text-muted-foreground cursor-pointer">Translated — as originally sent</summary>
+							<p class="bg-muted/40 mt-2 px-3 py-2 leading-relaxed whitespace-pre-wrap">{step.original}</p>
+						</details>
+					{/if}
 					{#if step.interventions.length > 0}
 						<div class="border-pixel mt-3 border-2 border-dashed px-4 py-3">
 							<p class="mb-2 flex items-center gap-2 text-sm font-medium">
