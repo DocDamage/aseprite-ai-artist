@@ -372,7 +372,10 @@ async function readRegion(
     layer: args.layer,
     frame: args.frame,
     region: args.region,
-    composite: args.composite ?? true,
+    // `look` has no `composite` field: its `layer` promises a single layer, so
+    // naming one must read that layer's cel. Defaulting to the composite here
+    // made op 'diff' with layer=… silently diff the whole image.
+    composite: args.composite ?? args.layer === undefined,
   });
   return { ...data, spriteName: data.sprite };
 }

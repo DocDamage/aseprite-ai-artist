@@ -214,6 +214,21 @@ test("headless drives a real batch Aseprite end to end", { skip: aseprite ? fals
     const out = path.join(scratch, "real.aseprite");
     await call("sprite_manage", { op: "save_as", path: out });
     assert.equal(existsSync(out), true);
+
+    // look op 'diff' with `layer` compares that layer alone: a change on
+    // another layer must not show up, and the composite must.
+    await call("layer", { op: "create", name: "still" });
+    await call("frame", { op: "add" });
+    await call("draw", {
+      layer: "Layer 1",
+      frame: 2,
+      ops: [{ kind: "rect", rect: { x: 0, y: 0, width: 2, height: 2 }, color: "#29adff", fill: "#29adff" }],
+      paletteLock: false,
+    });
+    const composite = await call("look", { op: "diff", fromFrame: 1, toFrame: 2 });
+    const scoped = await call("look", { op: "diff", fromFrame: 1, toFrame: 2, layer: "still" });
+    assert.ok((composite.changedPixels as number) > 0, "the composite sees the edit");
+    assert.equal(scoped.changedPixels, 0, "a layer the edit never touched reports no change");
   } finally {
     live.close();
     await server.close();

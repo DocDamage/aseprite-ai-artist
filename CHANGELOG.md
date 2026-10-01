@@ -32,6 +32,12 @@ All notable changes to this project are documented here. Format follows
   so runs on different models answer the same task. The eval guide moved to
   `docs/evals/benchmarks.md`.
 
+### Fixed
+
+- **`look` op `ascii`/`diff` with `layer` read the composite.** The layer was
+  passed through but the read stayed flattened, so a per-layer diff silently
+  diffed the whole image. Naming a layer now reads that layer's cel.
+
 ## [0.4.0] — 2026-09-29
 
 ### Added

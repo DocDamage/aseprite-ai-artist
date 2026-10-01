@@ -27,7 +27,11 @@ matrix. How the store works:
    path — that choice is part of what's being measured.
 2. Do not intervene mid-run unless the model asks a genuine clarifying
    question. Record it as an intervention on that step.
-3. When the model reports done, capture the evidence below before judging
+3. Start each step's session outside this repository (an empty scratch
+   directory holding only the run's `.aseprite`): from the repo root the model
+   can read `gallery/prompts/` — the criteria and the later steps — and earlier
+   runs in `gallery/generations/`.
+4. When the model reports done, capture the evidence below before judging
    anything yourself.
 
 ## What to capture
