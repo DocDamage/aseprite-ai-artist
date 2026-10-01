@@ -300,7 +300,7 @@ observation that decides them.
 
 ## Deployment (maintainers)
 
-The site in `apps/web` (SvelteKit, `@sveltejs/adapter-vercel`) deploys to
+The site in `apps/web` ([pixeli.pebbly.space](https://pixeli.pebbly.space/); SvelteKit, `@sveltejs/adapter-vercel`) deploys to
 Vercel **only on push to `main`** — never for pull requests or other branches.
 [`apps/web/vercel.json`](../apps/web/vercel.json) enforces that with
 [`git.deploymentEnabled`](https://vercel.com/docs/project-configuration/git-configuration#git.deploymentenabled):

@@ -6,7 +6,52 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-10-02
+
 ### Added
+
+- **Benchmark runs on 0.5.0.** All three benchmarks re-run with Claude Opus 5.5
+  using `grid`: the mage scores 14/15, the tree 12/13 and the road 13/14, and
+  each can be set against its 0.4.0 run on the new compare page.
+- **Site: compare runs of one benchmark.** `/benchmarks/<prompt>/compare`,
+  linked as *Compare runs* from a benchmark with two or more runs. Pick an
+  image — any step's still, animation or filmstrip — then either drag a
+  divider between two runs drawn at the same scale, so the same art pixel
+  sits under the same screen pixel on both sides, or lay any number of runs
+  out as a grid. Animations are decoded and played on one shared clock,
+  each stretched to the longest loop, so they start and end together; a
+  scrubber pauses and steps through them, and each run shows its own loop
+  length and the speed it plays at. Filmstrips are shown raw — untimed,
+  uncropped — as full-screen-width rows at a fixed height. The mode, image
+  and runs are kept in the URL, so a comparison can be linked.
+- **Site: renamed Pixeli, at [pixeli.pebbly.space](https://pixeli.pebbly.space/),
+  with a pin-board gallery.** Running text is set in Pixelify Sans, headings
+  stay in Press Start 2P, and every page carries a canonical link to the
+  deployed address. A new footer links the site, the plugin's docs and
+  pebbly, signed with the pebbly logo redrawn in pixels. The home page's
+  newest pieces and the gallery share one full-width wall. The gallery spans the
+  whole screen in up to six masonry columns. Cards are drawn like pixel game
+  cards — a stepped pixel frame, a name plate with the score as a gem, the
+  art in its own framed window, a text plate — over a blurred glow of the
+  art itself; benchmark cards share the design. Art everywhere fills its
+  width edge to edge with the height following, and only art too wide to
+  reach a minimum height gets space above and below. Images, the compare
+  slider and grid tiles open full screen; page changes cross-fade through
+  the View Transitions API, and a piece's art moves from its card to its
+  page.
+
+- **`draw` kind `grid` — draw by writing the picture.** A legend (one
+  character → colour, `.` transparent) and rows of text, one character per
+  pixel, compiled on the server into ordinary draw ops. The model sees the
+  whole silhouette while it writes it instead of composing it from shapes.
+  `transparent: "erase"` (default) makes the rectangle exactly the grid;
+  `"skip"` stamps over existing art. Ragged rows and undeclared characters are
+  refused with their row and column. See ADR-0010.
+- **`look` op `ascii` is the readable half of that round trip.** It now returns
+  `gridRows` and `origin` alongside `legend`, and `rulers: false` prints the
+  bare rows: read a layer, edit the rows, send them back as a grid at the same
+  origin. The `draw`, `fix` and `animate` skills use this for pixel-level
+  edits and for redrawing a part from one key pose to the next.
 
 - **Benchmark: craft ratings and run metrics.** A generation can carry blind
   `ratings` — one per judge, 0–4 on `read`, `form`, `motion`, `cohesion` and
@@ -41,6 +86,34 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- **`frame reorder` keeps a tag that covers only the moved frame.** Deleting
+  the original frame took such a tag with it; it is now rebuilt with its name,
+  colour, direction and repeats.
+- **Erasing on an indexed sprite writes its transparent index.** Region and
+  selection `clear` — and so every `.` in a `grid` — wrote index 0, which is
+  opaque on a sprite whose transparent index is something else.
+- **`draw` `selectionOnly` clipped only `pixels`.** The schema promised every
+  op; `rect`, `line`, `polyline`, `ellipse`, `fill`, `replace`, `dither`,
+  `gradient`, `clear` and `blit` painted straight through the selection. The
+  clip now lives in the one function every primitive writes through, so a new
+  op cannot miss it, and a contiguous `fill` no longer spreads across the
+  selection edge.
+- **`frame` op `reorder` always failed** with `command 'MoveFrame' not found`
+  — Aseprite 1.3 has no such command. It now moves the frame's cels and
+  duration to `toIndex` through the sprite API and leaves tag ranges where
+  they were.
+- **`draw` op `fill` ignored `tolerance`.** Every fill was exact. On RGB
+  sprites `tolerance` is now the largest per-channel difference still counted
+  as the clicked colour; indexed and grayscale fills stay exact.
+- **`look` ops `onion` and `filmstrip` ignored `layer`.** Over an opaque
+  background the target frame covered every ghost, so onion skin of a moving
+  prop in a scene showed nothing. Both now render only the named layer when
+  one is given.
+- **`export` ignored `layers` and `tags`.** Both were in the schema and never
+  read, so every export wrote every layer and frame. `layers` now limits png,
+  gif, frames and spritesheet to those layers; `tags` limits gif, frames and
+  spritesheet to the frames the tags cover. `aseprite` (and `png` for `tags`)
+  refuses them instead of ignoring them.
 - **`look` op `ascii`/`diff` with `layer` read the composite.** The layer was
   passed through but the read stayed flattened, so a per-layer diff silently
   diffed the whole image. Naming a layer now reads that layer's cel.

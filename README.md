@@ -299,6 +299,11 @@ frame-to-frame diff and a side-by-side against the reference it is drawing
 from. `validate` then checks the sprite mechanically before
 anything is called done.
 
+🔤 **It can write pixels as text.** A `draw` `grid` is the sprite typed out row
+by row — one character per pixel, a legend for the colours — the same format
+`look` returns. The agent reads the canvas, edits the rows and draws them back,
+instead of guessing coordinates for forty separate shapes.
+
 🛡️ **It can't quietly wreck your file.** With Aseprite detached, every tool
 refuses immediately instead of timing out — because an agent that "recovers" by
 editing the `.aseprite` on disk makes changes you never see, and your next save
@@ -320,9 +325,27 @@ silhouette, outlines, animation timing, layer rigging, the review checklist.
 Skills point at rules instead of restating them, so each rule has exactly one
 place to be wrong.
 
+```mermaid
+flowchart LR
+  A[Your agent] -- MCP over stdio --> S[MCP server]
+  S -- ws :9932 --> B[Bridge]
+  B -- ws :9931 --> E[Aseprite extension]
+  E --> D[(Open document)]
+  S -. headless .-> H[aseprite -b]
 ```
-your agent  ──stdio/MCP──▶  server  ──ws:9932──▶  bridge  ──ws:9931──▶  Aseprite
-```
+
+What one drawing turn goes through:
+
+| Stage | Tool | What happens |
+|---|---|---|
+| Check | `preflight`, `sprite_info` | Refuses unless Aseprite is attached; reads layers, frames, palette |
+| Draw | `draw` | Shapes, fills, dithers — or a `grid`: pixels typed as text rows with a legend |
+| Look | `look` | Upscaled preview to judge the read; `ascii` returns the same text grid, so the agent can edit it and draw it back |
+| Fix | `recolor`, `transform`, `select` | Palette-legal edits scoped to a region or selection |
+| Check again | `validate` | Off-palette colours, stray pixels, broken outlines, banding |
+| Ship | `export` | PNG, GIF, spritesheet + atlas, per layer or per tag |
+
+Each call is one transaction — one Ctrl+Z for you.
 
 Aseprite's Lua WebSocket can only be a client, so a small bridge holds the
 listening socket. It runs as its own process: restarting the MCP server — which
@@ -336,34 +359,19 @@ threat model in [SECURITY.md](SECURITY.md).
 
 ## 🖼️ More, drawn the same way
 
-<div align="center">
-
-<img src="docs/media/hero2.gif" alt="A pixel robot at an easel paints a landscape stroke by stroke under a pendant lamp" width="768">
-
-<sub>🤖 192×96, 54 frames, one palette. The paint appears under the brush, every
-frame. Then the robot wipes the canvas clean and starts again — which is why the
-loop has no seam.</sub>
-
-<br><br>
-
-<img src="docs/media/harbour.gif" alt="A pixel-art harbour at night: a lighthouse beam sweeps over the water, windows flicker, smoke drifts from a chimney" width="768">
-
-<sub>⚓ 256×144, 28 frames, ten layers. Only six of them move — beam, windows,
-water, smoke, boat, stars — each on its own cycle length, which keeps an ambient
-loop from feeling mechanical.</sub>
-
-</div>
+Everything else people have drawn with the plugin — prompts, models and source
+files included — hangs at **[pixeli.pebbly.space](https://pixeli.pebbly.space/)**.
 
 ### Who drew what
 
 | Art | Model |
 |---|---|
 | ☔ Rainy bookshop (hero, `docs/media/rainy-bookshop.gif`) | Claude Opus 5.5 |
-| 🤖 Robot at the easel (`docs/media/hero2.gif`) | Claude Fable 5.1 |
-| ⚓ Night harbour (`docs/media/harbour.gif`) | Codex CLI, `gpt-5.6-terra`, high reasoning |
 | 🐾 Mascot (`docs/media/mascot.png`) | Codex CLI, `gpt-5.6-terra`, high reasoning |
 
 ## 🗂️ The gallery and the benchmark
+
+**See them at [pixeli.pebbly.space](https://pixeli.pebbly.space/).**
 
 Every sprite people make with the plugin can go into [`gallery/`](gallery/):
 the `.aseprite` source, a cover, the animation, and exactly how it was made —
@@ -385,7 +393,7 @@ request. The rules are in [gallery/README.md](gallery/README.md); the design is
 
 The repository is a pnpm workspace run by turborepo: the plugin is the root
 package, [`gallery/`](gallery/) holds the generations, and [`apps/web`](apps/web/)
-is the site.
+is the site, [Pixeli](https://pixeli.pebbly.space/).
 
 ```bash
 pnpm install && pnpm run build
