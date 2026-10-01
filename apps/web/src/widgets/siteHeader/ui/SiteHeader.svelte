@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import GithubIcon from '~icons/pixelarticons/github';
+	import PlusIcon from '~icons/pixelarticons/plus';
 	import { Button, RetroModeSwitcher } from '$shared/ui/8bit';
 	import { REPO_URL } from '$shared/lib/site';
 	import { PEBBLY_MARK } from '$shared/config';
@@ -45,6 +46,12 @@
 			</ul>
 		</nav>
 		<div class="ml-auto flex items-center gap-2">
+			<!-- The one call to action on every page: the gallery only grows through submissions. -->
+			<Button href={resolve('/contribute')} size="sm" class="text-[0.625rem]">
+				<PlusIcon aria-hidden="true" />
+				<span class="hidden sm:inline">Add your art</span>
+				<span class="sr-only sm:hidden">Add your art</span>
+			</Button>
 			<Button href={REPO_URL} variant="ghost" size="sm" rel="noopener" class="text-[0.625rem]">
 				<GithubIcon aria-hidden="true" />
 				<span class="hidden sm:inline">GitHub</span>

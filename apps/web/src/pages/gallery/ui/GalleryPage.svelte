@@ -35,7 +35,10 @@
 <!-- Full width, like a pin board: the wall of art is the page, and a wide screen gets more columns
 rather than wider margins. -->
 <div class="px-4 pt-14 sm:px-6 lg:px-10">
-	<h1 class="text-2xl sm:text-4xl">Gallery</h1>
+	<div class="flex flex-wrap items-center justify-between gap-4">
+		<h1 class="text-2xl sm:text-4xl">Gallery</h1>
+		<Button href={resolve('/contribute')}>Add your art</Button>
+	</div>
 	<p class="text-muted-foreground mt-4 max-w-[62ch] text-lg">
 		Every piece submitted so far, newest first. Open one to see the prompts that made it and download the source.
 	</p>
