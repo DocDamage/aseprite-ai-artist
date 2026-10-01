@@ -1,4 +1,10 @@
-import type { FileRole, GenerationFile } from '@pebbly/gallery';
+import type { Craft, FileRole, GenerationFile, Rating, StepMetrics } from '@pebbly/gallery';
+
+/** Judges' craft scores averaged: `score` 0–1, `axes` means 0–4. */
+export type CraftView = Craft;
+/** One judge's blind 0–4 scores; see gallery/RUBRIC.md. */
+export type RatingView = Rating;
+export type StepMetricsView = StepMetrics;
 
 export interface Score {
 	passed: number;
@@ -73,6 +79,9 @@ export interface GenerationDetail extends GenerationSummary {
 	files: FileView[];
 	validate: { step: number; passed: boolean; score?: number; errors: number; warnings: number }[];
 	results: CriterionResultView[];
+	ratings: RatingView[];
+	craft: CraftView | null;
+	metrics: StepMetricsView[];
 	/** The run's own generation.yaml, verbatim. */
 	yaml: string;
 	githubUrl: string;

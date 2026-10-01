@@ -97,6 +97,16 @@ validate:                                # optional: the `validate` tool's repor
     score: 96                            # optional, 0–100
     errors: 0                            # default 0
     warnings: 1                          # default 0
+metrics:                                 # optional: what each step cost, from the session log
+  - step: 1
+    minutes: 8.8                         # wall time, prompt to final message
+    toolCalls: 42
+    outputTokens: 46596
+    costUsd: 2.79
+ratings:                                 # optional: blind craft scores, see RUBRIC.md
+  - judge: human:ada                     # human:<github login> or model:<model id>
+    scores: { read: 3, form: 2, motion: 3, cohesion: 4, appeal: 2 }   # 0–4 each
+    note: Arcs read well; the coat loses its shading on the recoil frames.
 benchmark:                               # only for benchmark runs
   prompt: boombox-mage                   # a folder name under gallery/prompts/
   revision: 1                            # the prompt's `revision` when you ran it
@@ -122,6 +132,11 @@ benchmark:                               # only for benchmark runs
 - **Exactly one `cover`**, a `.png`, `.gif` or `.webp`.
 - **At least one `.aseprite`/`.ase` with role `source`** — the gallery keeps the
   editable original, not just a picture of it.
+- **Ratings**: one per judge; scores are integers 0–4; `motion` is required
+  when a file has role `animation` and forbidden otherwise; a `model:` judge
+  cannot be one of the run's `models`. How to score: [RUBRIC.md](RUBRIC.md).
+- **Metrics**: at most one entry per step, and the step must exist. They are
+  shown, never ranked.
 - **No duplicates**: a model, a file path (compared case-insensitively) or a
   `validate` step listed twice is an error; `step` numbers must exist.
 - **File names**: no `__` prefix (the site reserves it) and no Windows-reserved

@@ -1,3 +1,3 @@
 // Cross-import API for `entities/benchmark`: what a benchmark may name from a generation.
-export type { FileView, Score } from '../model/types';
+export type { CraftView, FileView, Score } from '../model/types';
 export { default as ScoreMeter } from '../ui/ScoreMeter.svelte';

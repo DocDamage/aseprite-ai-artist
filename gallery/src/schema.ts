@@ -159,6 +159,45 @@ export const validateReportSchema = z.strictObject({
   warnings: z.int().nonnegative().default(0),
 });
 
+/**
+ * Craft axes, scored 0–4 against the anchors in gallery/RUBRIC.md. Criteria
+ * answer "did it do what the brief said"; these answer "is it good".
+ */
+export const craftAxes = ['read', 'form', 'motion', 'cohesion', 'appeal'] as const;
+export type CraftAxis = (typeof craftAxes)[number];
+
+const axisScore = z.int().min(0).max(4);
+
+export const ratingSchema = z.strictObject({
+  /**
+   * Who scored it: `human:<github login>` or `model:<model id>`. A model never
+   * rates a run it took part in — that is grading its own homework.
+   */
+  judge: z
+    .string()
+    .regex(/^(?:human:[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})|model:[A-Za-z0-9][\w.:/-]*)$/, 'human:<github login> or model:<model id>'),
+  scores: z.strictObject({
+    read: axisScore,
+    form: axisScore,
+    /** Required when the run has an animation; absent for a still. */
+    motion: axisScore.optional(),
+    cohesion: axisScore,
+    appeal: axisScore,
+  }),
+  note: line.optional(),
+});
+
+/** What a step cost to run, read from the harness's session log. Shown, never ranked. */
+export const stepMetricsSchema = z.strictObject({
+  step: z.int().positive(),
+  /** Wall time from the prompt to the model's final message. */
+  minutes: z.number().positive().optional(),
+  toolCalls: z.int().nonnegative().optional(),
+  outputTokens: z.int().nonnegative().optional(),
+  /** Model cost in US dollars as the harness reports it. */
+  costUsd: z.number().nonnegative().optional(),
+});
+
 export const generationSchema = z
   .strictObject({
     title: line,
@@ -183,6 +222,9 @@ export const generationSchema = z
     tags: z.array(line).default([]),
     files: z.array(generationFileSchema).min(1),
     validate: z.array(validateReportSchema).default([]),
+    /** Blind craft scores from judges who did not take part in the run. */
+    ratings: z.array(ratingSchema).default([]),
+    metrics: z.array(stepMetricsSchema).default([]),
     /** Present only when the run followed a benchmark prompt's fixed setup exactly. */
     benchmark: z
       .strictObject({
@@ -277,6 +319,39 @@ export const generationSchema = z
         ctx.addIssue({ code: 'custom', path: ['validate', index, 'step'], message: `step ${report.step} does not exist` });
       }
     });
+
+    const judges = new Set<string>();
+    // A run is animated when it ships an animation, a filmstrip or any GIF —
+    // the cover is often the animation itself rather than a separate file.
+    const animated = generation.files.some(
+      (file) => file.role === 'animation' || file.role === 'filmstrip' || /\.gif$/i.test(file.path),
+    );
+    generation.ratings.forEach((rating, index) => {
+      if (judges.has(rating.judge)) {
+        ctx.addIssue({ code: 'custom', path: ['ratings', index, 'judge'], message: `${rating.judge} already rated this run` });
+      }
+      judges.add(rating.judge);
+      if (rating.judge.startsWith('model:') && models.has(rating.judge.slice('model:'.length))) {
+        ctx.addIssue({ code: 'custom', path: ['ratings', index, 'judge'], message: 'a model cannot rate a run it took part in' });
+      }
+      if (animated && rating.scores.motion === undefined) {
+        ctx.addIssue({ code: 'custom', path: ['ratings', index, 'scores', 'motion'], message: 'the run has an animation, so score its motion' });
+      }
+      if (!animated && rating.scores.motion !== undefined) {
+        ctx.addIssue({ code: 'custom', path: ['ratings', index, 'scores', 'motion'], message: 'the run ships no animation, filmstrip or GIF, so there is no motion to score' });
+      }
+    });
+
+    const meteredSteps = new Set<number>();
+    generation.metrics.forEach((metrics, index) => {
+      if (meteredSteps.has(metrics.step)) {
+        ctx.addIssue({ code: 'custom', path: ['metrics', index, 'step'], message: `step ${metrics.step} already has metrics` });
+      }
+      meteredSteps.add(metrics.step);
+      if (metrics.step > generation.steps.length) {
+        ctx.addIssue({ code: 'custom', path: ['metrics', index, 'step'], message: `step ${metrics.step} does not exist` });
+      }
+    });
   });
 
 export type PromptInput = z.input<typeof promptSchema>;
@@ -285,3 +360,5 @@ export type GenerationInput = z.input<typeof generationSchema>;
 export type GenerationFile = z.output<typeof generationSchema>;
 export type GenerationFileEntry = z.output<typeof generationFileSchema>;
 export type FileRole = (typeof fileRoles)[number];
+export type Rating = z.output<typeof ratingSchema>;
+export type StepMetrics = z.output<typeof stepMetricsSchema>;

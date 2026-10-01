@@ -45,9 +45,26 @@ matrix. How the store works:
   frame against it.
 - The model's own `validate` output (findings, `passed`, `score`) and its
   final review report, verbatim.
+- From the harness's session log: wall time, tool calls, output tokens and
+  cost per step — they go in `metrics`.
 
 Run through `rules://07-review-checklist` too, and put anything ticked "no" in
 the criterion's note rather than silently passing it.
+
+## How a run is scored
+
+Three numbers, kept apart because they answer different questions:
+
+| | Question | Who decides | Ranks? |
+|---|---|---|---|
+| **Compliance** | Did it do what the brief said? | Pass/fail per criterion, checked with the tool each criterion names | First |
+| **Craft** | Is it good? | Blind judges, 0–4 on `read`, `form`, `motion`, `cohesion`, `appeal` against the anchors in [RUBRIC.md](../../gallery/RUBRIC.md) | Breaks ties |
+| **Cost** | What did it take? | The session log: minutes, tool calls, tokens, dollars | Shown only |
+
+Compliance alone rewards a model that ticks boxes with ugly art; craft alone
+rewards one that ignores the brief. Rate a run after it is recorded, without
+looking at its `models` line, and never with a model that took part in it —
+the checker refuses that.
 
 ## Related
 

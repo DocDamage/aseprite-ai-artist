@@ -15,6 +15,7 @@
 		Table
 	} from '$shared/ui/8bit';
 	import { plural } from '$shared/lib/format';
+	import { RUBRIC_URL } from '$shared/lib/site';
 	import { FileImage, ScoreMeter } from '$entities/generation';
 	import type { BenchmarksPageData } from '../model/types';
 
@@ -54,6 +55,10 @@
 		<p class="text-muted-foreground mt-2 text-sm">
 			Each model's best score per benchmark, averaged over the benchmarks it has been run on.
 		</p>
+		<p class="text-muted-foreground mt-1 text-sm">
+			Compliance ranks first; craft, judged 0–4 on five axes, breaks ties.
+			<a href={RUBRIC_URL} class="underline underline-offset-4" rel="noopener">Read the rubric</a>.
+		</p>
 		{#if leaderboard.length > 0}
 			<div class="mt-6 overflow-x-auto px-2 pb-2">
 				<Table.Root font="normal" containerClass="w-full min-w-max" class="text-sm">
@@ -63,6 +68,7 @@
 							<Table.Head class="retro w-12 text-[0.625rem]">#</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Model</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Score</Table.Head>
+							<Table.Head class="retro text-[0.625rem]">Craft</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Coverage</Table.Head>
 							<Table.Head class="retro text-right text-[0.625rem]">Runs</Table.Head>
 						</Table.Row>
@@ -84,6 +90,9 @@
 											aria-label="Mean best score {Math.round(entry.score * 100)} percent"
 										/>
 									</span>
+								</Table.Cell>
+								<Table.Cell class="retro text-xs tabular-nums">
+									{#if entry.craft === null}<span class="text-muted-foreground" aria-label="Unrated">—</span>{:else}{Math.round(entry.craft * 100)}%{/if}
 								</Table.Cell>
 								<Table.Cell class="tabular-nums">{entry.benchmarks}/{total} benchmarks</Table.Cell>
 								<Table.Cell class="text-right tabular-nums">{entry.runs}</Table.Cell>

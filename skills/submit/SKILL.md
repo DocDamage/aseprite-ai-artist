@@ -155,6 +155,15 @@ Rules that fail the check when missed:
 - `step` values and `validate[].step` are 1-based and must exist.
 - `benchmark.results` names criterion ids that exist in the prompt.
 
+Two optional blocks:
+
+- `metrics` — per step, from the session you can see: `minutes`, `toolCalls`,
+  `outputTokens`, `costUsd`. Fill only what the harness actually reports;
+  never estimate.
+- `ratings` — leave them out. You took part in this run, and the checker
+  refuses `model:<id>` for any of the run's own models. Judges add ratings
+  later, blind, against `gallery/RUBRIC.md`.
+
 **Show the user the final YAML and the file list**, and wait for a go-ahead.
 They are about to publish it under their name.
 

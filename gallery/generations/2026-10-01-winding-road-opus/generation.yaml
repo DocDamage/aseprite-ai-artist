@@ -97,6 +97,17 @@ validate:
     score: 100
     errors: 0
     warnings: 0
+metrics:
+  - step: 1
+    minutes: 21.1
+    toolCalls: 71
+    outputTokens: 111950
+    costUsd: 6.04
+  - step: 2
+    minutes: 22.7
+    toolCalls: 96
+    outputTokens: 90816
+    costUsd: 6.41
 benchmark:
   prompt: winding-road
   revision: 1

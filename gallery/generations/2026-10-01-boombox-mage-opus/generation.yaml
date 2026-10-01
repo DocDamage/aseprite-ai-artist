@@ -99,6 +99,17 @@ validate:
     score: 70
     errors: 0
     warnings: 6
+metrics:
+  - step: 1
+    minutes: 8.8
+    toolCalls: 42
+    outputTokens: 46596
+    costUsd: 2.79
+  - step: 2
+    minutes: 15.6
+    toolCalls: 73
+    outputTokens: 84230
+    costUsd: 5.01
 benchmark:
   prompt: boombox-mage
   revision: 1

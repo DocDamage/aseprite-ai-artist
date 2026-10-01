@@ -21,6 +21,7 @@ export function benchmarkView(benchmark: Benchmark, prompt: PromptView): Benchma
 			modelLabel: cell.modelLabel,
 			plugin: cell.plugin,
 			best: cell.best,
+			craft: cell.craft,
 			runs: cell.runs.map((run) => ({
 				id: run.id,
 				title: run.title,
@@ -89,6 +90,7 @@ export function leaderboardView(leaderboard: Gallery['leaderboard']): Leaderboar
 	return leaderboard.map((entry) => ({
 		modelLabel: entry.modelLabel,
 		score: entry.score,
+		craft: entry.craft,
 		benchmarks: entry.benchmarks,
 		runs: entry.runs
 	}));

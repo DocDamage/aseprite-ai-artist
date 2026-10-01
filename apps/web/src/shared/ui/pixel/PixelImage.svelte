@@ -36,7 +36,7 @@
 </script>
 
 <div
-	class={cn('flex w-full min-w-0 items-center justify-center justify-self-stretch overflow-x-auto', className)}
+	class={cn('flex w-full min-w-0 items-center justify-self-stretch overflow-x-auto', className)}
 	bind:clientWidth={available}
 >
 	{#if size}
@@ -47,7 +47,7 @@
 			height={size.height}
 			loading={eager ? 'eager' : 'lazy'}
 			decoding="async"
-			class="pixelated block max-w-none shrink-0"
+			class="pixelated mx-auto block max-w-none shrink-0"
 		/>
 	{:else}
 		<img {src} {alt} loading={eager ? 'eager' : 'lazy'} decoding="async" class="pixelated block w-full" />

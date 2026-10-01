@@ -132,6 +132,9 @@ export function detail(generation: Generation, prompts: Prompt[]): GenerationDet
 				...(criterion ? { text: criterion.text, step: criterion.step } : {})
 			};
 		}),
+		ratings: generation.ratings,
+		craft: generation.craft,
+		metrics: generation.metrics,
 		yaml: readFileSync(join(gallery().root, 'generations', generation.id, 'generation.yaml'), 'utf8'),
 		githubUrl: `${REPO_URL}/tree/main/gallery/generations/${generation.id}`
 	};

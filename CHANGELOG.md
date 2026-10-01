@@ -8,6 +8,13 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Benchmark: craft ratings and run metrics.** A generation can carry blind
+  `ratings` — one per judge, 0–4 on `read`, `form`, `motion`, `cohesion` and
+  `appeal` against the anchors in `gallery/RUBRIC.md` — and per-step
+  `metrics` (minutes, tool calls, output tokens, cost). Compliance still ranks
+  first; craft breaks ties and has its own column; cost is shown, never
+  ranked. The checker refuses a model rating a run it took part in and a
+  missing `motion` score on an animated run.
 - **Gallery: `references` on every generation.** Required, no default:
   `source` (`none`, `generated` by an image model, or `supplied` by the
   author), `imageModels`, `kinds` (concept-sheet, storyboard, …) and the

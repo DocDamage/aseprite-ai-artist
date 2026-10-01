@@ -345,3 +345,60 @@ test('a benchmark run from someone outside MAINTAINERS is refused; a free genera
     cleanup();
   }
 });
+
+const STILL = { read: 3, form: 2, cohesion: 4, appeal: 3 };
+
+test('craft breaks a compliance tie and averages judges over their axes', () => {
+  const { root, cleanup } = makeRepo({
+    // Same compliance (1/2) for every model; only craft separates them.
+    '2026-09-29-a': generation({ models: ['model-x'], ratings: [{ judge: 'human:tester', scores: { read: 1, form: 1, cohesion: 1, appeal: 1 } }] }),
+    '2026-09-29-b': generation({
+      models: ['model-y'],
+      ratings: [
+        { judge: 'human:tester', scores: STILL },
+        { judge: 'model:model-z', scores: { read: 4, form: 4, cohesion: 4, appeal: 4 } },
+      ],
+    }),
+    '2026-09-29-c': generation({ models: ['model-w'] }),
+  });
+  try {
+    const result = inspectGallery(root);
+    assert.deepEqual(errorsOf(result), []);
+    const y = result.gallery.generations.find((g) => g.id === '2026-09-29-b')!.craft!;
+    assert.equal(y.judges, 2);
+    assert.equal(y.score, (12 / 16 + 1) / 2);
+    assert.equal(y.axes.read, 3.5);
+    assert.equal(y.axes.motion, undefined, 'no judge scored motion on a still');
+    assert.deepEqual(
+      result.gallery.leaderboard.map((entry) => [entry.modelLabel, entry.craft]),
+      [['model-y', (12 / 16 + 1) / 2], ['model-x', 0.25], ['model-w', null]],
+      'unrated ranks below a low rating',
+    );
+  } finally {
+    cleanup();
+  }
+});
+
+test('a model cannot rate its own run, and an animation needs a motion score', () => {
+  const { root, cleanup } = makeRepo(
+    {
+      '2026-09-29-a': generation({ ratings: [{ judge: 'model:model-x', scores: STILL }] }),
+      '2026-09-29-b': generation({
+        files: [
+          { path: 'cover.png', role: 'cover' },
+          { path: 'knight.aseprite', role: 'source' },
+          { path: 'anim.gif', role: 'animation' },
+        ],
+        ratings: [{ judge: 'human:tester', scores: STILL }],
+      }),
+    },
+    { '2026-09-29-b': { 'anim.gif': Buffer.from('GIF89a\0\0') } },
+  );
+  try {
+    const errors = errorsOf(inspectGallery(root));
+    assert.ok(errors.some((message) => message.includes('cannot rate a run it took part in')));
+    assert.ok(errors.some((message) => message.includes('score its motion')));
+  } finally {
+    cleanup();
+  }
+});

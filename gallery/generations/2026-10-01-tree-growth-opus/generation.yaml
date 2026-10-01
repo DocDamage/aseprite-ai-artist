@@ -97,6 +97,17 @@ validate:
     score: 65
     errors: 0
     warnings: 7
+metrics:
+  - step: 1
+    minutes: 8
+    toolCalls: 40
+    outputTokens: 38860
+    costUsd: 2.53
+  - step: 2
+    minutes: 12.9
+    toolCalls: 57
+    outputTokens: 69092
+    costUsd: 4.1
 benchmark:
   prompt: tree-growth
   revision: 1

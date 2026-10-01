@@ -12,5 +12,8 @@ export type {
 	CriterionResultView,
 	GenerationSummary,
 	GenerationDetail,
-	Facets
+	Facets,
+	CraftView,
+	RatingView,
+	StepMetricsView
 } from './model/types';

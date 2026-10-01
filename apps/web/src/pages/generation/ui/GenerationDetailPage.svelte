@@ -14,6 +14,8 @@
 	import GenerationFiles from './GenerationFiles.svelte';
 	import MoreViews from './MoreViews.svelte';
 	import ValidateReports from './ValidateReports.svelte';
+	import CraftRatings from './CraftRatings.svelte';
+	import RunMetrics from './RunMetrics.svelte';
 
 	interface Props {
 		data: GenerationPageData;
@@ -228,6 +230,11 @@
 			</div>
 		</section>
 	{/if}
+
+	<section class="mt-16 flex min-w-0 flex-col gap-12">
+		<CraftRatings ratings={g.ratings} craft={g.craft} />
+		<RunMetrics metrics={g.metrics} />
+	</section>
 
 	<div class="mt-16">
 		<MoreViews generation={g} />

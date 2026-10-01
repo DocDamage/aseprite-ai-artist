@@ -4,11 +4,14 @@ import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
 import type { z } from 'zod';
 import {
+  craftAxes,
   generationSchema,
   promptSchema,
+  type CraftAxis,
   type GenerationFile,
   type GenerationFileEntry,
   type PromptFile,
+  type Rating,
 } from './schema.ts';
 
 /** GitHub rejects a push containing any file over 100 MiB; stay clear of it. */
@@ -54,6 +57,15 @@ export interface Score {
   total: number;
 }
 
+/** Judges' craft scores for one run, averaged. */
+export interface Craft {
+  /** Mean over judges of each judge's mean axis score, scaled to 0–1. */
+  score: number;
+  /** Per-axis mean over the judges, 0–4. An axis no judge scored is absent. */
+  axes: Partial<Record<CraftAxis, number>>;
+  judges: number;
+}
+
 export interface Generation extends Omit<GenerationFile, 'files'> {
   id: string;
   files: StoredFile[];
@@ -67,6 +79,8 @@ export interface Generation extends Omit<GenerationFile, 'files'> {
   score: Score | null;
   /** True when the run used an older revision of its benchmark prompt. */
   outdated: boolean;
+  /** Null until someone rates the run. */
+  craft: Craft | null;
 }
 
 export interface BenchmarkCell {
@@ -75,6 +89,8 @@ export interface BenchmarkCell {
   /** Best run first. */
   runs: Generation[];
   best: Score;
+  /** Craft of the best run (the one the cell shows); null when it is unrated. */
+  craft: Craft | null;
 }
 
 export interface Benchmark {
@@ -107,6 +123,11 @@ export interface LeaderboardEntry {
    * all-failed, so one easy win cannot outrank a model that ran everything.
    */
   score: number;
+  /**
+   * Mean craft score, 0–1, over the benchmarks where the model's best cell is
+   * rated; null when none is. Second key of the ranking, after `score`.
+   */
+  craft: number | null;
   /** Benchmarks with at least one ranked run, out of `Gallery.benchmarks.length`. */
   benchmarks: number;
   runs: number;
@@ -225,7 +246,7 @@ export function inspectGallery(root: string = DEFAULT_GALLERY_ROOT): LoadResult 
           ? ' · supplied reference'
           : '';
     const modelLabel = [...new Set(data.models)].sort().join(' + ') + pipeline;
-    generations.push({ ...data, id, files, cover, modelLabel, score, outdated });
+    generations.push({ ...data, id, files, cover, modelLabel, score, outdated, craft: craftOf(data.ratings) });
   }
 
   generations.sort((a, b) => (a.date === b.date ? b.id.localeCompare(a.id) : b.date.localeCompare(a.date)));
@@ -446,14 +467,18 @@ function buildLeaderboard(benchmarks: Benchmark[]): LeaderboardEntry[] {
     for (const cell of benchmark.cells) {
       let entry = byModel.get(cell.modelLabel);
       if (!entry) {
-        entry = { modelLabel: cell.modelLabel, score: 0, benchmarks: 0, runs: 0, best: {} };
+        entry = { modelLabel: cell.modelLabel, score: 0, craft: null, benchmarks: 0, runs: 0, best: {} };
         byModel.set(cell.modelLabel, entry);
       }
       entry.runs += cell.runs.length;
       // A model can hold several cells on one benchmark (one per plugin version);
       // its standing there is its best one.
       const held = entry.best[benchmark.prompt.id];
-      if (!held || ratio(cell.best) > ratio(held.best)) entry.best[benchmark.prompt.id] = cell;
+      const better =
+        !held ||
+        ratio(cell.best) > ratio(held.best) ||
+        (ratio(cell.best) === ratio(held.best) && craftScore(cell.craft) > craftScore(held.craft));
+      if (better) entry.best[benchmark.prompt.id] = cell;
     }
   }
   const entries = [...byModel.values()];
@@ -462,8 +487,36 @@ function buildLeaderboard(benchmarks: Benchmark[]): LeaderboardEntry[] {
     entry.benchmarks = cells.length;
     const passed = cells.reduce((sum, cell) => sum + cell.best.passed, 0);
     entry.score = suiteCriteria === 0 ? 0 : passed / suiteCriteria;
+    const rated = cells.filter((cell) => cell.craft !== null);
+    entry.craft = rated.length === 0 ? null : rated.reduce((sum, cell) => sum + cell.craft!.score, 0) / rated.length;
   }
-  return entries.sort((a, b) => b.score - a.score || b.benchmarks - a.benchmarks || a.modelLabel.localeCompare(b.modelLabel));
+  return entries.sort(
+    (a, b) =>
+      b.score - a.score ||
+      craftScore(b.craft) - craftScore(a.craft) ||
+      b.benchmarks - a.benchmarks ||
+      a.modelLabel.localeCompare(b.modelLabel),
+  );
+}
+
+/** Unrated sorts below any rating, including a 0. */
+function craftScore(craft: Craft | number | null): number {
+  if (craft === null) return -1;
+  return typeof craft === 'number' ? craft : craft.score;
+}
+
+function craftOf(ratings: Rating[]): Craft | null {
+  if (ratings.length === 0) return null;
+  const axes: Partial<Record<CraftAxis, number>> = {};
+  for (const axis of craftAxes) {
+    const given = ratings.flatMap((rating) => (rating.scores[axis] === undefined ? [] : [rating.scores[axis]]));
+    if (given.length > 0) axes[axis] = given.reduce((sum, value) => sum + value, 0) / given.length;
+  }
+  const perJudge = ratings.map((rating) => {
+    const values = Object.values(rating.scores);
+    return values.reduce((sum, value) => sum + value, 0) / values.length / 4;
+  });
+  return { score: perJudge.reduce((sum, value) => sum + value, 0) / perJudge.length, axes, judges: ratings.length };
 }
 
 function buildBenchmark(prompt: Prompt, generations: Generation[], releases: PluginRelease[]): Benchmark {
@@ -476,15 +529,18 @@ function buildBenchmark(prompt: Prompt, generations: Generation[], releases: Plu
     const key = `${run.modelLabel}\u0000${run.plugin}`;
     let cell = cellsByKey.get(key);
     if (!cell) {
-      cell = { modelLabel: run.modelLabel, plugin: run.plugin, runs: [], best: { passed: 0, total: 0 } };
+      cell = { modelLabel: run.modelLabel, plugin: run.plugin, runs: [], best: { passed: 0, total: 0 }, craft: null };
       cellsByKey.set(key, cell);
     }
     cell.runs.push(run);
   }
   const cells = [...cellsByKey.values()];
   for (const cell of cells) {
-    cell.runs.sort((a, b) => ratio(b.score!) - ratio(a.score!) || b.date.localeCompare(a.date));
+    cell.runs.sort(
+      (a, b) => ratio(b.score!) - ratio(a.score!) || craftScore(b.craft) - craftScore(a.craft) || b.date.localeCompare(a.date),
+    );
     cell.best = cell.runs[0]!.score!;
+    cell.craft = cell.runs[0]!.craft;
   }
 
   const releaseOrder = new Map(releases.map((release, index) => [release.version, index]));

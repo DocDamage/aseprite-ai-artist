@@ -44,7 +44,7 @@
 		</p>
 	{:else}
 		<p class="text-muted-foreground mt-2 text-sm">
-			Rows are models, strongest first; columns are plugin versions, newest first. Each cell is the best run's score.
+			Rows are models, strongest first; columns are plugin versions, newest first. Each cell is the best run's score and its craft rating.
 		</p>
 		<div class="mt-5 overflow-x-auto px-2 pb-2">
 			<Table.Root font="normal" containerClass="w-full min-w-max" class="text-sm">
@@ -67,6 +67,14 @@
 									{#if cell}
 										<a href={resolve('/g/[id]', { id: cell.runs[0]!.id })} class="flex w-fit flex-col gap-1 hover:underline">
 											<ScoreMeter score={cell.best} />
+											{#if cell.craft}
+												<span class="text-xs tabular-nums">
+													<span class="retro text-[0.625rem]">{Math.round(cell.craft.score * 100)}%</span> craft
+													<span class="text-muted-foreground">({plural(cell.craft.judges, 'judge')})</span>
+												</span>
+											{:else}
+												<span class="text-muted-foreground text-xs">unrated</span>
+											{/if}
 											<span class="text-muted-foreground text-xs">{plural(cell.runs.length, 'run')}</span>
 										</a>
 									{:else}
