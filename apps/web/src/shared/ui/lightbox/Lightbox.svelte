@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import CloseIcon from '~icons/pixelarticons/close';
+	import { Button } from '$shared/ui/8bit';
 
 	interface Props {
 		open: boolean;
@@ -58,14 +59,12 @@
 				<div class="text-foreground mx-auto mt-4 max-w-3xl text-center text-sm">{@render caption()}</div>
 			{/if}
 		</div>
-		<button
-			type="button"
-			class="bg-background/60 hover:bg-background/80 border-foreground/60 dark:border-ring absolute top-4 right-4 grid size-12 place-items-center pixel-notch border-2 backdrop-blur-md"
-			aria-label="Close"
-			onclick={() => (open = false)}
-		>
-			<CloseIcon aria-hidden="true" />
-		</button>
+		<!-- The site's own pixel button, the same one as every other icon control. -->
+		<div class="absolute top-4 right-4">
+			<Button variant="outline" size="icon" aria-label="Close" onclick={() => (open = false)}>
+				<CloseIcon aria-hidden="true" />
+			</Button>
+		</div>
 	</dialog>
 {/if}
 
