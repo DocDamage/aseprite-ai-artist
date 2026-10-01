@@ -13,11 +13,9 @@ The document on your screen, one pixel at a time — and every step is one Ctrl+
 [![CI](https://github.com/with-pebbly/aseprite-ai-artist/actions/workflows/ci.yml/badge.svg)](https://github.com/with-pebbly/aseprite-ai-artist/actions/workflows/ci.yml)
 [![licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
-<sub>☔ 500×400 · 72 frames · 20 layers · one 50-colour palette — drawn by <b>Claude Opus 5.5</b> through this server.<br>
-Rain, wind, lightning, a raccoon stealing a cola, and a reader who sips her coffee and turns the page.<br>
-Every moving part runs on a cycle that divides the loop, so it never seams.</sub>
+<sub>☔ 500×400 · 72 frames · 20 layers — drawn by <b>Claude Opus 5.5</b> through this server.</sub>
 
-**[Install](#-get-started-in-three-steps)** · **[Skills](#-the-skills-and-how-to-use-them)** · **[Models](#-which-model-should-hold-the-brush)** · **[How it works](#-under-the-hood)**
+**[Install](#-install)** · **[How it draws](#-how-it-draws)** · **[Skills](#-skills)** · **[Gallery](https://pixeli.pebbly.space/)**
 
 </div>
 
@@ -25,404 +23,191 @@ Every moving part runs on a cycle that divides the loop, so it never seams.</sub
 
 ## ✨ What it feels like
 
-You type a sentence:
-
 > *"Draw me a 32×32 knight in the PICO-8 palette, then give him a 4-frame idle."*
 
-…and you watch it happen in Aseprite. The agent picks a palette, blocks in a
-silhouette, **stops to look at what it drew**, shades it with hue-shifted ramps,
-splits the knight onto layers, animates him breathing, tags the cycle — and then
-tells you honestly what it had to compromise on.
+You type that, and watch it happen in Aseprite: a palette, a silhouette, shading,
+layers, a breathing idle, a tagged cycle. The agent **looks at its own work**
+after every step, and at the end tells you what it compromised on.
 
-You stay in charge the whole time. Don't like the helmet? Ctrl+Z, or just say so.
+You stay in charge. Don't like the helmet? Ctrl+Z, or just say so.
 
-It works with **Claude Code, omp, Codex CLI, Gemini CLI, Cursor, VS Code and
-Windsurf** — one config line each.
+Works with **Claude Code, omp, Codex CLI, Gemini CLI, Cursor, VS Code and
+Windsurf**. Best results so far: **Claude Opus 5.5**.
 
-> [!TIP]
-> **Recommended model: Claude Opus 5.5.** Right now it's the best brush we've
-> handed this server — the scene above is its work.
+## 🚀 Install
 
-## 🚀 Get started in three steps
+You need [Aseprite](https://www.aseprite.org/) 1.3+ and Node 22.6+ (macOS, Linux
+or Windows).
 
-You need [Aseprite](https://www.aseprite.org/) 1.3+ and Node 22.6+ on macOS,
-Linux or Windows. Open Aseprite once before you start, so its config folder
-exists.
-
-### 1. Install the extension
+**1. The Aseprite extension** — then quit and reopen Aseprite:
 
 ```bash
 npx @pebbly/aseprite-ai-artist install-extension
 ```
 
-Then **quit and reopen Aseprite**. It only connects at startup, so an editor that
-was already running will never find the server.
-
-Updating to a new version? Run the same command again — the extension carries
-part of every new feature, and an old one answers new requests with a clear
-"not supported" rather than doing half the job.
-
-### 2. Connect your agent
+**2. Your agent:**
 
 <details open>
-<summary><b>Claude Code</b> — install the plugin, not the bare server</summary>
-
-<br>
+<summary><b>Claude Code</b></summary>
 
 ```
 /plugin marketplace add with-pebbly/aseprite-ai-artist
 /plugin install aseprite@aseprite-ai-artist
 ```
 
-You get the server, the `/aseprite:*` commands, four specialist subagents and the
-preview hooks. Don't also add the server by hand — you'd load every tool twice,
-on every request.
-
 </details>
 
 <details>
-<summary><b>omp</b> — the same plugin, through omp's marketplace</summary>
-
-<br>
+<summary><b>omp</b></summary>
 
 ```bash
 omp plugin marketplace add with-pebbly/aseprite-ai-artist
 omp plugin install aseprite@aseprite-ai-artist
 ```
 
-Same server, skills, subagents and `/aseprite:*` commands as Claude Code; the
-preview hooks come as an omp extension.
-
 </details>
 
 <details>
 <summary><b>Codex, Gemini, Cursor, VS Code, Windsurf</b></summary>
 
-<br>
-
 ```bash
-npx @pebbly/aseprite-ai-artist install codex      # ~/.codex/config.toml
-npx @pebbly/aseprite-ai-artist install gemini     # ~/.gemini/settings.json
-npx @pebbly/aseprite-ai-artist install cursor     # ~/.cursor/mcp.json
-npx @pebbly/aseprite-ai-artist install --all      # all of the above
+npx @pebbly/aseprite-ai-artist install codex      # or gemini, cursor, --all
 ```
 
-Your existing config is backed up first. `--dry-run` shows the change without
-making it; `--project` writes into the repo instead of your home directory.
+Your config is backed up first; `--dry-run` shows the change.
 
 </details>
 
-Restart your agent afterwards so it picks up the new server.
-
-### 3. Check it
+**3. Check it** — restart your agent, then:
 
 ```bash
 npx @pebbly/aseprite-ai-artist doctor
 ```
 
-Ticks all the way down? You're ready. If something's missing, it tells you
-which half — no guessing. More in [docs/INSTALL.md](docs/INSTALL.md).
+All ticks means you're ready. Updating? Run step 1 again. Odd setups (Steam,
+custom folders, Windows paths) are in [docs/INSTALL.md](docs/INSTALL.md).
 
-## 💻 macOS, Linux and Windows
+<details>
+<summary><b>No window? Headless mode</b></summary>
 
-It runs the same on all three. CI builds and tests every commit on
-`macos-latest`, `ubuntu-latest` and `windows-latest`.
-
-| | macOS | Linux | Windows |
-|---|:---:|:---:|:---:|
-| MCP server, bridge, installer, `doctor` | ✅ | ✅ | ✅ |
-| Aseprite extension | ✅ | ✅ | ✅ |
-| Where `install-extension` looks for Aseprite | `~/Library/Application Support/Aseprite` | `$XDG_CONFIG_HOME/aseprite` (default `~/.config/aseprite`), then `~/.aseprite` | `%APPDATA%\Aseprite` |
-
-Steam, itch.io and self-built Aseprite all use the same config folder as their
-platform's standard build. If yours lives somewhere else, point the installer
-at it: set `ASEPRITE_USER_FOLDER`, or pass `--dir <path>`.
-
-On Windows the bridge starts as a hidden background process, so no console
-window pops up while you draw. Both sockets bind `127.0.0.1` only, so Windows
-Firewall has nothing to ask about.
-
-## 🤖 No window? Headless mode
-
-For CI, scripted asset builds or a machine with no display, the server can run
-Aseprite itself, in batch mode, instead of driving an open window:
+For CI or a batch of assets, the server can run Aseprite itself with no window:
 
 ```bash
-npx @pebbly/aseprite-ai-artist install codex --headless   # writes ASEPRITE_AI_HEADLESS=1
 npx @pebbly/aseprite-ai-artist serve --headless --aseprite /path/to/aseprite
 ```
 
-Plugin installs (Claude Code, omp) turn it on with `ASEPRITE_AI_HEADLESS=1` in
-the environment the agent starts from. The executable comes from `--aseprite`,
-then `ASEPRITE_PATH`, then the usual install locations — `doctor` shows which
-one it found. No extension or bridge is needed.
+Nothing is on disk until the agent saves, and it never touches a file your
+editor has open. It is never a fallback: if your window isn't attached, the
+agent asks instead of quietly switching.
 
-It is the same tools on the same command table: one long-lived `aseprite -b`
-keeps your documents open in memory between calls, so the active layer, frame
-and undo history behave exactly as in the editor. Two differences you will
-notice:
+</details>
 
-- **Nothing is on disk until it is saved.** `sprite_manage` `save`/`save_as`
-  and `export` write files; everything else stays in memory and is gone when the
-  server stops. `preflight` says so, so the agent saves before it finishes.
-- **It never touches a file your Aseprite window has open.** If the editor is
-  attached and has that file open, headless `open`, `save` and `save_as` refuse —
-  otherwise your next save there would overwrite the work.
+## 🎨 How it draws
 
-`/aseprite:studio` picks the mode from the request — headless for a batch of
-files or a build step, the window for anything you want to watch — and
-`/aseprite:studio --headless …` (or `--live`) forces it. Under the hood that is
-`preflight mode="headless"`; each side keeps its own documents when you switch.
-It is never a fallback: if your window isn't attached, the agent asks rather
-than quietly going headless. Why, in [ADR-0008](docs/adr/0008-headless-mode.md).
+Ask `/aseprite:studio` for anything and it runs the whole job:
 
-## 🎨 The skills, and how to use them
-
-Skills are the workflows the agent follows — the order an experienced pixel
-artist would work in, written down. They're served to every client under the
-same names:
-
-| Client | How you call a skill |
-|---|---|
-| Claude Code, omp | slash command: `/aseprite:draw` |
-| Codex, Gemini, Cursor, VS Code, Windsurf | MCP prompt `aseprite:draw`, or just ask — the server's instructions point the agent at the right one |
-| Anything else | read `skill://draw` as a resource |
-
-### 🎬 Start here: `aseprite:studio`, the director
-
-**If you remember one skill, make it this one.** `studio` is the orchestrator:
-hand it any request and it plans the chain of skills, runs it, and checks each
-stage before moving on. You don't need to know the other skills' names.
-
-```
-/aseprite:studio an animated knight for my Godot game, 32×32, idle and walk
-```
-
-What happens to that request, in order:
-
-| # | Stage | Skill | What it does | You're asked? |
-|---|---|---|---|---|
-| 1 | Connect | — | `preflight`, then `sprite_info` on whatever is open. Refuses if Aseprite isn't attached — never edits files behind your back | only if Aseprite is closed |
-| 2 | Plan | — | Matches the request to a route and writes the chain down: here `brief → concept → new → draw → shade → rig → animate → review → export` | — |
-| 3 | Brief | `brief` | Size, palette, view, light, outline — every open question in **one** message | **once** |
-| 4 | Design | `concept` | Writes the art spec (scenario, palette, poses) and an image-model prompt. Send back a concept sheet, or say "continue without" | in the same message |
-| 5 | Set up | `new`, `palette` | Canvas, colour mode, palette, layers | — |
-| 6 | Draw | `draw`, `shade` | Silhouette first, as a [text grid](#-pixels-as-text-the-grid-loop); then volume with hue-shifted ramps | — |
-| 7 | Move | `rig`, `animate` | Splits limbs onto layers, plans key poses and timing, redraws frames as grids, tags the cycles | — |
-| 8 | Check | `review` → `fix` | `look` + `validate`, fixes what they find; stops after a third round instead of looping | — |
-| 9 | Ship | `export` | Spritesheet + atlas, GIF or PNGs for the engine | — |
-| 10 | Report | — | What exists now, what it decided for you, what it compromised on — with a preview, not an adjective | — |
-
-After **every stage that changed pixels** it calls `look` and checks the result
-before going on: a stage is done when it has been seen, not when the tool said
-"ok". Where your client has the specialist agents, the palette, the rig, the
-animation plan and the review are handed to them; they read the same rules.
-
-**Why the image model?** The model drawing pixels is at its worst when it must
-invent the character, the pose, the camera and the palette while placing every
-pixel. With a concept sheet the job becomes *reproduce this design at 32×32 in
-these six colours* — and the reference is a guide for shapes and poses, never
-pixels that get downscaled onto the canvas.
-
-### 🔤 Pixels as text: the grid loop
-
-New in 0.5.0. Before it touches the
-canvas, the agent **writes the frame out as text** — one character per pixel,
-a legend for the colours — and draws that text in one call:
-
-```
-draw kind="grid" x=8 y=10 legend={ "O": "#1d2b53", "s": "#ffccaa", "h": "#ff004d" }
-rows:
-  ..OOOO..
-  .OhhhhO.
-  OsOssOsO
-  OssssssO
-  .OOOOOO.
-```
-
-`look op="ascii"` returns the canvas in exactly that format, so fixing is the
-same loop in reverse: **read the rows → change the wrong characters → send the
-rows back** to the same origin. Animation works the same way: the agent copies
-the previous frame's rows, moves the arm three characters, and draws the new
-frame.
-
-Why it matters: before, the agent had to translate "the head goes here" into a
-list of `ellipse`, `rect` and `line` calls and only found out afterwards what
-they added up to. Silhouettes came out lopsided, limbs changed length between
-frames, small edits spilled into the pixels next to them. With the grid the
-agent sees the whole shape while writing it, and an edit touches exactly the
-characters it changed. Early results on the three benchmarks, same model and
-prompts: the maintainer rated the mage 3 → 4, the road 1 → 3 and the tree
-unchanged. That is one run each and one human rater (the older runs also carry a
-blind model judge the new ones don't yet), so a signal rather than a measurement
-— [see them side by side](https://pixeli.pebbly.space/benchmarks). The design
-and its limits are in [ADR-0010](docs/adr/0010-pixel-grid.md).
-
-### The rest of the toolbox
-
-Reach for these directly when you know exactly which step you want.
-
-| Skill | Use it when… | Try |
+| | Stage | What happens |
 |---|---|---|
-| 📝 **`brief`** | the idea is still vague. Settles size, palette, view, light and outline in one message before a pixel is drawn. | `/aseprite:brief a cosy tavern keeper` |
-| 🖼️ **`concept`** | anything new. Writes the art spec, gives you a prompt for a concept sheet or storyboard, then imports what you send back — one storyboard panel per frame. Also the way in when you already have reference art. | `/aseprite:concept a fire mage, 4-frame walk` |
-| 📄 **`new`** | you're starting fresh. Sets up canvas, colour mode, palette and layers so nothing fights you later. | `/aseprite:new 64×64 sprite, PICO-8` |
-| 🎨 **`palette`** | colour is the question — a retro look, hue-shifted ramps, cleaning up ninety near-identical browns, or building a tight palette out of the art itself. | `/aseprite:palette give this a Game Boy look` |
-| ✏️ **`draw`** | it's time to make the thing. Silhouette first, then materials, shading, outline, verify. Labels and title cards too, in a crisp pixel font — measured first, so they land centred. | `/aseprite:draw a fox curled up asleep` |
-| 🌗 **`shade`** | the art looks flat. Adds light and shadow one step at a time, with hue shifting. | `/aseprite:shade light from the upper left` |
-| 🦴 **`rig`** | a character is about to move. Splits it onto head, torso, arm and leg layers — `left/arm` and `right/arm` can share a name. | `/aseprite:rig split the knight for animation` |
-| 🏃 **`animate`** | something needs to move. Key poses first, timing that breathes, tagged cycles. Checks each in-between over onion-skin ghosts; a cape's drift or a lantern's sway can be generated instead of hand-placed. | `/aseprite:animate 8-frame walk cycle` |
-| 🧱 **`tileset`** | you need terrain or level art — seamless tiles, autotiles, Tiled/Godot export. | `/aseprite:tileset grass-to-dirt autotile, 16px` |
-| 🔍 **`review`** | you want the truth. Mechanical checks plus eyes-on checks, reported with evidence — including rules you set, like "the sword never covers the face". | `/aseprite:review why does this look off?` |
-| 🩹 **`fix`** | something exists and needs changing without wrecking what's already right. | `/aseprite:fix make him look more menacing` |
-| 📦 **`export`** | it's done and has to leave Aseprite — spritesheets with JSON atlases, GIFs, scaled PNGs, nine-slice panels and pivot points for your engine. | `/aseprite:export spritesheet for Godot` |
-| 🗂️ **`submit`** | you want your sprite in the public gallery or the benchmark. Exports the files, writes an honest `generation.yaml`, checks it and opens the pull request — after asking you. | `/aseprite:submit` |
+| 1 | **Connect** | Checks Aseprite is attached and reads what's open. If it isn't, it stops — it never edits files behind your back. |
+| 2 | **Brief** | Only for open-ended requests: size, palette, view, light — **one** message, one answer. |
+| 3 | **Concept** | For anything new: writes the design down and gives you a prompt for an image model. Send back a concept sheet, or say "continue without". |
+| 4 | **Draw** | Silhouette first, written as a text grid (below), then shading. |
+| 5 | **Animate** | Splits limbs onto layers, plans key poses and timing, draws each frame, tags the cycles. |
+| 6 | **Review** | Looks, validates, fixes — two rounds, and it tells you if a third wouldn't help. |
+| 7 | **Export** | Spritesheet + atlas, GIF or PNGs for your engine. |
 
-### 🧑‍🎨 The specialists
+After every step that changed pixels, it **looks** at the result before moving on.
 
-In Claude Code and omp, `studio` can hand a stage to one of four subagents.
-Each reads the same rulebook, so the result is the same whether it or the main
-agent does the work — they just keep the main conversation lighter.
+### 🔤 The grid loop
 
-| Agent | What it owns |
-|---|---|
-| **palette-smith** | proposes a palette and explains why it fits |
-| **rig-builder** | plans and builds the layer rig |
-| **animation-director** | key poses, timing and tags before a frame is drawn |
-| **pixel-critic** | a scored, located critique — read-only, never touches your sprite |
+New in 0.5.0. The agent doesn't draw with circles and rectangles — it **types
+the frame out**, one character per pixel, and draws that text in one call. To
+fix something, it reads the canvas back in the same format and changes only
+the characters that are wrong.
 
-## 🏆 Which model should hold the brush?
+<img src="docs/media/grid-loop.svg" alt="Four steps: the agent writes a pebble as rows of characters; Aseprite draws it; the agent reads it back as text and changes two characters; Aseprite draws the pebble winking" width="100%">
 
-Not a benchmark — an honest log of what drew the art on this page. Models we
-haven't tried are marked untested rather than guessed at. For repeatable,
-scored runs instead of a log entry, see [the gallery and benchmark](#-the-gallery-and-the-benchmark).
+It sees the whole shape while writing it, so silhouettes stay even, limbs keep
+their length between frames, and an edit never spills into its neighbours.
+Animation is the same trick: copy the last frame's rows, move the arm, draw.
 
-| Model | What it drew | How it went |
+Early signal, not a measurement: with the same model and prompts, the mage
+benchmark went 3 → 4/10 and the road 1 → 3/10; the tree stayed at 2
+([compare them](https://pixeli.pebbly.space/benchmarks)).
+
+## 🧰 Skills
+
+`studio` picks these for you. Call one directly when you know the step you want
+— as `/aseprite:<name>` in Claude Code and omp, or just ask elsewhere.
+
+| Skill | For | Try |
 |---|---|---|
-| **Claude Opus 5.5** | the rainy bookshop up top | Best so far. 500×400, 72 frames, 20 layers in one session — plus a few rounds of user notes (café table, hoodie, an arm rig redone with fixed-length IK, lightning, raccoon). |
-| **Claude Fable 5.1** | the robot at the easel, below | Very strong. One session, no review passes needed. |
-| **Codex CLI** `gpt-5.6-terra`, high reasoning | the harbour below, and the mascot | Strong, but it took five rounds of critique. |
-| **Claude Opus 5** | the server, the rulebook, every review pass | The planner and the critic. Its own drawing attempt got scrapped. |
-| Gemini 3 Pro, Sonnet 5, Cursor, others | — | Untested. Run one and [send us the sprite](gallery/README.md)! |
+| 🎬 **`studio`** | anything — it plans and runs the rest | `/aseprite:studio a fox, 32×32, sleeping loop` |
+| 📝 **`brief`** | a vague idea | `/aseprite:brief a cosy tavern keeper` |
+| 🖼️ **`concept`** | a design or storyboard before drawing | `/aseprite:concept a fire mage, 4-frame walk` |
+| 📄 **`new`** | a fresh document set up right | `/aseprite:new 64×64, PICO-8` |
+| 🎨 **`palette`** | colour: a retro look, ramps, cleanup | `/aseprite:palette give this a Game Boy look` |
+| ✏️ **`draw`** | making the thing, text included | `/aseprite:draw a fox curled up asleep` |
+| 🌗 **`shade`** | flat art that needs light | `/aseprite:shade light from the upper left` |
+| 🦴 **`rig`** | splitting a character for animation | `/aseprite:rig split the knight` |
+| 🏃 **`animate`** | walk, idle, attack cycles | `/aseprite:animate 8-frame walk cycle` |
+| 🧱 **`tileset`** | terrain and autotiles | `/aseprite:tileset grass-to-dirt, 16px` |
+| 🔍 **`review`** | an honest critique | `/aseprite:review why does this look off?` |
+| 🩹 **`fix`** | changing art without wrecking it | `/aseprite:fix make him more menacing` |
+| 📦 **`export`** | files for your engine | `/aseprite:export spritesheet for Godot` |
+| 🗂️ **`submit`** | sharing it in the gallery | `/aseprite:submit` |
 
-<div align="center">
-<img src="docs/media/mascot.png" alt="The mascot" width="96"><br>
-<sub><i>our mascot — Codex, from the brief and the rulebook alone</i></sub>
-</div>
+In Claude Code and omp, four specialists take stages off the main agent:
+**palette-smith**, **rig-builder**, **animation-director** and the read-only
+**pixel-critic**.
 
-**Method mattered more than the model.** Every good result came the same way:
+## 🏆 Which model?
 
-- **Generate, don't hand-place.** Write a small program that emits every frame,
-  then push it. Placing pixels one call at a time by eye is where weak attempts
-  died.
-- **Look at frames full-size, one at a time.** A filmstrip is a trap — at that
-  size you see what you already expect to be there.
-- **Turn reasoning up** before you blame the model. A 32×32 grid is a spatial
-  problem.
+| Model | Drew | How it went |
+|---|---|---|
+| **Claude Opus 5.5** | the rainy bookshop up top | Best so far — 72 frames, 20 layers, one session plus a few notes. |
+| **Codex CLI** `gpt-5.6-terra` | the mascot | Strong, after five rounds of critique. |
+| Others | — | Untested. [Send us a sprite!](gallery/README.md) |
 
-## 💡 Why this one
+Scored, repeatable runs live on the [benchmark](https://pixeli.pebbly.space/benchmarks).
 
-🌍 **It works everywhere, not just in Claude Code.** Most Aseprite MCP projects
-keep their craft knowledge inside a Claude Code plugin, so Codex and Cursor get
-raw tools and none of the discipline. Here the rules and skills are served over
-MCP, so every client reads the same source of truth.
+## 🗂️ Gallery and benchmark
 
-🪶 **Eighteen tools, not ninety.** Every tool schema sits in the model's context
-on every turn, drawing or not. Grouping by noun with an `op` enum covers the same
-ground at a sixth of the cost — and makes batching the default, so one `draw`
-call is one undo step for you.
+Everything drawn with the plugin — with its prompts, models and `.aseprite`
+source — is at **[pixeli.pebbly.space](https://pixeli.pebbly.space/)**. The
+benchmark puts every model and plugin version through the same three fixed
+prompts and scores them against written criteria.
 
-👀 **It has to look at its own work.** `look` gives the agent an upscaled
-preview, a one-glyph-per-pixel text grid, a filmstrip, an onion skin, a
-frame-to-frame diff and a side-by-side against the reference it is drawing
-from. `validate` then checks the sprite mechanically before
-anything is called done.
-
-🛡️ **It can't quietly wreck your file.** With Aseprite detached, every tool
-refuses immediately instead of timing out — because an agent that "recovers" by
-editing the `.aseprite` on disk makes changes you never see, and your next save
-overwrites them.
-
-There's [a whole page](docs/RESEARCH.md) on the other projects in this space, and
-where they're still better.
+Made something? Ask your agent for `/aseprite:submit` — it packages the files
+and opens the pull request.
 
 ## 🔧 Under the hood
 
-**Eighteen tools**, grouped by noun — `preflight` · `sprite_info` ·
-`sprite_manage` · `look` · `read_pixels` · `draw` · `select` · `transform` ·
-`recolor` · `layer` · `frame` · `tag` · `cel` · `palette` · `validate` ·
-`reference` · `export` · `tileset`, plus `run_lua` as an escape hatch, off by
-default. Full reference: [docs/TOOLS.md](docs/TOOLS.md).
-
-**A rulebook** in [`rules/`](rules/) — palette discipline, hue-shifted shading,
-silhouette, outlines, animation timing, layer rigging, the review checklist.
-Skills point at rules instead of restating them, so each rule has exactly one
-place to be wrong.
-
 ```
-your agent  ──stdio/MCP──▶  server  ──ws:9932──▶  bridge  ──ws:9931──▶  Aseprite
+your agent  ──MCP──▶  server  ──▶  bridge  ──▶  Aseprite extension
 ```
 
-Aseprite's Lua WebSocket can only be a client, so a small bridge holds the
-listening socket. It runs as its own process: restarting the MCP server — which
-agent hosts do freely — doesn't drop your Aseprite connection, and a second
-agent window can attach without stealing the first one's replies. Details in
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
-Both ports bind `127.0.0.1` only. `run_lua` is arbitrary code execution inside
-the app holding your unsaved work, so it stays off unless you turn it on — full
-threat model in [SECURITY.md](SECURITY.md).
-
-## 🖼️ More, drawn the same way
-
-Everything else people have drawn with the plugin — prompts, models and source
-files included — hangs at **[pixeli.pebbly.space](https://pixeli.pebbly.space/)**.
-
-### Who drew what
-
-| Art | Model |
-|---|---|
-| ☔ Rainy bookshop (hero, `docs/media/rainy-bookshop.gif`) | Claude Opus 5.5 |
-| 🐾 Mascot (`docs/media/mascot.png`) | Codex CLI, `gpt-5.6-terra`, high reasoning |
-
-## 🗂️ The gallery and the benchmark
-
-**See them at [pixeli.pebbly.space](https://pixeli.pebbly.space/).**
-
-Every sprite people make with the plugin can go into [`gallery/`](gallery/):
-the `.aseprite` source, a cover, the animation, and exactly how it was made —
-the prompts in order, the model behind each step, the harness and the plugin
-version. The benchmarks are built from the same store: fixed, fully specified
-prompts — [a boombox mage's anime attack](gallery/prompts/boombox-mage/prompt.yaml),
-[a tree growing from a seed](gallery/prompts/tree-growth/prompt.yaml) and
-[a winding-road landscape loop](gallery/prompts/winding-road/prompt.yaml) — each
-get one block, with every model × plugin version scored against written
-criteria ([how to run them](docs/evals/benchmarks.md)).
-
-Both are published as a site built from [`apps/web`](apps/web/). To add your
-own run, finish the sprite and ask your agent for `/aseprite:submit` — it
-exports the files, writes `generation.yaml`, checks it and opens the pull
-request. The rules are in [gallery/README.md](gallery/README.md); the design is
-[ADR-0006](docs/adr/0006-gallery-and-benchmark.md).
+- **18 tools, grouped by noun** (`draw`, `look`, `layer`, `frame`, `export`…)
+  instead of ninety — every tool costs context on every turn.
+  [Reference](docs/TOOLS.md).
+- **A rulebook** in [`rules/`](rules/) — palettes, shading, outlines, timing —
+  served over MCP, so every client gets the same craft knowledge.
+- **Safe by default.** Every action is one undo step. With Aseprite detached,
+  tools refuse instead of editing files on disk. Everything binds to
+  `127.0.0.1`. [Details](docs/ARCHITECTURE.md) · [security](SECURITY.md).
 
 ## 🛠️ Development
-
-The repository is a pnpm workspace run by turborepo: the plugin is the root
-package, [`gallery/`](gallery/) holds the generations, and [`apps/web`](apps/web/)
-is the site, [Pixeli](https://pixeli.pebbly.space/).
 
 ```bash
 pnpm install && pnpm run build
 pnpm test                 # TypeScript
-pnpm run test:pure        # Lua that needs no editor — what CI runs
-pnpm run test:extension   # the real handlers, headless, against a real sprite
-pnpm gallery:check        # every generation and benchmark prompt, as CI checks them
-pnpm web:dev              # the gallery site on localhost
+pnpm run test:extension   # the Lua handlers, inside a real Aseprite
+pnpm gallery:check        # gallery and benchmark data
+pnpm web:dev              # the site, locally
 ```
 
-`test:extension` needs Aseprite installed, so CI can't run it. Before changing
-anything, read [AGENTS.md](AGENTS.md) — it lists the rules that aren't
-negotiable and the Lua gotchas that have already cost someone a day.
+Read [AGENTS.md](AGENTS.md) before changing anything — it lists the rules that
+aren't negotiable and the Lua gotchas that already cost someone a day.
 
 ## 📜 Licence
 
