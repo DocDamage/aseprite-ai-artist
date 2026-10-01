@@ -368,9 +368,12 @@ loop from feeling mechanical.</sub>
 Every sprite people make with the plugin can go into [`gallery/`](gallery/):
 the `.aseprite` source, a cover, the animation, and exactly how it was made —
 the prompts in order, the model behind each step, the harness and the plugin
-version. The benchmark is built from the same store: a fixed prompt like
-[the knight](gallery/prompts/knight/prompt.yaml) gets one block, with every
-model × plugin version scored against written criteria.
+version. The benchmarks are built from the same store: fixed, fully specified
+prompts — [a boombox mage's anime attack](gallery/prompts/boombox-mage/prompt.yaml),
+[a tree growing from a seed](gallery/prompts/tree-growth/prompt.yaml) and
+[a winding-road landscape loop](gallery/prompts/winding-road/prompt.yaml) — each
+get one block, with every model × plugin version scored against written
+criteria ([how to run them](docs/evals/benchmarks.md)).
 
 Both are published as a site built from [`apps/web`](apps/web/). To add your
 own run, finish the sprite and ask your agent for `/aseprite:submit` — it

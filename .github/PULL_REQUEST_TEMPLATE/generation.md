@@ -6,7 +6,7 @@
 
 **What is it?** <!-- One or two sentences: what was asked, what came out. -->
 
-**Benchmark run?** <!-- Yes: which prompt and revision (e.g. knight r1). No: a free gallery run. -->
+**Benchmark run?** <!-- Yes: which prompt and revision (e.g. boombox-mage r1). No: a free gallery run. -->
 
 ## Checklist
 

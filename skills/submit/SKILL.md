@@ -116,32 +116,34 @@ the public gallery is what you exported, not what you remember drawing.
 In the staging folder, exactly per the schema:
 
 ```yaml
-title: The knight
-description: A 32×32 knight and a sword slash.
+title: Cherry tree in bloom
+description: A 64×64 cherry tree drawn to the tree-growth brief.
 date: 2026-09-29
 author: { name: Ada Lovelace, github: ada }
 plugin: 0.3.2
 harness: claude-code
 models: [claude-opus-4-1]
-tags: [character, animation]
+tags: [nature, animation]
 references:
   source: generated
   imageModels: [gpt-image-2]
   kinds: [concept-sheet]
 steps:
+  # the step text exactly as sent — for a benchmark run, verbatim from
+  # prompt.yaml (cut short here)
   - text: |-
-      Draw me a 32×32 knight with a sword, standing still. One frame.
+      The document is already open: 64×64 pixels, RGB, with the PICO-8 palette loaded (16 colours). …
     interventions: []
 files:
-  - { path: knight.png, role: cover, label: Still knight, step: 1 }
-  - { path: knight.aseprite, role: source, label: Source document }
+  - { path: tree.png, role: cover, label: The tree, step: 1 }
+  - { path: tree.aseprite, role: source, label: Source document }
 validate:
   - { step: 1, passed: true, score: 92, errors: 0, warnings: 1 }
 benchmark:            # only for a confirmed benchmark run
-  prompt: knight
+  prompt: tree-growth
   revision: 1
   results:
-    - { criterion: still-validate, pass: true, note: "validate: 0 errors, 1 warning, named." }
+    - { criterion: tree-validate, pass: true, note: "validate: 0 errors, 1 warning, named." }
 ```
 
 Rules that fail the check when missed:

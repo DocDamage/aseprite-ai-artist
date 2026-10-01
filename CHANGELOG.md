@@ -20,6 +20,18 @@ All notable changes to this project are documented here. Format follows
   it. The Pebbly generation's prompts now read in English with the Russian
   originals kept.
 
+### Changed
+
+- **Benchmarks: the knight is retired; three fully specified prompts replace
+  it.** `boombox-mage` (a street-mage, then an anime sound-blast attack with
+  an impact frame and effect layers confined to their beats), `tree-growth`
+  (a cherry tree, then its growth from a seed built backwards from that exact
+  final frame) and `winding-road` (a deep-perspective valley road, then a
+  24-frame seamless ambient loop with a wagon travelling it). Each step text
+  fixes size, palette, layout, colours, layer names, frame counts and timing,
+  so runs on different models answer the same task. The eval guide moved to
+  `docs/evals/benchmarks.md`.
+
 ## [0.4.0] — 2026-09-29
 
 ### Added

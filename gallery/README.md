@@ -25,11 +25,11 @@ gallery/
   prompts/<slug>/prompt.yaml            benchmark prompts (maintainers + separate PRs)
   generations/<yyyy-mm-dd>-<slug>/      one folder per run
     generation.yaml
-    cover.png  knight.aseprite  slash.gif  …
+    cover.png  mage.aseprite  attack.gif  …
 ```
 
 - Folder name: the date of the run (`yyyy-mm-dd`), a hyphen, then a slug of
-  lowercase letters, digits and single hyphens — `2026-09-29-knight-opus`.
+  lowercase letters, digits and single hyphens — `2026-09-29-boombox-mage-opus`.
 - **Flat**: no sub-folders. Every file sits next to `generation.yaml`.
 - Every file in the folder must be listed in `generation.yaml`; unlisted files
   are rejected (only `.DS_Store` is ignored). Symlinks are rejected too — commit
@@ -40,7 +40,7 @@ gallery/
 ## `generation.yaml`
 
 ```yaml
-title: A knight, then a slash            # required
+title: Boombox mage and his sound blast  # required
 description: >-                          # optional, plain text
   Opus 4.1 drove the whole session; nothing was edited by hand.
 date: 2026-09-29                         # required, ISO date of the run
@@ -53,17 +53,19 @@ harness: claude-code                     # required: claude-code, omp, codex, ge
 models:                                  # required, ≥1, ids exactly as the harness names them
   - claude-opus-4-1
 steps:                                   # required, ≥1, in the order they ran
-  - text: Draw me a 32×32 knight with a sword, standing still. One frame.
+  # A benchmark run carries each step's text verbatim from prompt.yaml;
+  # the two below are cut short for this example.
+  - text: |-
+      The document is already open: 128×64 pixels, RGB, with the PICO-8 palette loaded (16 colours). …
     # model: claude-opus-4-1             # required on EVERY step when models has >1 entry,
     #                                    # and must be one of `models`
     interventions: []                    # what you said mid-run; see Honesty
     # original: …                        # only when `text` is an English translation:
     #                                    # the prompt exactly as sent (not in benchmark runs)
   - text: |-
-      Starting from this knight, animate a sword slash: windup, then
-      follow-through. 4 to 6 frames.
+      The open document holds the street-mage with his magic boombox (canvas 128×64, …
     interventions:
-      - 'Asked "should the sword arc over the head?" — answered "yes".'
+      - 'Offered a concept image — answered "No reference, continue from the text."'
 references:                              # required — where the design came from
   source: none                           # none | generated | supplied
   # imageModels: [gpt-image-2]           # required when generated; only then
@@ -73,20 +75,20 @@ references:                              # required — where the design came fr
   #   Pixel art character concept sheet of …
 tags: [character, animation]             # optional
 files:                                   # required, ≥1
-  - path: knight-cover.png
+  - path: mage-cover.png
     role: cover                          # exactly one cover, and it must be png/gif/webp
-    label: The still knight              # optional caption
+    label: The mage                      # optional caption
     step: 1                              # optional: 1-based step that produced it
-  - path: knight.aseprite
+  - path: mage.aseprite
     role: source                         # at least one .aseprite/.ase with role source
     step: 1
-  - path: slash.aseprite
+  - path: attack.aseprite
     role: source
     step: 2
-  - path: slash.gif
+  - path: attack.gif
     role: animation
     step: 2
-  - path: slash-filmstrip.png
+  - path: attack-filmstrip.png
     role: filmstrip
     step: 2
 validate:                                # optional: the `validate` tool's reports
@@ -96,14 +98,14 @@ validate:                                # optional: the `validate` tool's repor
     errors: 0                            # default 0
     warnings: 1                          # default 0
 benchmark:                               # only for benchmark runs
-  prompt: knight                         # a folder name under gallery/prompts/
+  prompt: boombox-mage                   # a folder name under gallery/prompts/
   revision: 1                            # the prompt's `revision` when you ran it
   results:                               # every criterion of that prompt, answered
-    - criterion: still-validate
+    - criterion: mage-validate
       pass: true
-    - criterion: slash-arc
+    - criterion: attack-wave
       pass: false
-      note: The sword translated in a straight line; no arc between poses.
+      note: One arc copied and translated right; no new arcs born at the speakers.
     # … one entry per criterion in prompt.yaml
 ```
 
@@ -181,8 +183,10 @@ Everyone else submits gallery generations. What follows is how maintainers
 record a run.
 
 A benchmark run is comparable only if the task was identical, so it must follow
-the prompt's fixed setup to the letter. Read
-[`prompts/knight/prompt.yaml`](prompts/knight/prompt.yaml) — the `setup` block
+the prompt's fixed setup to the letter. The current prompts are
+[`boombox-mage`](prompts/boombox-mage/prompt.yaml),
+[`tree-growth`](prompts/tree-growth/prompt.yaml) and
+[`winding-road`](prompts/winding-road/prompt.yaml); in each, the `setup` block
 (canvas, colour mode, palette, `rules`) and the `steps` text are the
 contract. In practice:
 
@@ -191,8 +195,8 @@ contract. In practice:
   declared exception: a run that drew from an image model's concept or
   storyboard is allowed, must say so in `references`, and is ranked on its own
   row (`… · concept by <model>`), never mixed into the agent's pixel-only row.
-- Respect the session boundaries the prompt defines (the knight's step 2 runs in
-  a fresh session against a copy of step 1's result).
+- Respect the session boundaries the prompt defines (every current prompt runs
+  step 2 in a fresh session against a copy of step 1's result).
 - Set `benchmark.prompt` and `benchmark.revision`, and answer every criterion.
 - Only runs on a prompt's **current revision** are ranked; runs on an older
   revision are kept and shown as outdated, never mixed in.
