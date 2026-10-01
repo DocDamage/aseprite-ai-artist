@@ -44,6 +44,9 @@ All notable changes to this project are documented here. Format follows
 - **`look` op `ascii`/`diff` with `layer` read the composite.** The layer was
   passed through but the read stayed flattened, so a per-layer diff silently
   diffed the whole image. Naming a layer now reads that layer's cel.
+- **Site: wide art no longer loses its left edge.** An image wider than its
+  box (a long filmstrip) was centred inside a scroll container, which pushed
+  its left part out of reach; it now starts at the left and scrolls right.
 
 ## [0.4.0] — 2026-09-29
 
