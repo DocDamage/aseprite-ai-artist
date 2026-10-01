@@ -141,7 +141,7 @@
 	{#if runs.length < 2 || !view}
 		<p class="text-muted-foreground mt-4">This benchmark needs at least two runs before there is anything to compare.</p>
 	{:else}
-		<div class="mt-8 flex flex-wrap items-end gap-x-8 gap-y-6 px-1.5">
+		<div class="mt-8 flex flex-wrap items-start gap-x-8 gap-y-6 px-1.5">
 			<div>
 				<span id="label-mode" class="retro mb-3 block text-[0.625rem]">Mode</span>
 				<div role="group" aria-labelledby="label-mode" class="flex gap-4">

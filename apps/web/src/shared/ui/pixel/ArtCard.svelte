@@ -38,6 +38,9 @@
 	const MIN_HEIGHT = 240;
 
 	let zoomed = $state(false);
+	// The name plate wraps to as many lines as the title needs, so the button that sits on the
+	// art window's corner is placed from its measured height, not a fixed offset.
+	let plateHeight = $state(44);
 
 	const native = $derived(art?.width && art.height ? { width: art.width / art.pixel, height: art.height / art.pixel } : null);
 </script>
@@ -70,7 +73,7 @@ valid HTML and neither would get a reliable click. -->
 			<div class="bg-background/40 absolute inset-0 -z-10"></div>
 
 			<!-- Name plate. -->
-			<header class="plate flex min-h-11 items-center gap-2.5 py-1.5 pr-3 pl-1.5">
+			<header bind:clientHeight={plateHeight} class="plate flex min-h-11 items-center gap-2.5 py-1.5 pr-3 pl-1.5">
 				{#if badge}
 					<span class="gem retro grid h-8 min-w-8 shrink-0 place-items-center px-1.5 text-[0.625rem] tabular-nums">
 						{@render badge()}
@@ -108,7 +111,8 @@ valid HTML and neither would get a reliable click. -->
 	{#if art}
 		<button
 			type="button"
-			class="plate absolute top-[4.25rem] right-5 grid size-10 place-items-center opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] [@media(hover:none)]:opacity-100"
+			style:top="{plateHeight + 24}px"
+			class="plate absolute right-5 grid size-10 place-items-center opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] [@media(hover:none)]:opacity-100"
 			aria-label="Open full screen: {alt}"
 			onclick={() => (zoomed = true)}
 		>
