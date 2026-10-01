@@ -124,19 +124,19 @@
 					</div>
 				</div>
 				<span
-					class="bg-background/55 pointer-events-none absolute top-3 left-3 pixel-notch border-2 border-white/15 px-2.5 py-1 text-xs backdrop-blur-md"
+					class="bg-background/55 pointer-events-none absolute top-3 left-3 pixel-notch [--notch:4px] border-4 border-white/15 px-2.5 py-1 text-xs backdrop-blur-md"
 				>
 					{before.label}
 				</span>
 				<span
-					class="bg-background/55 pointer-events-none absolute top-3 right-3 pixel-notch border-2 border-white/15 px-2.5 py-1 text-xs backdrop-blur-md"
+					class="bg-background/55 pointer-events-none absolute top-3 right-3 pixel-notch [--notch:4px] border-4 border-white/15 px-2.5 py-1 text-xs backdrop-blur-md"
 				>
 					{after.label}
 				</span>
 				{#if onexpand}
 					<button
 						type="button"
-						class="bg-background/55 border-foreground/50 dark:border-ring/70 absolute right-3 bottom-3 grid size-10 place-items-center pixel-notch border-2 opacity-0 backdrop-blur-md transition-opacity group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] [@media(hover:none)]:opacity-100"
+						class="bg-background/55 border-foreground/50 dark:border-ring/70 absolute right-3 bottom-3 grid size-10 place-items-center pixel-notch [--notch:4px] border-4 opacity-0 backdrop-blur-md transition-opacity group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] [@media(hover:none)]:opacity-100"
 						aria-label="Open the comparison full screen"
 						onpointerdown={(event) => event.stopPropagation()}
 						onclick={onexpand}

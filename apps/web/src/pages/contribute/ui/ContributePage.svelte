@@ -60,7 +60,7 @@
 		{/each}
 	</ol>
 
-	<section class="border-pixel mt-14 border-l-4 pl-4" aria-labelledby="benchmarks-note">
+	<section class="border-pixel mt-14 border-l-6 pl-4" aria-labelledby="benchmarks-note">
 		<h2 id="benchmarks-note" class="text-sm leading-relaxed">What about benchmarks?</h2>
 		<p class="text-muted-foreground mt-3">
 			Contributions go to the gallery. The benchmarks are run by the maintainers, under the same fixed setup every

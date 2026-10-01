@@ -217,7 +217,7 @@
 											{#if result.step}Step {result.step}, {/if}<code>{result.criterion}</code>
 										</p>
 										{#if result.note}
-											<p class="border-pixel mt-1.5 border-l-4 pl-2.5">{result.note}</p>
+											<p class="border-pixel mt-1.5 border-l-2 pl-2.5">{result.note}</p>
 										{/if}
 									</div>
 								</li>

@@ -44,7 +44,7 @@
 	/>
 </svelte:head>
 
-<section class="grid-dots border-pixel border-b-4">
+<section class="grid-dots border-pixel border-b-6">
 	<div
 		class="mx-auto grid max-w-6xl items-center gap-14 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16"
 	>
@@ -123,7 +123,7 @@
 			{/snippet}
 		</Masonry>
 	{:else}
-		<Empty class="canvas-checker border-pixel mt-10 pixel-notch [--notch:4px] border-4 border-dashed">
+		<Empty class="canvas-checker border-pixel mt-10 pixel-notch [--notch:6px] border-6 border-dashed">
 			<EmptyHeader>
 				<EmptyMedia variant="icon"><PaletteIcon aria-hidden="true" /></EmptyMedia>
 				<EmptyTitle class="text-sm leading-relaxed">The walls are bare</EmptyTitle>

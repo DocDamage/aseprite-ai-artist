@@ -94,7 +94,7 @@
 				</Table.Root>
 			</div>
 		{:else}
-			<p class="text-muted-foreground border-pixel mt-6 pixel-notch border-2 border-dashed p-4 text-sm">
+			<p class="text-muted-foreground border-pixel mt-6 pixel-notch [--notch:6px] border-6 border-dashed p-4 text-sm">
 				No model has been ranked yet. The maintainers run the benchmarks; new models are added as they are tested.
 			</p>
 		{/if}

@@ -202,36 +202,44 @@
  * Pixel corners. Rounding a pixel-art site with border-radius gives smooth anti-aliased arcs,
  * which is exactly what the art never has; these step instead, one art pixel at a time.
  *
- * .pixel-frame — the 4px card frame: a nine-slice SVG draws the stepped border (border-image
+ * Border widths step down with nesting: 6px for a top-level box (cards, the art viewers,
+ * inputs), 4px for a panel inside one (plates, the art window, dividers), 2px for small
+ * marks (gems, chips, notches).
+ *
+ * .pixel-frame — the card frame, `--frame` wide (6px; 4px when nested): a nine-slice SVG draws the stepped border (border-image
  * replaces the border, so border colour classes do nothing on it) and clip-path cuts the
  * background to the same staircase, so nothing shows outside the steps.
  * .pixel-notch — small or dashed things (buttons, chips, empty states): the corners are cut
  * square by --notch, the border width, which is how 8-bit UI rounds a box that size.
  */
 :root {
-	--pixel-frame-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath fill='%231b1824' fill-opacity='0.8' d='M8 0h12v4H8zM4 4h4v4H4zM20 4h4v4h-4zM0 8h4v12H0zM24 8h4v12h-4zM4 20h4v4H4zM20 20h4v4h-4zM8 24h12v4H8z'/%3E%3C/svg%3E");
+	--pixel-frame-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='42' viewBox='0 0 42 42'%3E%3Cpath fill='%231b1824' fill-opacity='0.8' d='M12 0h18v6H12zM6 6h6v6H6zM30 6h6v6h-6zM0 12h6v18H0zM36 12h6v18h-6zM6 30h6v6H6zM30 30h6v6h-6zM12 36h18v6H12z'/%3E%3C/svg%3E");
 }
 .dark {
-	--pixel-frame-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath fill='%236a6080' fill-opacity='1' d='M8 0h12v4H8zM4 4h4v4H4zM20 4h4v4h-4zM0 8h4v12H0zM24 8h4v12h-4zM4 20h4v4H4zM20 20h4v4h-4zM8 24h12v4H8z'/%3E%3C/svg%3E");
+	--pixel-frame-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='42' viewBox='0 0 42 42'%3E%3Cpath fill='%236a6080' fill-opacity='1' d='M12 0h18v6H12zM6 6h6v6H6zM30 6h6v6h-6zM0 12h6v18H0zM36 12h6v18h-6zM6 30h6v6H6zM30 30h6v6h-6zM12 36h18v6H12z'/%3E%3C/svg%3E");
 }
 @layer components {
 	.pixel-frame {
-		border: 4px solid transparent;
-		border-image: var(--pixel-frame-image) 12 / 12px / 0 stretch;
+		--frame: 6px;
+		--step: calc(var(--frame) * 2);
+		border: var(--frame) solid transparent;
+		border-image: var(--pixel-frame-image) 18 / calc(var(--frame) * 3) / 0 stretch;
 		clip-path: polygon(
-			8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px,
-			100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px),
-			calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px),
-			4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px), 0 8px, 4px 8px, 4px 4px, 8px 4px
+			var(--step) 0, calc(100% - var(--step)) 0, calc(100% - var(--step)) var(--frame), calc(100% - var(--frame)) var(--frame),
+			calc(100% - var(--frame)) var(--step), 100% var(--step), 100% calc(100% - var(--step)),
+			calc(100% - var(--frame)) calc(100% - var(--step)), calc(100% - var(--frame)) calc(100% - var(--frame)),
+			calc(100% - var(--step)) calc(100% - var(--frame)), calc(100% - var(--step)) 100%, var(--step) 100%,
+			var(--step) calc(100% - var(--frame)), var(--frame) calc(100% - var(--frame)), var(--frame) calc(100% - var(--step)),
+			0 calc(100% - var(--step)), 0 var(--step), var(--frame) var(--step), var(--frame) var(--frame), var(--step) var(--frame)
 		);
 	}
 	/* A raised panel on a card, as game cards draw their name and text boxes: dark fill, a dark
 	   rim, a one-pixel light bevel on top and left, a shadow on the bottom and right, square-cut
 	   corners. Translucent, so the card's glow shows through. */
 	.plate {
-		--notch: 2px;
+		--notch: 4px;
 		background: color-mix(in oklab, var(--background) 72%, transparent);
-		border: 2px solid color-mix(in oklab, var(--foreground) 35%, transparent);
+		border: 4px solid color-mix(in oklab, var(--foreground) 35%, transparent);
 		box-shadow:
 			inset 2px 2px 0 rgb(255 255 255 / 0.1),
 			inset -2px -2px 0 rgb(0 0 0 / 0.3);

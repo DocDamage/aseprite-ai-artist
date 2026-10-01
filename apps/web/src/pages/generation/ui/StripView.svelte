@@ -37,7 +37,7 @@
 	</div>
 	<button
 		type="button"
-		class="bg-background/55 border-foreground/50 dark:border-ring/70 absolute top-3 right-3 grid size-10 place-items-center pixel-notch border-2 opacity-0 backdrop-blur-md transition-opacity group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] [@media(hover:none)]:opacity-100"
+		class="bg-background/55 border-foreground/50 dark:border-ring/70 absolute top-3 right-3 grid size-10 place-items-center pixel-notch [--notch:4px] border-4 opacity-0 backdrop-blur-md transition-opacity group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] [@media(hover:none)]:opacity-100"
 		aria-label="Open full screen: {alt}"
 		onclick={() => (zoomed = true)}
 	>

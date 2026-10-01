@@ -22,7 +22,7 @@
 </svelte:head>
 
 <div class="mx-auto max-w-3xl px-4 pt-16 sm:px-6">
-	<Empty class="canvas-checker border-pixel pixel-notch [--notch:4px] border-4 border-dashed">
+	<Empty class="canvas-checker border-pixel pixel-notch [--notch:6px] border-6 border-dashed">
 		<EmptyHeader class="max-w-lg">
 			<EmptyMedia><PixelSprite rows={PEBBLY_FRAMES[3]!} scale={4} label="Pebbly watching a paint drop fall" /></EmptyMedia>
 			<p class="retro text-muted-foreground text-sm tabular-nums">{page.status}</p>

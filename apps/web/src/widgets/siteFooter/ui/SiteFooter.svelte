@@ -16,7 +16,7 @@
 	];
 </script>
 
-<footer class="site-footer border-pixel mt-24 border-t-4">
+<footer class="site-footer border-pixel mt-24 border-t-6">
 	<!-- PICO-8's sixteen colours: every benchmark and the mascot are drawn in it. -->
 	<div class="flex h-2" aria-hidden="true">
 		{#each swatches as color (color)}

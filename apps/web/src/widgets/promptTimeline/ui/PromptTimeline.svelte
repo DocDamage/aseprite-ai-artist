@@ -21,7 +21,7 @@
 	<ol class="mt-5">
 		{#each prompt.steps as step, index (index)}
 			<li class="contents">
-				<div class="border-pixel border-l-4 pl-4">
+				<div class="border-pixel border-l-6 pl-4">
 					<div class="flex flex-wrap items-center gap-3">
 						<span class="retro bg-primary text-primary-foreground grid size-7 place-items-center text-[0.625rem]" aria-hidden="true">
 							{index + 1}
@@ -42,7 +42,7 @@
 						</details>
 					{/if}
 					{#if step.interventions.length > 0}
-						<div class="border-pixel mt-3 pixel-notch border-2 border-dashed px-4 py-3">
+						<div class="border-pixel mt-3 pixel-notch [--notch:6px] border-6 border-dashed px-4 py-3">
 							<p class="mb-2 flex items-center gap-2 text-sm font-medium">
 								<MessageCircleIcon aria-hidden="true" />
 								The author stepped in {step.interventions.length === 1 ? 'once' : `${step.interventions.length} times`}

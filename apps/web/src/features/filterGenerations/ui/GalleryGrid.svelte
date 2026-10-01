@@ -201,7 +201,7 @@
 		</div>
 	{/if}
 {:else}
-	<Empty class="border-pixel mt-6 pixel-notch [--notch:4px] border-4 border-dashed">
+	<Empty class="border-pixel mt-6 pixel-notch [--notch:6px] border-6 border-dashed">
 		<EmptyHeader>
 			<EmptyMedia variant="icon"><SearchIcon aria-hidden="true" /></EmptyMedia>
 			<EmptyTitle class="text-sm leading-relaxed">No piece matches all of these filters</EmptyTitle>

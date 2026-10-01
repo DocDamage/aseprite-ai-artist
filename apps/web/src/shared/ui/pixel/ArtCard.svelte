@@ -86,7 +86,7 @@ valid HTML and neither would get a reliable click. -->
 			to reach MIN_HEIGHT gets space above and below (the canvas checkerboard), and art taller
 			than 1.5× the width is capped and centred, so one piece cannot take a whole column. The
 			scale is whatever fills the width, not a whole multiple: filling the card was the point. -->
-			<div class="pixel-frame canvas-checker @container relative grid place-items-center" style:min-height="{MIN_HEIGHT}px">
+			<div class="pixel-frame canvas-checker @container [--frame:4px] relative grid place-items-center" style:min-height="{MIN_HEIGHT}px">
 				{#if art}
 					<img
 						src={art.src}

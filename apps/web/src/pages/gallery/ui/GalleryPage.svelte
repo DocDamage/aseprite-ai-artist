@@ -41,7 +41,7 @@ rather than wider margins. -->
 	</p>
 
 	{#if generations.length === 0}
-		<Empty class="canvas-checker border-pixel mt-10 pixel-notch [--notch:4px] border-4 border-dashed">
+		<Empty class="canvas-checker border-pixel mt-10 pixel-notch [--notch:6px] border-6 border-dashed">
 			<EmptyHeader>
 				<EmptyMedia variant="icon"><PaletteIcon aria-hidden="true" /></EmptyMedia>
 				<EmptyTitle class="text-sm leading-relaxed">Nothing hanging yet</EmptyTitle>

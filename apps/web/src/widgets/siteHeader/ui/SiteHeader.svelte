@@ -23,7 +23,7 @@
 >
 	Skip to content
 </a>
-<header class="site-header bg-background/95 border-pixel sticky top-0 z-40 border-b-4 backdrop-blur">
+<header class="site-header bg-background/95 border-pixel sticky top-0 z-40 border-b-6 backdrop-blur">
 	<div class="flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2.5 sm:px-6 lg:px-10">
 		<a href={resolve('/')} class="flex items-center gap-3 py-1.5" aria-label="{SITE_NAME}, home">
 			<PixelSprite rows={PEBBLY_MARK} scale={2} inheritOutline label="Pebbly, the site's mascot" />
