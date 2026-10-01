@@ -226,7 +226,7 @@ pixels that get downscaled onto the canvas.
 
 ### 🔤 Pixels as text: the grid loop
 
-New in 0.5.0, and the biggest jump in quality so far. Before it touches the
+New in 0.5.0. Before it touches the
 canvas, the agent **writes the frame out as text** — one character per pixel,
 a legend for the colours — and draws that text in one call:
 
@@ -251,10 +251,11 @@ list of `ellipse`, `rect` and `line` calls and only found out afterwards what
 they added up to. Silhouettes came out lopsided, limbs changed length between
 frames, small edits spilled into the pixels next to them. With the grid the
 agent sees the whole shape while writing it, and an edit touches exactly the
-characters it changed. On the three benchmarks, the maintainer's ratings rose
-on two of three — boombox mage 3 → 4, winding road 1 → 3, tree unchanged — with
-the same model and the same prompts
-([see them side by side](https://pixeli.pebbly.space/benchmarks)). The design
+characters it changed. Early results on the three benchmarks, same model and
+prompts: the maintainer rated the mage 3 → 4, the road 1 → 3 and the tree
+unchanged. That is one run each and one human rater (the older runs also carry a
+blind model judge the new ones don't yet), so a signal rather than a measurement
+— [see them side by side](https://pixeli.pebbly.space/benchmarks). The design
 and its limits are in [ADR-0010](docs/adr/0010-pixel-grid.md).
 
 ### The rest of the toolbox
