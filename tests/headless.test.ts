@@ -17,6 +17,10 @@ const scratch = mkdtempSync(path.join(tmpdir(), "aia-headless-"));
  * `crash` exits mid-session; every other command echoes what it received, and
  * the process remembers how many commands it has seen so a restart is visible.
  */
+// The fake is a node script marked executable. Windows runs executables by extension only, so
+// spawning it fails with EFTYPE there; these tests cover platform-independent protocol logic.
+const noFakeBinary = process.platform === "win32" ? "a script cannot be spawned as an executable on Windows" : false;
+
 function fakeAseprite(): string {
   const file = path.join(scratch, "fake-aseprite.mjs");
   writeFileSync(
@@ -58,7 +62,7 @@ function client(guardFiles: string[] | null = null) {
   });
 }
 
-test("headless replies are matched by id and unmarked output is ignored", async () => {
+test("headless replies are matched by id and unmarked output is ignored", { skip: noFakeBinary }, async () => {
   const link = client();
   try {
     const [a, b] = await Promise.all([
@@ -73,7 +77,7 @@ test("headless replies are matched by id and unmarked output is ignored", async 
   }
 });
 
-test("a crash between calls is reported once, then the session restarts empty", async () => {
+test("a crash between calls is reported once, then the session restarts empty", { skip: noFakeBinary }, async () => {
   const link = client();
   try {
     await link.call("session.site");
@@ -87,7 +91,7 @@ test("a crash between calls is reported once, then the session restarts empty", 
   }
 });
 
-test("a crash while idle surfaces on the next call instead of a silent fresh session", async () => {
+test("a crash while idle surfaces on the next call instead of a silent fresh session", { skip: noFakeBinary }, async () => {
   const link = client();
   try {
     await link.call("reply_then_die");
@@ -101,7 +105,7 @@ test("a crash while idle surfaces on the next call instead of a silent fresh ses
   }
 });
 
-test("headless refuses to write a file the user's Aseprite window has open", async () => {
+test("headless refuses to write a file the user's Aseprite window has open", { skip: noFakeBinary }, async () => {
   const open = path.join(scratch, "open.aseprite");
   const link = client([open]);
   try {
@@ -144,7 +148,7 @@ test("headless preflight without an executable says so instead of pretending", a
   }
 });
 
-test("preflight switches mode only when asked, and the choice sticks", async () => {
+test("preflight switches mode only when asked, and the choice sticks", { skip: noFakeBinary }, async () => {
   // A live server with nothing to attach to: ports nobody listens on, no bridge spawn.
   const { server, live } = createServer({
     pluginPort: 19971,
