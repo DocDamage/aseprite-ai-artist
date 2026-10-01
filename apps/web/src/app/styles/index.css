@@ -213,9 +213,11 @@
  * square by --notch, the border width, which is how 8-bit UI rounds a box that size.
  */
 :root {
+	--pixel-frame-color: rgb(27 24 36 / 0.8);
 	--pixel-frame-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='42' viewBox='0 0 42 42'%3E%3Cpath fill='%231b1824' fill-opacity='0.8' d='M12 0h18v6H12zM6 6h6v6H6zM30 6h6v6h-6zM0 12h6v18H0zM36 12h6v18h-6zM6 30h6v6H6zM30 30h6v6h-6zM12 36h18v6H12z'/%3E%3C/svg%3E");
 }
 .dark {
+	--pixel-frame-color: #6a6080;
 	--pixel-frame-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='42' viewBox='0 0 42 42'%3E%3Cpath fill='%236a6080' fill-opacity='1' d='M12 0h18v6H12zM6 6h6v6H6zM30 6h6v6h-6zM0 12h6v18H0zM36 12h6v18h-6zM6 30h6v6H6zM30 30h6v6h-6zM12 36h18v6H12z'/%3E%3C/svg%3E");
 }
 @layer components {
@@ -232,6 +234,23 @@
 			var(--step) calc(100% - var(--frame)), var(--frame) calc(100% - var(--frame)), var(--frame) calc(100% - var(--step)),
 			0 calc(100% - var(--step)), 0 var(--step), var(--frame) var(--step), var(--frame) var(--frame), var(--step) var(--frame)
 		);
+	}
+	/* The frame's inner corner steps, drawn again above the content: full-bleed art or a glow
+	   inside the frame would otherwise paint over them, since children paint above their
+	   parent's border. Colour must match the SVG's. */
+	.pixel-frame::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		pointer-events: none;
+		background: var(--pixel-frame-color);
+		--corner: linear-gradient(#000 0 0);
+		mask:
+			var(--corner) top left / var(--frame) var(--frame) no-repeat,
+			var(--corner) top right / var(--frame) var(--frame) no-repeat,
+			var(--corner) bottom left / var(--frame) var(--frame) no-repeat,
+			var(--corner) bottom right / var(--frame) var(--frame) no-repeat;
 	}
 	/* A raised panel on a card, as game cards draw their name and text boxes: dark fill, a dark
 	   rim, a one-pixel light bevel on top and left, a shadow on the bottom and right, square-cut
@@ -257,6 +276,32 @@
 	}
 	.pixel-notch {
 		--notch: 2px;
+	}
+	/* The corner pixel inside each cut, as the 8-bit components draw it: without it the edges
+	   just stop short of each other and the box reads as broken, not rounded. A ring in the
+	   parent's own border colour, masked down to its four corners; `border-color: inherit`
+	   keeps it in step with whatever colour class the box uses, and `solid` keeps it whole on
+	   dashed boxes. */
+	.plate::before,
+	.gem::before,
+	.pixel-notch::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+		border: var(--notch) solid;
+		border-color: inherit;
+		--corner: linear-gradient(#000 0 0);
+		mask:
+			var(--corner) top left / var(--notch) var(--notch) no-repeat,
+			var(--corner) top right / var(--notch) var(--notch) no-repeat,
+			var(--corner) bottom left / var(--notch) var(--notch) no-repeat,
+			var(--corner) bottom right / var(--notch) var(--notch) no-repeat;
+	}
+	/* The corner pixels position against the box; boxes Tailwind already positions keep theirs. */
+	:is(.pixel-frame, .plate, .gem, .pixel-notch):not(.absolute, .fixed, .sticky) {
+		position: relative;
 	}
 	.plate,
 	.gem,

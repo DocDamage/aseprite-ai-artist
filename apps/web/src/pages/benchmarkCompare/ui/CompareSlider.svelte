@@ -29,7 +29,7 @@
 	let dragging = $state(false);
 
 	/** The frame border on both sides, and the divider slider under the art in a box. */
-	const FRAME = 8;
+	const FRAME = 12;
 	const CONTROLS = 64;
 
 	const native = (file: FileView) =>
