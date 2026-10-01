@@ -27,15 +27,21 @@ has to see them to recover.
 - **`ascii`** — exact text grid, one glyph per pixel, with coordinate rulers and
   a colour legend. For verifying precise positions, and for clients with no
   vision. Capped at 64×64 cells and 71 distinct colours; above either it refuses
+  — pass a smaller `region`. `rulers: false` prints the bare rows; either way
+  the result carries `gridRows`, `legend` and `origin`, which `draw` kind `grid`
+  takes back unchanged — read, edit the rows, write.
 - **`filmstrip`** — every frame in one image. A vision model reads only the
-  first frame of a GIF, so this is the only way to review animation.
+  first frame of a GIF, so this is the only way to review animation. `layer`
+  limits it to one layer.
 - **`diff`** — pixel-level text diff between two frames. `.` unchanged,
   `-` erased, glyph = the new colour. Reports `changedBounds` (tight bounding
   box of every changed pixel, null when nothing changed) and `percentChanged`.
 - **`onion`** — the target frame at full opacity over ghosted neighbouring
   frames (`framesBefore`/`framesAfter`, default 1 each; `ghostOpacity`
   0-255, default 90), oldest-first. For checking in-betweens and spacing while
-  animating without stepping through frames one at a time. Reports
+  animating without stepping through frames one at a time. Over an opaque
+  background the target hides the ghosts — pass `layer` to show only the part
+  that moves. Reports
   `framesUsed`, the 1-based frame numbers composited.
 - **`compare`** — the reference layer (`reference`, default `"reference"`) at
   full opacity on the left, the art with every reference layer removed on the
@@ -48,7 +54,7 @@ has to see them to recover.
 
 | Tool | Ops / kinds | Notes |
 |------|-------------|-------|
-| `draw` | `pixels` `line` `polyline` `rect` `ellipse` `fill` `replace` `dither` `gradient` `clear` `blit` `text` | Batch. One transaction, one undo step. |
+| `draw` | `pixels` `line` `polyline` `rect` `ellipse` `fill` `replace` `dither` `gradient` `clear` `blit` `text` `grid` | Batch. One transaction, one undo step. |
 | `select` | `get` `none` `all` `rect` `ellipse` `color` `invert` `grow` `shrink` | Scopes `draw`, `transform` and `recolor`. |
 | `transform` | `translate` `flip` `rotate` `scale` `outline` `crop_to_content` | Acts on ONE cel; there is no scope parameter. Non-90° rotation needs `allowLossy`. `outline`'s `side` (`outside` default, `inside`) picks which pixels get painted; `diagonals` (default `false`) switches 4- to 8-neighbour. |
 | `recolor` | `shade` `snap` `replace` `hue_shift` `desaturate` | Operates on distinct colours, not pixels; one pass, one undo step. |
@@ -66,6 +72,18 @@ the glyph ink box — outline and shadow never shift it), `letterSpacing`,
 (`textBounds`, null when there's no ink) without touching the sprite — size a
 panel or centre a label first. See
 [ADR-0005](adr/0005-bitmap-text.md) and the font format below.
+
+`draw` op kind `grid` is a picture written as text — the writable form of
+`look op="ascii"`: `x`, `y` (top-left, default 0), `legend` (one character →
+`#rrggbb` or `#rrggbbaa`, or `null` for transparent; `.` is transparent unless redefined),
+`rows` (top to bottom, one character per pixel, every row the same width, at
+most 256×256), `transparent` (`erase`, the default, clears transparent cells so
+the rectangle ends up exactly as written; `skip` leaves what is underneath).
+It is compiled on the server into `clear` rectangles and one `pixels` op per
+colour: the palette lock snaps each legend colour once, and `selectionOnly`
+clips both the painted and the erased cells. A
+ragged row or a character missing from the legend is refused with its row and
+column, never padded. See [ADR-0010](adr/0010-pixel-grid.md).
 
 ### Font format
 
@@ -111,7 +129,7 @@ frame where both layers' opaque pixels intersect.
 | Tool | Ops | Notes |
 |------|-----|-------|
 | `reference` | `import` `sample_palette` `list` `remove` | Imports on a locked, semi-transparent layer. `region` crops one panel of the source (source pixels, also for `sample_palette`); `grid` `{columns, rows, count?, gap?}` cuts a storyboard into panels and puts panel i on frame `frame`+i-1 of one layer — the sprite needs the frames first. |
-| `export` | `png` `gif` `spritesheet` `frames` `aseprite` | `spritesheet` writes a JSON atlas beside the PNG. |
+| `export` | `png` `gif` `spritesheet` `frames` `aseprite` | `spritesheet` writes a JSON atlas beside the PNG. `layers` (png, gif, frames, spritesheet) exports only those layers; `tags` (gif, frames, spritesheet) only the frames they cover. `aseprite` refuses both, and an unknown name is refused rather than exported as everything. Named layers export visible even if hidden; with `tags`, `frames` filenames count from the first kept frame. |
 | `tileset` | `list` `create_layer` `get` `stamp` `pack` `export` | Needs the `tileset` feature. `pack` turns a painted mockup into a tileset plus a reconstructing tilemap; `export` writes Tiled (`.tsj` + `.tmj`), Godot 4 (`.tres`) or JSON, with the packed PNG. |
 
 ## Escape hatch

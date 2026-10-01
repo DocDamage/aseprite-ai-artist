@@ -26,7 +26,32 @@ the same, and step 3 gains a comparison.
 ### 2. Block in the silhouette
 
 One flat colour, no detail. Target the `base` layer. Everything in one `draw`
-call:
+call.
+
+For anything up to about 32×32, write it as a **grid**: one character per
+pixel, so you see the whole silhouette while you write it instead of finding
+out afterwards what a stack of ellipses and rects added up to.
+
+```
+draw layer="base" label="block in slime" ops=[
+  { kind:"grid", x:8, y:10, legend:{ "O":"#5f574f" }, rows:[
+    "....OOOO....",
+    "..OOOOOOOO..",
+    ".OOOOOOOOOO.",
+    "OOOOOOOOOOOO",
+    "OOOOOOOOOOOO",
+    ".OOOOOOOOOO." ] }
+]
+```
+
+Every row must be the same width, `.` is transparent, and transparent cells
+erase what is under them (`transparent:"skip"` to stamp over existing art
+instead). Bigger sprites: one grid per body part or per layer, each at its own
+`x`/`y` — long rows of identical characters are where a model miscounts, and a
+ragged row is refused with its row number rather than silently shifted.
+
+Shapes are still the right tool for big regular forms — a sky gradient, a
+floor, a 40-pixel circle:
 
 ```
 draw layer="base" label="block in knight" ops=[
@@ -94,6 +119,11 @@ look op="ascii"
 
 The text grid is where you catch the pixel one row too low and the line run of
 3 in a sequence of 2s. A preview cannot show you those.
+
+To fix what it shows, edit the grid itself: `look op="ascii" layer="base"
+rulers=false region=…` returns bare rows plus `origin`; change the cells that
+are wrong and send the rows back as `draw` kind `grid` at that origin, with the
+legend `look` gave you. Only the region you send is touched.
 
 ### 8. Validate and report
 

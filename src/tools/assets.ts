@@ -100,8 +100,14 @@ export function registerAssetTools(server: McpServer, live: AsepriteLink): void 
         padding: z.number().int().min(0).max(16).default(0).describe("Pixels between frames; prevents bleed at non-integer zoom."),
         trim: z.boolean().default(false).describe("Trim transparent margins; the atlas keeps the original offsets."),
         includeJson: z.boolean().default(true).describe("Write a sibling JSON atlas for 'spritesheet'."),
-        layers: z.array(z.string()).optional().describe("Export only these layers."),
-        tags: z.array(z.string()).optional().describe("Export only these tags."),
+        layers: z
+          .array(z.string())
+          .optional()
+          .describe("Export only these layers (names or group paths; a group brings its children). png, gif, frames, spritesheet; 'aseprite' refuses it."),
+        tags: z
+          .array(z.string())
+          .optional()
+          .describe("Export only the frames these tags cover. gif, frames, spritesheet; 'png' and 'aseprite' refuse it. An unknown tag is refused."),
       },
       outputSchema: {
         sprite: z.string(),

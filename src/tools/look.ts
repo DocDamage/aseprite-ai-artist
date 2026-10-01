@@ -24,9 +24,9 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
       description:
         "See what is actually on the canvas. Ops:\n" +
         "• 'preview' — a nearest-neighbour upscaled PNG of the active frame (~1024px long edge). Use for overall read: silhouette, colour, whether it looks like the thing.\n" +
-        "• 'ascii' — an exact text grid, one glyph per pixel with a colour legend and coordinate rulers. Use to verify precise pixel positions and values, to count cells, or on any client without vision. Capped at 64×64; pass a region to crop.\n" +
+        "• 'ascii' — an exact text grid, one glyph per pixel with a colour legend and coordinate rulers. Use to verify precise pixel positions and values, to count cells, or on any client without vision. Capped at 64×64; pass a region to crop. `rulers=false` prints the bare rows, which `draw` kind 'grid' takes back as-is: read a layer, edit the rows, send them at the same x/y.\n" +
         "• 'filmstrip' — every frame composited into one image. The only reliable way to review an animation, since a vision model reads just the first frame of a GIF.\n" +
-        "• 'onion' — the target frame at full opacity over ghosted neighbouring frames, oldest-first. Use to check in-betweens and spacing while animating, without stepping through frames one at a time.\n" +
+        "• 'onion' — the target frame at full opacity over ghosted neighbouring frames, oldest-first. Use to check in-betweens and spacing while animating, without stepping through frames one at a time. Over an opaque background the target hides every ghost — pass `layer` to onion-skin just the part that moves.\n" +
         "• 'diff' — a pixel-level text diff between two frames: '.' unchanged, '-' erased, glyph = the new colour. Use it to confirm exactly what an edit touched.\n" +
         "• 'compare' — the reference layer (left, full opacity) beside the art without any reference layer (right), same frame, same scale. Use it when drawing from a concept or storyboard: name the few largest mismatches and fix only those.\n" +
         "Draw, then look, then fix. Do not report a sprite finished without looking at it.",
@@ -70,7 +70,13 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
         layer: z
           .string()
           .optional()
-          .describe("Read a single layer instead of the composited image."),
+          .describe("Read a single layer instead of the composited image. Honoured by preview, ascii, diff, filmstrip and onion; compare has its own `reference`."),
+        rulers: z
+          .boolean()
+          .default(true)
+          .describe(
+            "ascii: false drops the coordinate rulers and row labels, leaving rows you can edit and pass straight to `draw` kind 'grid' with the reported origin.",
+          ),
         scale: z
           .number()
           .int()
@@ -89,6 +95,14 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
         scale: z.number().int().optional(),
         text: z.string().optional().describe("The grid, for 'ascii' and 'diff'."),
         legend: z.record(z.string()).optional().describe("glyph → #rrggbb."),
+        gridRows: z
+          .array(z.string())
+          .optional()
+          .describe("ascii: the bare rows, '.' transparent — `draw` kind 'grid' `rows`, with `legend` and `origin`."),
+        origin: z
+          .object({ x: z.number().int(), y: z.number().int() })
+          .optional()
+          .describe("ascii: sprite position of the grid's top-left cell — the `x`/`y` for `draw` kind 'grid'."),
         changedPixels: z.number().int().optional(),
         totalPixels: z.number().int().optional(),
         changedBounds: z
@@ -108,7 +122,7 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
         switch (args.op) {
           case "ascii": {
             const region = await readRegion(live, args);
-            const view = renderAscii(region);
+            const view = renderAscii(region, { showRulers: args.rulers });
             return ok(
               {
                 op: "ascii",
@@ -117,6 +131,8 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
                 height: view.height,
                 text: view.text,
                 legend: view.legend,
+                gridRows: view.rows,
+                origin: { x: view.originX, y: view.originY },
               },
               `${view.width}×${view.height} at (${view.originX},${view.originY})\n\n${view.text}\n\nLegend: ${formatLegend(view.legend)}\n'.' = transparent`,
             );
@@ -164,6 +180,7 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
               framesBefore: args.framesBefore,
               framesAfter: args.framesAfter,
               ghostOpacity: args.ghostOpacity,
+              layer: args.layer,
               region: args.region,
               path: out,
               scale: args.scale,
@@ -193,6 +210,7 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
               scale: number;
             }>("look.filmstrip", {
               sprite: args.sprite,
+              layer: args.layer,
               path: out,
               scale: args.scale,
             });

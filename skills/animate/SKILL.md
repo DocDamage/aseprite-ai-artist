@@ -59,7 +59,11 @@ cel op="move" layer="arm-near" frame=3 dx=2 dy=-1
 ```
 
 Redraw only where a part genuinely changes shape — a foreshortened arm, a
-bending knee.
+bending knee. Do that redraw as a grid: `look op="ascii" layer=… frame=…
+rulers=false region=…` on the part in the previous key, edit the rows into the
+new shape, and `draw` kind `grid` them onto the new frame at the same origin.
+Copying the rows first keeps the part's volume from drifting, because every
+pixel you did not change stays exactly where it was.
 
 ### 4. Look at the keys before adding in-betweens
 

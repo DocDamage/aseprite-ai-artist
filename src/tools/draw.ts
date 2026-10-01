@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { AsepriteLink } from "../bridge/link.js";
 import { LiveError } from "../lib/protocol.js";
+import { compileGrid, MAX_GRID_SIDE } from "../lib/grid.js";
 import { layoutText, loadFont, type TextAnchor } from "../lib/text.js";
 import { fail, hexColor, ok, targetShape } from "./kit.js";
 
@@ -70,7 +71,7 @@ const drawOp = z.discriminatedUnion("kind", [
     kind: z.literal("fill"),
     color: hexColor,
     at: z.object({ x: z.number().int(), y: z.number().int() }),
-    tolerance: z.number().int().min(0).max(255).default(0),
+    tolerance: z.number().int().min(0).max(255).default(0).describe("Largest per-channel difference (0–255) still counted as the clicked colour. RGB sprites only; indexed and grayscale fills stay exact."),
     contiguous: z.boolean().default(true),
   }),
   z.object({
@@ -140,6 +141,25 @@ const drawOp = z.discriminatedUnion("kind", [
     shadowOffset: z.object({ x: z.number().int(), y: z.number().int() }).default({ x: 1, y: 1 }),
     scale: z.number().int().min(1).max(8).default(1),
   }),
+  z.object({
+    kind: z.literal("grid"),
+    x: z.number().int().default(0).describe("Sprite x of the grid's left column."),
+    y: z.number().int().default(0).describe("Sprite y of the grid's top row."),
+    legend: z
+      .record(z.string(), hexColor.nullable())
+      .describe("One character → colour; null is transparent. '.' is transparent unless you redefine it."),
+    rows: z
+      .array(z.string().min(1))
+      .min(1)
+      .max(MAX_GRID_SIDE)
+      .describe("Top to bottom, one character per pixel, every row the same width."),
+    transparent: z
+      .enum(["erase", "skip"])
+      .default("erase")
+      .describe(
+        "Transparent cells: 'erase' clears them, so the grid's rectangle ends up exactly as written; 'skip' leaves the pixel underneath, to stamp a shape over existing art.",
+      ),
+  }),
 ]);
 
 export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
@@ -148,11 +168,13 @@ export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
     {
       title: "Draw",
       description:
-        "Apply a batch of drawing operations to one cel, as a single undoable action. Ops: pixels, line, polyline, rect, ellipse, fill, replace, dither, gradient, clear, blit, text. " +
+        "Apply a batch of drawing operations to one cel, as a single undoable action. Ops: pixels, line, polyline, rect, ellipse, fill, replace, dither, gradient, clear, blit, text, grid. " +
         "Batch aggressively — a whole sprite in one call is normal and correct, and it means the user can undo your work with one Ctrl+Z. " +
         "Set `paletteLock` (default true) to snap every colour to the sprite's palette by perceptual distance before anything is written, so you cannot silently widen a curated palette. " +
         "Ops run in array order, so paint fills before outlines and outlines before highlights. " +
-        "'text' is laid out here from a bitmap font and expanded to plain pixels before it reaches Aseprite — pass `measureOnly: true` with only 'text' ops to get each one's ink bounds without touching the sprite, e.g. to centre a label first.",
+        "'text' is laid out here from a bitmap font and expanded to plain pixels before it reaches Aseprite — pass `measureOnly: true` with only 'text' ops to get each one's ink bounds without touching the sprite, e.g. to centre a label first. " +
+        "'grid' paints a picture written as text — one character per pixel, a legend mapping characters to colours, the same shape `look op=\"ascii\"` returns — so you can see the whole silhouette while you write it instead of composing it from shapes. " +
+        "It is the easiest way to draw a small sprite or a whole animation frame, and to edit one: read a region with `look op=\"ascii\" layer=… rulers=false`, change the rows, and send them back as a grid at the region's x/y.",
       inputSchema: {
         ...targetShape,
         ops: z.array(drawOp).min(1).max(512).describe("Applied in order, in one transaction."),
@@ -243,6 +265,8 @@ export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
           if (op.kind === "text") {
             const layout = layoutText({ ...op, font: loadFont(op.font) });
             if (layout.pixels.length > 0) expandedOps.push({ kind: "pixels", points: layout.pixels });
+          } else if (op.kind === "grid") {
+            expandedOps.push(...compileGrid(op).ops);
           } else {
             expandedOps.push(op);
           }
@@ -255,8 +279,10 @@ export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
         );
         const snapped = (data.colorsSnapped as { from: string; to: string; deltaE: number }[]) ?? [];
         const far = snapped.filter((s) => s.deltaE > 12);
+        // Lua counts the expanded ops; the agent sent — and should hear back about — its own.
+        data.opsApplied = args.ops.length;
         const summary = [
-          `${String(data.opsApplied ?? args.ops.length)} op(s), ${String(data.pixelsChanged ?? 0)} pixel(s) changed on '${String(data.layer)}' frame ${String(data.frame)}.`,
+          `${args.ops.length} op(s), ${String(data.pixelsChanged ?? 0)} pixel(s) changed on '${String(data.layer)}' frame ${String(data.frame)}.`,
         ];
         if (far.length > 0) {
           summary.push(
@@ -285,7 +311,7 @@ export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
         ...targetShape,
         rect: rectShape.optional(),
         color: hexColor.optional().describe("For op 'color'."),
-        tolerance: z.number().int().min(0).max(255).default(0),
+        tolerance: z.number().int().min(0).max(255).default(0).describe("Largest per-channel difference (0–255) still counted as the clicked colour. RGB sprites only; indexed and grayscale fills stay exact."),
         contiguous: z.boolean().default(false).describe("For op 'color'."),
         amount: z.number().int().positive().default(1).describe("Pixels, for grow/shrink."),
         mode: z

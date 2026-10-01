@@ -135,7 +135,12 @@ export function registerStructureTools(server: McpServer, live: AsepriteLink): v
           .array(z.number().int().positive())
           .optional()
           .describe("Per-frame durations from frame 1, for 'set_duration'."),
-        toIndex: z.number().int().positive().optional().describe("For 'reorder'."),
+        toIndex: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe("For 'reorder': the 1-based position `frame` ends up at. Its cels and duration move with it; tag ranges stay where they are."),
         linkCels: z
           .boolean()
           .default(false)

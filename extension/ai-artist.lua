@@ -15,7 +15,7 @@
 --------------------------------------------------------------------------------
 
 local PROTOCOL_VERSION = 1
-local EXTENSION_VERSION = "0.4.0"
+local EXTENSION_VERSION = "0.5.0"
 
 -- Optional capabilities. The wire version stays 1 across builds; new command
 -- families are gated on these flags plus the loud unsupported_command reply,
@@ -483,7 +483,14 @@ end
 
 local Draw = {}
 
+-- The selection draw.batch clips to when selectionOnly is set, nil otherwise.
+-- Every primitive writes through Draw.pixel, so this one check clips all of
+-- them; a primitive that wrote with img:drawPixel directly would silently
+-- paint outside the selection.
+Draw.mask = nil
+
 function Draw.pixel(img, ox, oy, x, y, value)
+  if Draw.mask and not Draw.mask:contains(x, y) then return 0 end
   local lx, ly = x - ox, y - oy
   if lx >= 0 and ly >= 0 and lx < img.width and ly < img.height then
     img:drawPixel(lx, ly, value)
@@ -614,12 +621,25 @@ function Draw.flood(img, ox, oy, sx, sy, value, tolerance, contiguous)
   local target = img:getPixel(lx, ly)
   if target == value then return 0 end
 
+  -- tolerance is the largest per-channel difference (0-255) still counted as
+  -- the target colour. Indexed and grayscale pixels have no RGB channels to
+  -- compare, so they stay exact.
+  local matches = function(px) return px == target end
+  if (tolerance or 0) > 0 and img.colorMode == ColorMode.RGB then
+    local pc = app.pixelColor
+    local r, g, b, a = pc.rgbaR(target), pc.rgbaG(target), pc.rgbaB(target), pc.rgbaA(target)
+    matches = function(px)
+      return math.abs(pc.rgbaR(px) - r) <= tolerance and math.abs(pc.rgbaG(px) - g) <= tolerance
+        and math.abs(pc.rgbaB(px) - b) <= tolerance and math.abs(pc.rgbaA(px) - a) <= tolerance
+    end
+  end
+
   local count = 0
   if not contiguous then
     for y = 0, img.height - 1 do
       for x = 0, img.width - 1 do
-        if img:getPixel(x, y) == target then
-          img:drawPixel(x, y, value); count = count + 1
+        if matches(img:getPixel(x, y)) then
+          count = count + Draw.pixel(img, ox, oy, x + ox, y + oy, value)
         end
       end
     end
@@ -634,8 +654,9 @@ function Draw.flood(img, ox, oy, sx, sy, value, tolerance, contiguous)
     local key = y * img.width + x
     if not seen[key] and x >= 0 and y >= 0 and x < img.width and y < img.height then
       seen[key] = true
-      if img:getPixel(x, y) == target then
-        img:drawPixel(x, y, value)
+      -- A masked pixel is neither filled nor crossed: the fill stays inside
+      -- the selection the way Aseprite's own bucket does.
+      if matches(img:getPixel(x, y)) and Draw.pixel(img, ox, oy, x + ox, y + oy, value) == 1 then
         count = count + 1
         stack[#stack + 1] = { x + 1, y }
         stack[#stack + 1] = { x - 1, y }
@@ -1059,6 +1080,20 @@ local function pick_scale(w, h, requested)
   return math.min(wanted, by_output)
 end
 
+--- Frame `frame` as one image: the whole composite, or a single layer's cel
+--- when `layer_name` is set. A single layer is how onion skin and filmstrip
+--- stay readable over an opaque background, which otherwise hides every ghost.
+local function frame_image(s, frame, layer_name)
+  local img = Image(s.width, s.height, s.colorMode)
+  if layer_name then
+    local cel = get_cel(s, find_layer(s, layer_name), frame, false)
+    if cel then img:drawImage(cel.image, cel.position) end
+  else
+    img:drawSprite(s, frame)
+  end
+  return img
+end
+
 H["look.preview"] = function(args)
   local s = find_sprite(args.sprite)
   local frame = find_frame(s, args.frame)
@@ -1067,13 +1102,7 @@ H["look.preview"] = function(args)
   local region = args.region and clamp_region(s, args.region) or
     { x = 0, y = 0, width = s.width, height = s.height }
 
-  local flat = Image(s.width, s.height, s.colorMode)
-  if args.layer then
-    local cel = get_cel(s, find_layer(s, args.layer), frame, false)
-    if cel then flat:drawImage(cel.image, cel.position) end
-  else
-    flat:drawSprite(s, frame)
-  end
+  local flat = frame_image(s, frame, args.layer)
 
   local cropped = Image(region.width, region.height, s.colorMode)
   cropped:drawImage(flat, Point(-region.x, -region.y))
@@ -1117,8 +1146,7 @@ H["look.filmstrip"] = function(args)
   strip:clear(app.pixelColor.rgba(64, 64, 72, 255))
 
   for i, frame in ipairs(s.frames) do
-    local cell = Image(s.width, s.height, s.colorMode)
-    cell:drawSprite(s, frame)
+    local cell = frame_image(s, frame, args.layer)
     local rgb = cell.colorMode == ColorMode.RGB and cell or Image(cell, nil)
     local col = (i - 1) % cols
     local row = math.floor((i - 1) / cols)
@@ -1169,13 +1197,12 @@ H["look.onion"] = function(args)
   local frames_used = {}
   for n = from, to do
     if n ~= target.frameNumber then
-      local ghost = Image(s.width, s.height, s.colorMode)
-      ghost:drawSprite(s, s.frames[n])
+      local ghost = frame_image(s, s.frames[n], args.layer)
       composite:drawImage(ghost, Point(0, 0), ghostOpacity)
     end
     frames_used[#frames_used + 1] = n
   end
-  composite:drawSprite(s, target)
+  composite:drawImage(frame_image(s, target, args.layer), Point(0, 0))
 
   local cropped = Image(region.width, region.height, s.colorMode)
   cropped:drawImage(composite, Point(-region.x, -region.y))
@@ -1387,7 +1414,8 @@ H["draw.batch"] = function(args)
       "the select tool first, or drop selectionOnly.")
   end
 
-  transact(args.label and ("AI: " .. args.label) or "AI: draw", function()
+  Draw.mask = selection
+  local ok, err = pcall(transact, args.label and ("AI: " .. args.label) or "AI: draw", function()
     local cel = get_cel(s, layer, frame, args.createCel ~= false)
     if not cel then
       fault("invalid_args", "No cel on '" .. layer.name .. "' frame " .. frame.frameNumber ..
@@ -1420,9 +1448,7 @@ H["draw.batch"] = function(args)
         for _, p in ipairs(op.points) do
           local value = p.color and resolve(p.color) or fallback
           if value == nil then fault("invalid_args", "A pixel has no colour and the op has no default `color`.") end
-          if not selection or selection:contains(p.x, p.y) then
-            changed = changed + Draw.pixel(img, ox, oy, p.x, p.y, value)
-          end
+          changed = changed + Draw.pixel(img, ox, oy, p.x, p.y, value)
         end
       elseif kind == "line" then
         changed = changed + Draw.line(img, ox, oy, op.from.x, op.from.y, op.to.x, op.to.y,
@@ -1457,8 +1483,7 @@ H["draw.batch"] = function(args)
             local gx, gy = x + ox, y + oy
             if gx >= r.x and gy >= r.y and gx < r.x + r.width and gy < r.y + r.height
                and img:getPixel(x, y) == from then
-              img:drawPixel(x, y, to)
-              changed = changed + 1
+              changed = changed + Draw.pixel(img, ox, oy, gx, gy, to)
             end
           end
         end
@@ -1523,10 +1548,14 @@ H["draw.batch"] = function(args)
         end
       elseif kind == "clear" then
         local r = op.region
-        if r then
+        if r or selection then
+          -- Per pixel, so selectionOnly clips the erase like any other write.
+          r = r or { x = ox, y = oy, width = img.width, height = img.height }
+          -- Indexed sprites mark transparency with their own index, not 0.
+          local clear_value = s.colorMode == ColorMode.INDEXED and s.transparentColor or 0
           for y = r.y, r.y + r.height - 1 do
             for x = r.x, r.x + r.width - 1 do
-              changed = changed + Draw.pixel(img, ox, oy, x, y, 0)
+              changed = changed + Draw.pixel(img, ox, oy, x, y, clear_value)
             end
           end
         else
@@ -1562,6 +1591,10 @@ H["draw.batch"] = function(args)
 
     cel.image = img
   end)
+  -- Cleared on every path: a mask left behind would clip the next batch,
+  -- which may not have asked for selectionOnly at all.
+  Draw.mask = nil
+  if not ok then error(err, 0) end
 
   return {
     sprite = sprite_display_name(s),
@@ -1775,10 +1808,57 @@ H["frame.apply"] = function(args)
       elseif op == "activate" then
         app.frame = find_frame(s, args.frame)
       elseif op == "reorder" then
-        preserving_site(function()
-          app.frame = find_frame(s, args.frame)
-          app.command.MoveFrame{ before = need(args.toIndex, "toIndex") }
-        end)
+        -- Aseprite 1.3 registers no MoveFrame command (only NewFrame,
+        -- RemoveFrame, GotoFrame, ReverseFrames, FrameProperties), so a move is
+        -- insert, copy the cels across, delete the original.
+        local from = find_frame(s, args.frame).frameNumber
+        local to = need(args.toIndex, "toIndex")
+        if to < 1 or to > #s.frames then
+          fault("invalid_args", "toIndex " .. to .. " is outside frames 1–" .. #s.frames .. ".")
+        end
+        if to ~= from then
+          preserving_site(function()
+            -- Cel handles survive the insert (they are by id); Frame handles are
+            -- by number and would point at the wrong frame afterwards, so only
+            -- numbers are kept across it.
+            local moving = {}
+            for _, c in ipairs(s.cels) do
+              if c.frameNumber == from then moving[#moving + 1] = c end
+            end
+            local duration = s.frames[from].duration
+            -- A reorder moves a frame, not the cycles around it: the insert and
+            -- delete would otherwise grow one tag and shrink another.
+            local spans = {}
+            for _, t in ipairs(s.tags) do
+              spans[#spans + 1] = {
+                tag = t, from = t.fromFrame.frameNumber, to = t.toFrame.frameNumber,
+                name = t.name, color = t.color, aniDir = t.aniDir, repeats = t.repeats, data = t.data,
+              }
+            end
+            local dst = s:newEmptyFrame(to > from and to + 1 or to)
+            dst.duration = duration
+            for _, c in ipairs(moving) do
+              local copy = s:newCel(c.layer, dst, c.image, c.position)
+              copy.opacity = c.opacity
+              copy.zIndex = c.zIndex
+              copy.color = c.color
+              copy.data = c.data
+            end
+            s:deleteFrame(s.frames[to > from and from or from + 1])
+            for _, span in ipairs(spans) do
+              -- A tag covering only the moved frame dies with the deleted
+              -- original; its handle would raise, so rebuild it from the copy.
+              local ok = pcall(function() return span.tag.name end)
+              if ok then
+                span.tag.fromFrame = s.frames[span.from]
+                span.tag.toFrame = s.frames[span.to]
+              else
+                local t = s:newTag(span.from, span.to)
+                t.name, t.color, t.aniDir, t.repeats, t.data = span.name, span.color, span.aniDir, span.repeats, span.data
+              end
+            end
+          end)
+        end
       else
         fault("unsupported_command", "frame op '" .. tostring(op) .. "' is not supported.")
       end
@@ -2777,23 +2857,87 @@ end
 -- Export
 --------------------------------------------------------------------------------
 
---- Run `fn` on the sprite to export: the sprite itself at scale 1, otherwise a
---- throwaway copy resized nearest-neighbour. Both `frames` and `spritesheet` go
---- through Aseprite commands that read the active sprite and have no scale of
---- their own, so the only way to honour `scale` is to hand them a bigger sprite.
+--- Run `fn` on the sprite to export: the sprite itself when nothing needs
+--- changing, otherwise a throwaway copy — resized nearest-neighbour for
+--- `scale`, with every layer outside `layers` hidden (Aseprite's savers and
+--- the sheet exporter skip hidden layers) and every frame outside `tags`
+--- deleted. The export commands read the active sprite and have none of these
+--- options themselves, so the copy is the only way to honour them.
 --- The copy is made inside preserving_site (a scratch sprite created outside
 --- it would become the site that gets restored) and closed on every path.
-local function with_export_sprite(s, scale, fn)
-  if not scale or scale <= 1 then
+local function with_export_sprite(s, args, fn)
+  local scale = args.scale or 1
+  local layers = args.layers and args.layers[1] ~= nil and args.layers or nil
+  local tags = args.tags and args.tags[1] ~= nil and args.tags or nil
+  if scale <= 1 and not layers and not tags then
     app.sprite = s
     return fn(s)
   end
+
+  -- Resolve against the original first, so an unknown name is refused before
+  -- anything is written — exporting everything instead would be a silent lie.
+  local keep_frames = nil
+  if tags then
+    keep_frames = {}
+    for _, name in ipairs(tags) do
+      local tag = nil
+      for _, t in ipairs(s.tags) do if t.name == name then tag = t end end
+      if not tag then fault("invalid_args", "No tag named '" .. tostring(name) .. "'.") end
+      for n = tag.fromFrame.frameNumber, tag.toFrame.frameNumber do keep_frames[n] = true end
+    end
+  end
+  local keep_layers = nil
+  if layers then
+    -- Keyed by stack-index path, not by the Layer: every read of a layer
+    -- returns a fresh userdata wrapper, so two handles to the same layer are
+    -- different table keys. The path also matches the copy's layer exactly.
+    -- A top-level layer's parent is the Sprite, which errors on `isGroup`, so
+    -- the walk stops by comparing against the sprite (Sprite defines __eq).
+    local function path_of(layer)
+      local key = tostring(layer.stackIndex)
+      local parent = layer.parent
+      while parent ~= layer.sprite do
+        key = parent.stackIndex .. "/" .. key
+        parent = parent.parent
+      end
+      return key
+    end
+    keep_layers = {}
+    for _, name in ipairs(layers) do
+      local l = find_layer(s, name)
+      -- A kept group keeps its children; a kept child keeps the groups above
+      -- it visible, since a hidden parent hides everything inside.
+      local function keep_down(layer)
+        keep_layers[path_of(layer)] = true
+        if layer.isGroup then for _, child in ipairs(layer.layers) do keep_down(child) end end
+      end
+      keep_down(l)
+      local parent = l.parent
+      while parent ~= s do keep_layers[path_of(parent)] = true; parent = parent.parent end
+    end
+    keep_layers.path_of = path_of
+  end
+
   local result
   preserving_site(function()
     local copy = Sprite(s)
     app.sprite = copy
     local ok, err = pcall(function()
-      copy:resize(s.width * scale, s.height * scale)
+      if keep_layers then
+        local function hide(list)
+          for _, layer in ipairs(list) do
+            layer.isVisible = keep_layers[keep_layers.path_of(layer)] == true
+            if layer.isGroup then hide(layer.layers) end
+          end
+        end
+        hide(copy.layers)
+      end
+      if keep_frames then
+        for n = #copy.frames, 1, -1 do
+          if not keep_frames[n] then copy:deleteFrame(copy.frames[n]) end
+        end
+      end
+      if scale > 1 then copy:resize(s.width * scale, s.height * scale) end
       result = fn(copy)
     end)
     copy:close()
@@ -2809,14 +2953,22 @@ H["export.run"] = function(args)
   local files = {}
   local exported_frame = nil
 
+  local filtered = (args.layers and args.layers[1] ~= nil) or (args.tags and args.tags[1] ~= nil)
+
   preserving_site(function()
     app.sprite = s
 
     if op == "png" then
+      if args.tags and args.tags[1] ~= nil then
+        fault("invalid_args", "'png' writes one frame, picked with `frame`; `tags` applies to gif, frames and spritesheet.")
+      end
       local frame = find_frame(s, args.frame)
       exported_frame = frame.frameNumber
       local flat = Image(s.width, s.height, s.colorMode)
-      flat:drawSprite(s, frame)
+      -- Layers only: scale is applied to the flattened image below.
+      with_export_sprite(s, { layers = args.layers }, function(src)
+        flat:drawSprite(src, src.frames[frame.frameNumber])
+      end)
       local out = Sprite(s.width, s.height, s.colorMode)
       if s.colorMode == ColorMode.INDEXED then out:setPalette(s.palettes[1]) end
       out.cels[1].image = flat
@@ -2827,6 +2979,9 @@ H["export.run"] = function(args)
       files[#files + 1] = path
 
     elseif op == "aseprite" then
+      if filtered then
+        fault("invalid_args", "'aseprite' saves the whole document; `layers` and `tags` apply to png, gif, frames and spritesheet.")
+      end
       s:saveCopyAs(path)
       files[#files + 1] = path
 
@@ -2865,16 +3020,21 @@ H["export.run"] = function(args)
       end)
 
       local ok, err = pcall(function()
-        if s.colorMode == ColorMode.INDEXED and scale == 1 then
+        if s.colorMode == ColorMode.INDEXED and scale == 1 and not filtered then
           s:saveCopyAs(path)
+        elseif scale > 1 or filtered then
+          -- The helper hands back a throwaway copy here, safe to convert in place.
+          with_export_sprite(s, args, function(copy)
+            if copy.colorMode ~= ColorMode.INDEXED then
+              app.command.ChangePixelFormat{ ui = false, format = "indexed" }
+            end
+            copy:saveCopyAs(path)
+          end)
         else
           preserving_site(function()
             local copy = Sprite(s)
             app.sprite = copy
-            if scale > 1 then copy:resize(s.width * scale, s.height * scale) end
-            if copy.colorMode ~= ColorMode.INDEXED then
-              app.command.ChangePixelFormat{ ui = false, format = "indexed" }
-            end
+            app.command.ChangePixelFormat{ ui = false, format = "indexed" }
             copy:saveCopyAs(path)
             copy:close()
           end)
@@ -2890,7 +3050,7 @@ H["export.run"] = function(args)
 
     elseif op == "frames" then
       -- Aseprite expands {frame} itself when the filename carries the token.
-      with_export_sprite(s, args.scale, function(target) target:saveCopyAs(path) end)
+      with_export_sprite(s, args, function(target) target:saveCopyAs(path) end)
       files[#files + 1] = path
 
     elseif op == "spritesheet" then
@@ -2916,7 +3076,7 @@ H["export.run"] = function(args)
       end
       -- On a scaled copy the atlas describes the scaled texture, so frame
       -- rectangles and the image an engine loads always agree.
-      with_export_sprite(s, args.scale, function() app.command.ExportSpriteSheet(params) end)
+      with_export_sprite(s, args, function() app.command.ExportSpriteSheet(params) end)
       files[#files + 1] = path
 
     else

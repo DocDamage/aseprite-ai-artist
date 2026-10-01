@@ -48,6 +48,12 @@ One `draw` with all its ops, one `recolor`. That is one Ctrl+Z for the user if
 they dislike it. Use `label` to describe the intent — it becomes their undo
 entry.
 
+For a pixel-level fix, edit the text, not coordinates: `look op="ascii"
+layer=… rulers=false region=…` gives bare rows, the legend and `origin`; change
+the wrong cells and send the same rows back as one `draw` kind `grid` at that
+origin. Only that rectangle is touched, and its transparent cells erase — pass
+`transparent:"skip"` when you mean to add pixels without clearing any.
+
 ### 5. Verify what actually changed
 
 ```

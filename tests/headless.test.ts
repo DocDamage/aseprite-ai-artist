@@ -229,6 +229,43 @@ test("headless drives a real batch Aseprite end to end", { skip: aseprite ? fals
     const scoped = await call("look", { op: "diff", fromFrame: 1, toFrame: 2, layer: "still" });
     assert.ok((composite.changedPixels as number) > 0, "the composite sees the edit");
     assert.equal(scoped.changedPixels, 0, "a layer the edit never touched reports no change");
+
+    // draw kind 'grid' writes exactly its rows, and look ascii rulers=false
+    // reads them back cell for cell. Glyphs are reassigned on read, so compare
+    // colours, not characters.
+    await call("layer", { op: "create", name: "grid" });
+    const legend = { A: "#ff004d", B: "#29adff" };
+    const rows = ["..AB..", ".ABBA.", "AB..BA"];
+    await call("draw", { layer: "grid", frame: 1, paletteLock: false, ops: [{ kind: "grid", x: 1, y: 2, legend, rows }] });
+    const colours = async () => {
+      const read = await call("look", { op: "ascii", layer: "grid", frame: 1, rulers: false, region: { x: 1, y: 2, width: 6, height: 3 } });
+      assert.deepEqual(read.origin, { x: 1, y: 2 });
+      const back = read.legend as Record<string, string>;
+      return (read.gridRows as string[]).map((row) => Array.from(row, (g) => (g === "." ? "." : back[g]!.slice(0, 7))));
+    };
+    const expected = rows.map((row) => Array.from(row, (g) => (g === "." ? "." : legend[g as "A" | "B"])));
+    assert.deepEqual(await colours(), expected);
+
+    // Transparent cells erase — but only inside the selection when selectionOnly is set.
+    await call("select", { op: "rect", rect: { x: 1, y: 2, width: 3, height: 3 } });
+    await call("draw", {
+      layer: "grid",
+      frame: 1,
+      selectionOnly: true,
+      ops: [{ kind: "grid", x: 1, y: 2, legend: {}, rows: ["......", "......", "......"] }],
+    });
+    await call("select", { op: "none" });
+    assert.deepEqual(
+      await colours(),
+      expected.map((row) => row.map((c, x) => (x < 3 ? "." : c))),
+      "erase stops at the selection edge",
+    );
+
+    // look forwards every onion field to the extension: framesAfter and layer
+    // were each dropped once on the TS side, and the call still succeeded.
+    await call("frame", { op: "add", count: 3 });
+    const onion = await call("look", { op: "onion", frame: 1, framesBefore: 0, framesAfter: 3, layer: "grid" });
+    assert.deepEqual(onion.framesUsed, [1, 2, 3, 4]);
   } finally {
     live.close();
     await server.close();

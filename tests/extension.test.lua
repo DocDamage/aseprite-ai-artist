@@ -694,6 +694,127 @@ check("selectionOnly refuses rather than widening to the whole cel", function()
   end)
 end)
 
+-- Every op, not only 'pixels': before the clip moved into Draw.pixel, rect,
+-- line, ellipse, fill, dither, gradient, replace, clear and blit all painted
+-- straight through the selection while the schema promised otherwise.
+check("selectionOnly clips every draw op to the selection", function()
+  local base, ink = "#29adff", "#ff004d"
+  local whole = { x = 0, y = 0, width = 16, height = 16 }
+  local cases = {
+    { kind = "rect", rect = whole, color = ink, fill = ink },
+    { kind = "line", from = { x = 0, y = 8 }, to = { x = 15, y = 8 }, color = ink, thickness = 3 },
+    { kind = "polyline", closed = true, color = ink, fill = ink,
+      points = { { x = 0, y = 0 }, { x = 15, y = 0 }, { x = 15, y = 15 }, { x = 0, y = 15 } } },
+    { kind = "ellipse", rect = whole, color = ink, fill = ink },
+    { kind = "fill", at = { x = 2, y = 2 }, color = ink },
+    { kind = "fill", at = { x = 2, y = 2 }, color = ink, contiguous = false },
+    { kind = "replace", from = base, to = ink },
+    { kind = "dither", rect = whole, colorA = ink, colorB = ink },
+    { kind = "gradient", rect = whole, from = ink, to = ink },
+    { kind = "clear" },
+    { kind = "clear", region = whole },
+    { kind = "blit", from = { x = 0, y = 0, width = 4, height = 4 }, to = { x = 6, y = 6 }, fromLayer = "src" },
+  }
+  for _, op in ipairs(cases) do
+    withMockSprite(16, 16, ColorMode.RGB, function(mock)
+      local target = mock.layers[1]
+      local src = mock:newLayer()
+      src.name = "src"
+      call("draw.batch", { layer = "src", paletteLock = false,
+        ops = { { kind = "rect", rect = whole, color = ink, fill = ink } } })
+      call("draw.batch", { layer = target.name, paletteLock = false,
+        ops = { { kind = "rect", rect = whole, color = base, fill = base } } })
+      call("select.apply", { op = "rect", rect = { x = 0, y = 0, width = 8, height = 16 } })
+      call("draw.batch", { layer = target.name, paletteLock = false, selectionOnly = true, ops = { op } })
+
+      local cel = target:cel(1)
+      local want = app.pixelColor.rgba(41, 173, 255, 255)
+      local inside = 0
+      for y = 0, 15 do
+        for x = 0, 15 do
+          local value = cel.image:getPixel(x - cel.position.x, y - cel.position.y)
+          if x >= 8 and value ~= want then
+            error(op.kind .. " wrote (" .. x .. "," .. y .. ") outside the selection", 0)
+          end
+          if x < 8 and value ~= want then inside = inside + 1 end
+        end
+      end
+      assert(inside > 0, op.kind .. " changed nothing inside the selection")
+    end)
+  end
+end)
+
+check("a failed selectionOnly batch does not clip the next batch", function()
+  withMockSprite(16, 16, ColorMode.RGB, function(mock)
+    call("select.apply", { op = "rect", rect = { x = 0, y = 0, width = 4, height = 4 } })
+    local failed = A.handleCommand({ id = "t", cmd = "draw.batch", args = { selectionOnly = true,
+      paletteLock = false, ops = { { kind = "pixels", points = { { x = 1, y = 1 } } } } } })
+    assert(not failed.ok, "a pixel with no colour must fail")
+    local drew = call("draw.batch", { paletteLock = false,
+      ops = { { kind = "pixels", color = "#ff004d", points = { { x = 12, y = 12 } } } } })
+    assertEq(drew.pixelsChanged, 1, "pixel outside the old selection")
+  end)
+end)
+
+-- frame op 'reorder' called app.command.MoveFrame, which Aseprite 1.3 does not
+-- have: every reorder failed with "command 'MoveFrame' not found".
+check("frame reorder moves a frame's cels and duration, both directions, tags kept", function()
+  withMockSprite(4, 1, ColorMode.RGB, function(mock)
+    local layer = mock.layers[1]
+    call("frame.apply", { op = "add", count = 2 })
+    local colours = { "#ff004d", "#29adff", "#00e436" }
+    for f = 1, 3 do
+      call("draw.batch", { layer = layer.name, frame = f, paletteLock = false,
+        ops = { { kind = "pixels", color = colours[f], points = { { x = f, y = 0 } } } } })
+      mock.frames[f].duration = f / 10
+    end
+    mock:newTag(1, 3).name = "cycle"
+    local function order()
+      local out = {}
+      for f = 1, 3 do
+        local cel = layer:cel(f)
+        local x = -1
+        if cel then
+          for px in cel.image:pixels() do
+            if app.pixelColor.rgbaA(px()) > 0 then x = px.x + cel.position.x end
+          end
+        end
+        out[#out + 1] = x .. "@" .. math.floor(mock.frames[f].duration * 10 + 0.5)
+      end
+      return table.concat(out, " ")
+    end
+    call("frame.apply", { op = "reorder", frame = 1, toIndex = 3 })
+    assertEq(order(), "2@2 3@3 1@1", "frame 1 moved to the end")
+    call("frame.apply", { op = "reorder", frame = 3, toIndex = 1 })
+    assertEq(order(), "1@1 2@2 3@3", "and back to the front")
+    assertEq(mock.tags[1].fromFrame.frameNumber .. "-" .. mock.tags[1].toFrame.frameNumber, "1-3", "tag range")
+    -- A tag covering only the moved frame would die with the deleted original.
+    local hit = mock:newTag(2, 2)
+    hit.name = "hit"
+    call("frame.apply", { op = "reorder", frame = 2, toIndex = 3 })
+    local names = {}
+    for _, t in ipairs(mock.tags) do names[#names + 1] = t.name .. ":" .. t.fromFrame.frameNumber .. "-" .. t.toFrame.frameNumber end
+    table.sort(names)
+    assertEq(table.concat(names, " "), "cycle:1-3 hit:2-2", "one-frame tag survives")
+  end)
+end)
+
+-- `tolerance` was declared on op 'fill' and never read: every fill was exact.
+check("fill tolerance spreads across near colours and stops at far ones", function()
+  for _, case in ipairs({ { tolerance = 0, want = 1 }, { tolerance = 8, want = 3 } }) do
+    withMockSprite(4, 1, ColorMode.RGB, function()
+      call("draw.batch", { paletteLock = false, ops = {
+        { kind = "pixels", color = "#808080", points = { { x = 0, y = 0 } } },
+        { kind = "pixels", color = "#848484", points = { { x = 1, y = 0 } } },
+        { kind = "pixels", color = "#7c7c7c", points = { { x = 2, y = 0 } } },
+        { kind = "pixels", color = "#ff0000", points = { { x = 3, y = 0 } } } } })
+      local r = call("draw.batch", { paletteLock = false,
+        ops = { { kind = "fill", at = { x = 0, y = 0 }, color = "#000000", tolerance = case.tolerance } } })
+      assertEq(r.pixelsChanged, case.want, "pixels filled at tolerance " .. case.tolerance)
+    end)
+  end
+end)
+
 check("stamping onto a brand-new tilemap layer creates a TILEMAP cel", function()
   -- The known-bug regression test only ever stamped onto a layer that `pack`
   -- had already given a cel, so it never took the branch that was the fix.
@@ -1237,6 +1358,62 @@ check("spritesheet and frames honour scale, and leave the source sprite alone", 
   for _, existing in ipairs(app.fs.listFiles(dir)) do os.remove(app.fs.joinPath(dir, existing)) end
 end)
 
+-- `layers` and `tags` were declared on export and never read: every export
+-- wrote every layer and every frame, and reported success.
+check("export honours layers and tags on png, gif, frames and spritesheet", function()
+  local base = app.fs.joinPath(app.fs.tempPath, "ai-artist-test-filter")
+  local dir = base .. "-frames"
+  app.fs.makeAllDirectories(dir)
+  for _, existing in ipairs(app.fs.listFiles(dir)) do os.remove(app.fs.joinPath(dir, existing)) end
+
+  withMockSprite(4, 1, ColorMode.RGB, function(s)
+    s.layers[1].name = "back"
+    s:newLayer().name = "front"
+    call("frame.apply", { op = "add", count = 3 })
+    for f = 1, 4 do
+      call("draw.batch", { layer = "back", frame = f, paletteLock = false,
+        ops = { { kind = "pixels", color = "#29adff", points = { { x = 0, y = 0 } } } } })
+      call("draw.batch", { layer = "front", frame = f, paletteLock = false,
+        ops = { { kind = "pixels", color = "#ff004d", points = { { x = 3, y = 0 } } } } })
+    end
+    s:newTag(1, 2).name = "idle"
+    s:newTag(3, 4).name = "walk"
+    local open_before = #app.sprites
+    local function alpha(img, x) return app.pixelColor.rgbaA(img:getPixel(x, 0)) end
+
+    call("export.run", { op = "png", path = base .. ".png", layers = { "front" } })
+    local png = Image{ fromFile = base .. ".png" }
+    assertEq(alpha(png, 0) .. "," .. alpha(png, 3), "0,255", "png: back left out, front kept")
+
+    call("export.run", { op = "gif", path = base .. ".gif", tags = { "walk" } })
+    assertEq(#Sprite{ fromFile = base .. ".gif" }.frames, 2, "gif: only the walk frames")
+    app.sprite:close()
+    app.sprite = s
+
+    call("export.run", { op = "frames", path = app.fs.joinPath(dir, "f_{frame}.png"), tags = { "idle" }, layers = { "back" } })
+    local written = app.fs.listFiles(dir)
+    assertEq(#written, 2, "frames: two idle frames written")
+    local f0 = Image{ fromFile = app.fs.joinPath(dir, "f_0.png") }
+    assertEq(alpha(f0, 0) .. "," .. alpha(f0, 3), "255,0", "frames: front left out")
+
+    call("export.run", { op = "spritesheet", path = base .. "-sheet.png", tags = { "walk" }, includeJson = false })
+    assertEq(Image{ fromFile = base .. "-sheet.png" }.width, 8, "spritesheet: two frames wide")
+
+    local bad = A.handleCommand({ id = "t", cmd = "export.run", args = { op = "gif", path = base .. ".gif", tags = { "run" } } })
+    assert(not bad.ok and bad.error.code == "invalid_args", "an unknown tag is refused, not exported as everything")
+    local whole = A.handleCommand({ id = "t", cmd = "export.run", args = { op = "aseprite", path = base .. ".aseprite", layers = { "front" } } })
+    assert(not whole.ok and whole.error.code == "invalid_args", "aseprite refuses a filter it cannot apply")
+
+    assertEq(#s.layers, 2, "source layers untouched")
+    assertEq(#s.frames, 4, "source frames untouched")
+    assert(s.layers[1].isVisible and s.layers[2].isVisible, "source visibility untouched")
+    assertEq(#app.sprites, open_before, "every scratch copy was closed")
+  end)
+
+  for _, f in ipairs({ base .. ".png", base .. ".gif", base .. "-sheet.png" }) do os.remove(f) end
+  for _, existing in ipairs(app.fs.listFiles(dir)) do os.remove(app.fs.joinPath(dir, existing)) end
+end)
+
 check("a failure inside a transaction reports a readable message", function()
   -- Regression: transact() used to retry the failing closure and report the
   -- second attempt's error. Aseprite can raise values that are not strings, so
@@ -1528,6 +1705,42 @@ check("look.onion composites ghosts oldest-first and leaves the site untouched",
     assertEq(#app.sprites, openBefore, "the scratch sprite was not closed")
     assertEq(app.layer and app.layer.name or nil, beforeLayer, "active layer changed")
     assertEq(app.frame and app.frame.frameNumber or nil, beforeFrame, "active frame changed")
+  end)
+  os.remove(out)
+end)
+
+-- `layer` was declared on look and ignored by onion and filmstrip. Over an
+-- opaque background that made onion useless: the target frame covered every
+-- ghost, so a moving prop never showed its neighbours.
+check("look.onion and look.filmstrip with layer show only that layer, ghosts visible over a backdrop", function()
+  local out = app.fs.joinPath(app.fs.tempPath, "ai-artist-test-onion-layer.png")
+  withMockSprite(8, 1, ColorMode.RGB, function(mock)
+    local backdrop = mock.layers[1]
+    backdrop.name = "sky"
+    local prop = mock:newLayer()
+    prop.name = "prop"
+    call("frame.apply", { op = "add", count = 1 })
+    for f = 1, 2 do
+      call("draw.batch", { layer = "sky", frame = f, paletteLock = false,
+        ops = { { kind = "rect", rect = { x = 0, y = 0, width = 8, height = 1 }, color = "#29adff", fill = "#29adff" } } })
+      call("draw.batch", { layer = "prop", frame = f, paletteLock = false,
+        ops = { { kind = "pixels", color = "#ff004d", points = { { x = f * 3, y = 0 } } } } })
+    end
+    local function pixels()
+      local img = Image{ fromFile = out }
+      local alpha = {}
+      for x = 0, img.width - 1, img.width // 8 do alpha[#alpha + 1] = app.pixelColor.rgbaA(img:getPixel(x, 0)) end
+      return table.concat(alpha, ",")
+    end
+
+    call("look.onion", { frame = 2, framesBefore = 1, framesAfter = 0, layer = "prop", path = out, scale = 1 })
+    assertEq(pixels(), "0,0,0,90,0,0,255,0", "the frame-1 ghost at x=3, the target at x=6, sky left out")
+    call("look.onion", { frame = 2, framesBefore = 1, framesAfter = 0, path = out, scale = 1 })
+    assertEq(pixels(), "255,255,255,255,255,255,255,255", "without layer the opaque sky is composited")
+
+    call("look.filmstrip", { layer = "prop", path = out, scale = 1 })
+    local strip = Image{ fromFile = out }
+    assertEq(app.pixelColor.rgbaR(strip:getPixel(0, 0)), 64, "filmstrip cell 1 shows the gap grey, not sky, at x=0")
   end)
   os.remove(out)
 end)

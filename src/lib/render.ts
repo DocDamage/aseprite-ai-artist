@@ -1,4 +1,6 @@
 import { LiveError } from "./protocol.js";
+// Shared with the grid compiler: `look ascii` output must draw back unchanged.
+import { TRANSPARENT_GLYPH } from "./grid.js";
 
 /**
  * Turning pixels into something a language model can actually read.
@@ -25,7 +27,6 @@ export interface PixelRegion {
 
 /** Glyph alphabet, ordered so the most common colours get the most distinct shapes. */
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789#@%&$?!+=*";
-const TRANSPARENT_GLYPH = ".";
 
 export interface AsciiOptions {
   /** Refuse above this many cells; a wall of text is worse than no answer. */
@@ -35,6 +36,8 @@ export interface AsciiOptions {
 
 export interface AsciiView {
   text: string;
+  /** The grid alone, no rulers or row labels — exactly what `draw` kind `grid` takes as `rows`. */
+  rows: string[];
   legend: Record<string, string>;
   width: number;
   height: number;
@@ -76,12 +79,21 @@ export function renderAscii(region: PixelRegion, opts: AsciiOptions = {}): Ascii
     legend[glyph] = region.colors[i] ?? "#000000";
   }
 
+  const rows: string[] = [];
+  for (let row = 0; row < region.height; row++) {
+    let line = "";
+    for (let col = 0; col < region.width; col++) {
+      const idx = region.grid[row * region.width + col] ?? 0;
+      line += glyphFor.get(idx) ?? "?";
+    }
+    rows.push(line);
+  }
+
   const showRulers = opts.showRulers ?? true;
   const lines: string[] = [];
-  const rowLabelWidth = String(region.y + region.height - 1).length;
-  const pad = " ".repeat(rowLabelWidth + 1);
-
   if (showRulers) {
+    const rowLabelWidth = String(region.y + region.height - 1).length;
+    const pad = " ".repeat(rowLabelWidth + 1);
     // Two ruler rows: tens then units, so a 3-digit x is still readable.
     let tens = pad;
     let units = pad;
@@ -92,19 +104,14 @@ export function renderAscii(region: PixelRegion, opts: AsciiOptions = {}): Ascii
     }
     lines.push(tens.trimEnd());
     lines.push(units);
-  }
-
-  for (let row = 0; row < region.height; row++) {
-    let line = String(region.y + row).padStart(rowLabelWidth) + " ";
-    for (let col = 0; col < region.width; col++) {
-      const idx = region.grid[row * region.width + col] ?? 0;
-      line += glyphFor.get(idx) ?? "?";
-    }
-    lines.push(line);
+    rows.forEach((line, row) => lines.push(String(region.y + row).padStart(rowLabelWidth) + " " + line));
+  } else {
+    lines.push(...rows);
   }
 
   return {
     text: lines.join("\n"),
+    rows,
     legend,
     width: region.width,
     height: region.height,
