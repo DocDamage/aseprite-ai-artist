@@ -12,6 +12,8 @@ All notable changes to this project are documented here. Format follows
   4px inside, 2px deeper — and every stepped corner gets the inner corner pixel
   the 8-bit components draw, instead of edges that stop short of each other.
   The lightbox closes with the site's pixel icon button.
+- **Site: benchmark previews show the best-crafted run,** not the
+  highest-scoring one; score and date break ties.
 - **Site: "Add your art".** A button in the header on every page and one
   beside the gallery's title, both leading to the contribute page.
 

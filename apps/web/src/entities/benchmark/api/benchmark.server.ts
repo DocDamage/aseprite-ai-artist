@@ -62,8 +62,14 @@ export function criterionChips(prompt: Prompt): string[] {
 
 export function benchmarkCard(benchmark: Benchmark): BenchmarkCardView {
 	const runs = benchmark.cells.flatMap((cell) => cell.runs);
-	const best = [...runs].sort(
-		(a, b) => ratio(b.score!) - ratio(a.score!) || b.date.localeCompare(a.date)
+	// The preview is the best-looking run, not the highest-scoring one: compliance says a run
+	// followed the brief, craft says it is worth looking at. Unrated runs come last; score and
+	// then recency break ties.
+	const cover = [...runs].sort(
+		(a, b) =>
+			(b.craft?.score ?? -1) - (a.craft?.score ?? -1) ||
+			ratio(b.score!) - ratio(a.score!) ||
+			b.date.localeCompare(a.date)
 	)[0];
 	const top = benchmark.models.slice(0, 3).map((modelLabel) => {
 		const cell = benchmark.cells
@@ -80,7 +86,7 @@ export function benchmarkCard(benchmark: Benchmark): BenchmarkCardView {
 		chips: criterionChips(benchmark.prompt),
 		steps: benchmark.prompt.steps.length,
 		runs: runs.length,
-		coverRun: best?.id ?? null,
+		coverRun: cover?.id ?? null,
 		top
 	};
 }

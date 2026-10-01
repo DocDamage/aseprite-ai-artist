@@ -54,7 +54,7 @@ export interface BenchmarkCardView {
 	chips: string[];
 	steps: number;
 	runs: number;
-	/** Id of the best ranked run, whose cover represents the benchmark. */
+	/** Id of the best-crafted run (score, then date, break ties), whose cover represents the benchmark. */
 	coverRun: string | null;
 	/** The three strongest models, each with its best run. */
 	top: { modelLabel: string; plugin: string; best: Score; run: string }[];
