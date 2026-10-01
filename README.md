@@ -190,34 +190,72 @@ same names:
 
 ### 🎬 Start here: `aseprite:studio`, the director
 
-**If you remember one skill, make it this one.** `studio` is the orchestrator for
-everything else. Hand it any request — big or small — and it:
-
-1. checks Aseprite is attached and reads what's already open;
-2. works out what you actually want and writes down the chain of skills it needs;
-3. asks you **once**, and only if the request is genuinely open-ended;
-4. for anything new, writes the design down first — scenario, palette, poses —
-   and hands you **a ready prompt for an image model**. Paste it into ChatGPT,
-   Gemini or Midjourney, send back the concept sheet or storyboard, and the agent
-   redraws it as pixel art frame by frame; or say "continue without" and it draws
-   from the written design alone;
-5. runs each stage, handing parts to the specialists where your client has them;
-6. **looks** at the result after every stage that changed pixels — side by side
-   with the reference when there is one;
-7. finishes with a review, fixes what it finds, and reports what exists now.
+**If you remember one skill, make it this one.** `studio` is the orchestrator:
+hand it any request and it plans the chain of skills, runs it, and checks each
+stage before moving on. You don't need to know the other skills' names.
 
 ```
 /aseprite:studio an animated knight for my Godot game, 32×32, idle and walk
 ```
 
-Behind the scenes that becomes `brief → concept → new → palette → draw → shade →
-rig → animate → review → export` — and you didn't have to know any of those names.
+What happens to that request, in order:
+
+| # | Stage | Skill | What it does | You're asked? |
+|---|---|---|---|---|
+| 1 | Connect | — | `preflight`, then `sprite_info` on whatever is open. Refuses if Aseprite isn't attached — never edits files behind your back | only if Aseprite is closed |
+| 2 | Plan | — | Matches the request to a route and writes the chain down: here `brief → concept → new → draw → shade → rig → animate → review → export` | — |
+| 3 | Brief | `brief` | Size, palette, view, light, outline — every open question in **one** message | **once** |
+| 4 | Design | `concept` | Writes the art spec (scenario, palette, poses) and an image-model prompt. Send back a concept sheet, or say "continue without" | in the same message |
+| 5 | Set up | `new`, `palette` | Canvas, colour mode, palette, layers | — |
+| 6 | Draw | `draw`, `shade` | Silhouette first, as a [text grid](#-pixels-as-text-the-grid-loop); then volume with hue-shifted ramps | — |
+| 7 | Move | `rig`, `animate` | Splits limbs onto layers, plans key poses and timing, redraws frames as grids, tags the cycles | — |
+| 8 | Check | `review` → `fix` | `look` + `validate`, fixes what they find; stops after a third round instead of looping | — |
+| 9 | Ship | `export` | Spritesheet + atlas, GIF or PNGs for the engine | — |
+| 10 | Report | — | What exists now, what it decided for you, what it compromised on — with a preview, not an adjective | — |
+
+After **every stage that changed pixels** it calls `look` and checks the result
+before going on: a stage is done when it has been seen, not when the tool said
+"ok". Where your client has the specialist agents, the palette, the rig, the
+animation plan and the review are handed to them; they read the same rules.
 
 **Why the image model?** The model drawing pixels is at its worst when it must
 invent the character, the pose, the camera and the palette while placing every
 pixel. With a concept sheet the job becomes *reproduce this design at 32×32 in
 these six colours* — and the reference is a guide for shapes and poses, never
 pixels that get downscaled onto the canvas.
+
+### 🔤 Pixels as text: the grid loop
+
+New in 0.5.0, and the biggest jump in quality so far. Before it touches the
+canvas, the agent **writes the frame out as text** — one character per pixel,
+a legend for the colours — and draws that text in one call:
+
+```
+draw kind="grid" x=8 y=10 legend={ "O": "#1d2b53", "s": "#ffccaa", "h": "#ff004d" }
+rows:
+  ..OOOO..
+  .OhhhhO.
+  OsOssOsO
+  OssssssO
+  .OOOOOO.
+```
+
+`look op="ascii"` returns the canvas in exactly that format, so fixing is the
+same loop in reverse: **read the rows → change the wrong characters → send the
+rows back** to the same origin. Animation works the same way: the agent copies
+the previous frame's rows, moves the arm three characters, and draws the new
+frame.
+
+Why it matters: before, the agent had to translate "the head goes here" into a
+list of `ellipse`, `rect` and `line` calls and only found out afterwards what
+they added up to. Silhouettes came out lopsided, limbs changed length between
+frames, small edits spilled into the pixels next to them. With the grid the
+agent sees the whole shape while writing it, and an edit touches exactly the
+characters it changed. On the three benchmarks, the maintainer's ratings rose
+on two of three — boombox mage 3 → 4, winding road 1 → 3, tree unchanged — with
+the same model and the same prompts
+([see them side by side](https://pixeli.pebbly.space/benchmarks)). The design
+and its limits are in [ADR-0010](docs/adr/0010-pixel-grid.md).
 
 ### The rest of the toolbox
 
@@ -299,11 +337,6 @@ frame-to-frame diff and a side-by-side against the reference it is drawing
 from. `validate` then checks the sprite mechanically before
 anything is called done.
 
-🔤 **It can write pixels as text.** A `draw` `grid` is the sprite typed out row
-by row — one character per pixel, a legend for the colours — the same format
-`look` returns. The agent reads the canvas, edits the rows and draws them back,
-instead of guessing coordinates for forty separate shapes.
-
 🛡️ **It can't quietly wreck your file.** With Aseprite detached, every tool
 refuses immediately instead of timing out — because an agent that "recovers" by
 editing the `.aseprite` on disk makes changes you never see, and your next save
@@ -325,27 +358,9 @@ silhouette, outlines, animation timing, layer rigging, the review checklist.
 Skills point at rules instead of restating them, so each rule has exactly one
 place to be wrong.
 
-```mermaid
-flowchart LR
-  A[Your agent] -- MCP over stdio --> S[MCP server]
-  S -- ws :9932 --> B[Bridge]
-  B -- ws :9931 --> E[Aseprite extension]
-  E --> D[(Open document)]
-  S -. headless .-> H[aseprite -b]
 ```
-
-What one drawing turn goes through:
-
-| Stage | Tool | What happens |
-|---|---|---|
-| Check | `preflight`, `sprite_info` | Refuses unless Aseprite is attached; reads layers, frames, palette |
-| Draw | `draw` | Shapes, fills, dithers — or a `grid`: pixels typed as text rows with a legend |
-| Look | `look` | Upscaled preview to judge the read; `ascii` returns the same text grid, so the agent can edit it and draw it back |
-| Fix | `recolor`, `transform`, `select` | Palette-legal edits scoped to a region or selection |
-| Check again | `validate` | Off-palette colours, stray pixels, broken outlines, banding |
-| Ship | `export` | PNG, GIF, spritesheet + atlas, per layer or per tag |
-
-Each call is one transaction — one Ctrl+Z for you.
+your agent  ──stdio/MCP──▶  server  ──ws:9932──▶  bridge  ──ws:9931──▶  Aseprite
+```
 
 Aseprite's Lua WebSocket can only be a client, so a small bridge holds the
 listening socket. It runs as its own process: restarting the MCP server — which

@@ -15,7 +15,7 @@ description: 'The winding-road benchmark, r1. A 160×96 PICO-8 valley with a roa
   to kill that bridge, the operator cancelled it, killed the stale bridge, and started
   this clean session. Neither aborted session touched the document. Step 2 validate
   is recorded from the palette, strays, layers and animation checks; the full run
-  times out on this canvas through the MCP client. The plugin was the 0.5.0 code built from the repository before the version bump, so its preflight still reported 0.4.0; it already had `draw` kind `grid`, which the sessions used.'
+  times out on this canvas through the MCP client. The MCP server and skills were the 0.5.0 code built from the repository before the version bump, with `draw` kind `grid`, which the sessions used; the Aseprite extension in the window still reported 0.4.0 and lacked the later Lua fixes (a frame reorder attempted in the tree run failed on it).'
 date: 2026-10-02
 author:
   name: Nik Fedorov
