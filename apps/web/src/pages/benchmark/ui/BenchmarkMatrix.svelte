@@ -146,7 +146,7 @@
 	{/if}
 
 	{#if benchmark.outdatedRuns.length > 0}
-		<div class="mt-8 border-pixel border-2 border-dashed p-4">
+		<div class="mt-8 border-pixel pixel-notch border-2 border-dashed p-4">
 			<h3 class="text-sm">Unranked: older revisions</h3>
 			<p class="text-muted-foreground mt-1 text-sm">
 				These ran an earlier revision. Listed so you can find them; not ranked.

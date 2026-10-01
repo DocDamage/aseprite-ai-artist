@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SITE_NAME } from '$shared/lib/site';
 	import { resolve } from '$app/paths';
 	import PaletteIcon from '~icons/pixelarticons/colors-swatch';
 	import { GalleryGrid } from '$features/filterGenerations';
@@ -24,21 +25,23 @@
 </script>
 
 <svelte:head>
-	<title>Gallery: Aseprite AI Artist</title>
+	<title>Gallery: {SITE_NAME}</title>
 	<meta
 		name="description"
 		content="Every piece of pixel art made with Aseprite AI Artist, filterable by model, plugin version and harness."
 	/>
 </svelte:head>
 
-<div class="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
+<!-- Full width, like a pin board: the wall of art is the page, and a wide screen gets more columns
+rather than wider margins. -->
+<div class="px-4 pt-14 sm:px-6 lg:px-10">
 	<h1 class="text-2xl sm:text-4xl">Gallery</h1>
 	<p class="text-muted-foreground mt-4 max-w-[62ch] text-lg">
 		Every piece submitted so far, newest first. Open one to see the prompts that made it and download the source.
 	</p>
 
 	{#if generations.length === 0}
-		<Empty class="canvas-checker border-pixel mt-10 border-4 border-dashed">
+		<Empty class="canvas-checker border-pixel mt-10 pixel-notch [--notch:4px] border-4 border-dashed">
 			<EmptyHeader>
 				<EmptyMedia variant="icon"><PaletteIcon aria-hidden="true" /></EmptyMedia>
 				<EmptyTitle class="text-sm leading-relaxed">Nothing hanging yet</EmptyTitle>

@@ -8,7 +8,7 @@
  */
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import '@fontsource-variable/geist';
+@import '@fontsource-variable/pixelify-sans';
 @import '@fontsource/press-start-2p';
 
 @custom-variant dark (&:is(.dark *));
@@ -97,7 +97,9 @@
 }
 
 @theme inline {
-	--font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+	/* Pixelify Sans for all running text: pixel-built like the art, yet readable at body
+	   sizes, which Press Start 2P (kept for display headings, `.retro`) is not. */
+	--font-sans: 'Pixelify Sans Variable', ui-sans-serif, system-ui, sans-serif;
 	--font-retro: 'Press Start 2P', system-ui, sans-serif;
 	--color-ring: var(--ring);
 	--color-input: var(--input);
@@ -196,11 +198,107 @@
 	}
 }
 
+/*
+ * Pixel corners. Rounding a pixel-art site with border-radius gives smooth anti-aliased arcs,
+ * which is exactly what the art never has; these step instead, one art pixel at a time.
+ *
+ * .pixel-frame — the 4px card frame: a nine-slice SVG draws the stepped border (border-image
+ * replaces the border, so border colour classes do nothing on it) and clip-path cuts the
+ * background to the same staircase, so nothing shows outside the steps.
+ * .pixel-notch — small or dashed things (buttons, chips, empty states): the corners are cut
+ * square by --notch, the border width, which is how 8-bit UI rounds a box that size.
+ */
+:root {
+	--pixel-frame-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath fill='%231b1824' fill-opacity='0.8' d='M8 0h12v4H8zM4 4h4v4H4zM20 4h4v4h-4zM0 8h4v12H0zM24 8h4v12h-4zM4 20h4v4H4zM20 20h4v4h-4zM8 24h12v4H8z'/%3E%3C/svg%3E");
+}
+.dark {
+	--pixel-frame-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath fill='%236a6080' fill-opacity='1' d='M8 0h12v4H8zM4 4h4v4H4zM20 4h4v4h-4zM0 8h4v12H0zM24 8h4v12h-4zM4 20h4v4H4zM20 20h4v4h-4zM8 24h12v4H8z'/%3E%3C/svg%3E");
+}
+@layer components {
+	.pixel-frame {
+		border: 4px solid transparent;
+		border-image: var(--pixel-frame-image) 12 / 12px / 0 stretch;
+		clip-path: polygon(
+			8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px,
+			100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px),
+			calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px),
+			4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px), 0 8px, 4px 8px, 4px 4px, 8px 4px
+		);
+	}
+	/* A raised panel on a card, as game cards draw their name and text boxes: dark fill, a dark
+	   rim, a one-pixel light bevel on top and left, a shadow on the bottom and right, square-cut
+	   corners. Translucent, so the card's glow shows through. */
+	.plate {
+		--notch: 2px;
+		background: color-mix(in oklab, var(--background) 72%, transparent);
+		border: 2px solid color-mix(in oklab, var(--foreground) 35%, transparent);
+		box-shadow:
+			inset 2px 2px 0 rgb(255 255 255 / 0.1),
+			inset -2px -2px 0 rgb(0 0 0 / 0.3);
+		backdrop-filter: blur(16px) saturate(1.4);
+	}
+	/* The cost gem on a name plate: accent fill, the same bevel, brighter. */
+	.gem {
+		--notch: 2px;
+		background: var(--accent);
+		color: var(--accent-foreground);
+		border: 2px solid color-mix(in oklab, black 55%, var(--accent));
+		box-shadow:
+			inset 2px 2px 0 rgb(255 255 255 / 0.35),
+			inset -2px -2px 0 rgb(0 0 0 / 0.25);
+	}
+	.pixel-notch {
+		--notch: 2px;
+	}
+	.plate,
+	.gem,
+	.pixel-notch {
+		clip-path: polygon(
+			var(--notch) 0, calc(100% - var(--notch)) 0, calc(100% - var(--notch)) var(--notch), 100% var(--notch),
+			100% calc(100% - var(--notch)), calc(100% - var(--notch)) calc(100% - var(--notch)),
+			calc(100% - var(--notch)) 100%, var(--notch) 100%, var(--notch) calc(100% - var(--notch)),
+			0 calc(100% - var(--notch)), 0 var(--notch), var(--notch) var(--notch)
+		);
+	}
+}
+
+/*
+ * View transitions between pages. The header and footer have names of their own, so they
+ * hold still while the page between them changes. The cross-fade is stepped rather than
+ * smooth: a pixel-art site that dissolves through 60 blended frames looks out of character.
+ * A generation's art carries `view-transition-name` on both the card and the detail page,
+ * so it moves between the two instead of fading.
+ */
+.site-header {
+	view-transition-name: site-header;
+}
+.site-footer {
+	view-transition-name: site-footer;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 180ms;
+	animation-timing-function: steps(4, end);
+}
+::view-transition-group(*) {
+	animation-duration: 240ms;
+	animation-timing-function: steps(6, end);
+}
+::view-transition-old(*),
+::view-transition-new(*) {
+	image-rendering: pixelated;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
 	*::after {
 		animation-duration: 0.01ms !important;
 		transition-duration: 0.01ms !important;
+	}
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
 	}
 }

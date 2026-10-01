@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SITE_NAME } from '$shared/lib/site';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { PixelSprite } from '$shared/ui/pixel';
@@ -17,11 +18,11 @@
 </script>
 
 <svelte:head>
-	<title>{missing ? 'Not found' : 'Error'}: Aseprite AI Artist</title>
+	<title>{missing ? 'Not found' : 'Error'}: {SITE_NAME}</title>
 </svelte:head>
 
 <div class="mx-auto max-w-3xl px-4 pt-16 sm:px-6">
-	<Empty class="canvas-checker border-pixel border-4 border-dashed">
+	<Empty class="canvas-checker border-pixel pixel-notch [--notch:4px] border-4 border-dashed">
 		<EmptyHeader class="max-w-lg">
 			<EmptyMedia><PixelSprite rows={PEBBLY_FRAMES[3]!} scale={4} label="Pebbly watching a paint drop fall" /></EmptyMedia>
 			<p class="retro text-muted-foreground text-sm tabular-nums">{page.status}</p>

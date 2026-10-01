@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { SITE_NAME } from '$shared/lib/site';
 	import { resolve } from '$app/paths';
 	import ArrowLeftIcon from '~icons/pixelarticons/arrow-left';
+	import SlidersIcon from '~icons/pixelarticons/sliders';
+	import { Button } from '$shared/ui/8bit';
 	import { PromptTimeline } from '$widgets/promptTimeline';
 	import { GalleryGrid, type FilterKey } from '$features/filterGenerations';
 	import { plural } from '$shared/lib/format';
@@ -22,7 +25,7 @@
 </script>
 
 <svelte:head>
-	<title>{prompt.title}: Aseprite AI Artist benchmark</title>
+	<title>{prompt.title}: {SITE_NAME} benchmark</title>
 	<meta name="description" content={prompt.summary} />
 </svelte:head>
 
@@ -48,7 +51,15 @@
 	</div>
 
 	<section class="mt-16" aria-labelledby="runs">
-		<h2 id="runs" class="text-lg sm:text-2xl">Every run</h2>
+		<div class="flex flex-wrap items-center justify-between gap-4">
+			<h2 id="runs" class="text-lg sm:text-2xl">Every run</h2>
+			{#if runs.length > 1}
+				<Button variant="outline" href={resolve('/benchmarks/[prompt]/compare', { prompt: prompt.id })}>
+					<SlidersIcon aria-hidden="true" />
+					Compare runs
+				</Button>
+			{/if}
+		</div>
 		<p class="text-muted-foreground mt-2 text-sm">
 			{#if runs.length > 0}
 				{plural(runs.length, 'run')} of this prompt, newest first. Runs on an older revision are marked unranked.

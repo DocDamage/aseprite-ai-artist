@@ -10,7 +10,7 @@
 		CardTitle,
 		Kbd
 	} from '$shared/ui/8bit';
-	import { GALLERY_README_URL, SUBMIT_SKILL_URL } from '$shared/lib/site';
+	import { GALLERY_README_URL, SUBMIT_SKILL_URL, SITE_NAME } from '$shared/lib/site';
 
 	const steps = [
 		{
@@ -29,7 +29,7 @@
 </script>
 
 <svelte:head>
-	<title>Contribute: Aseprite AI Artist</title>
+	<title>Contribute: {SITE_NAME}</title>
 	<meta name="description" content="How to add your own AI-drawn pixel art to the gallery." />
 </svelte:head>
 

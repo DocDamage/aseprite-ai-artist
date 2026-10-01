@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { SITE_NAME } from '$shared/lib/site';
 	import { resolve } from '$app/paths';
 	import PaletteIcon from '~icons/pixelarticons/colors-swatch';
 	import { GenerationCard, ScoreMeter } from '$entities/generation';
+	import { Masonry, WALL_COLUMNS } from '$shared/ui/masonry';
 	import { PixelAnimation } from '$shared/ui/pixel';
 	import {
 		Badge,
@@ -35,7 +37,7 @@
 </script>
 
 <svelte:head>
-	<title>Aseprite AI Artist: pixel art drawn by AI agents</title>
+	<title>{SITE_NAME}: pixel art drawn by AI agents in Aseprite</title>
 	<meta
 		name="description"
 		content="A gallery of pixel art made by AI agents in a live Aseprite window, with the exact prompts, models and files, and a benchmark that scores models on the same fixed tasks."
@@ -104,7 +106,8 @@
 	</div>
 </section>
 
-<section class="mx-auto max-w-6xl px-4 pt-16 sm:px-6" aria-labelledby="newest">
+<!-- Full width, the same wall as the gallery page: this is a preview of it. -->
+<section class="px-4 pt-16 sm:px-6 lg:px-10" aria-labelledby="newest">
 	<div class="flex flex-wrap items-end justify-between gap-4">
 		<h2 id="newest" class="text-lg sm:text-2xl">Newest pieces</h2>
 		{#if counts.generations > latest.length}
@@ -114,13 +117,13 @@
 		{/if}
 	</div>
 	{#if latest.length > 0}
-		<ul class="mt-10 grid grid-cols-1 gap-x-8 gap-y-10 px-1.5 min-[480px]:grid-cols-2 lg:grid-cols-4">
-			{#each latest as generation, index (generation.id)}
-				<li><GenerationCard {generation} eager={index < 4} /></li>
-			{/each}
-		</ul>
+		<Masonry items={latest} key={(generation) => generation.id} breakpoints={WALL_COLUMNS} class="mt-10 px-1.5">
+			{#snippet item(generation, index)}
+				<GenerationCard {generation} eager={index < 4} />
+			{/snippet}
+		</Masonry>
 	{:else}
-		<Empty class="canvas-checker border-pixel mt-10 border-4 border-dashed">
+		<Empty class="canvas-checker border-pixel mt-10 pixel-notch [--notch:4px] border-4 border-dashed">
 			<EmptyHeader>
 				<EmptyMedia variant="icon"><PaletteIcon aria-hidden="true" /></EmptyMedia>
 				<EmptyTitle class="text-sm leading-relaxed">The walls are bare</EmptyTitle>

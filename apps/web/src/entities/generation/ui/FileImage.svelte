@@ -5,12 +5,15 @@
 	interface Props {
 		file: FileView;
 		alt: string;
-		max: number;
+		/** The art never gets shorter than this; a very wide image gets space above and below. */
+		minHeight?: number;
 		eager?: boolean;
+		/** A click opens the art full screen. */
+		zoomable?: boolean;
 		class?: string;
 	}
 
-	let { file, alt, max, eager = false, class: className }: Props = $props();
+	let { file, alt, minHeight, eager = false, zoomable = false, class: className }: Props = $props();
 </script>
 
 <PixelImage
@@ -19,7 +22,8 @@
 	height={file.height}
 	pixel={file.pixel}
 	{alt}
-	{max}
+	{minHeight}
 	{eager}
+	{zoomable}
 	class={className}
 />

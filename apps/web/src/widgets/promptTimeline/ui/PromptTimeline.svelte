@@ -42,7 +42,7 @@
 						</details>
 					{/if}
 					{#if step.interventions.length > 0}
-						<div class="border-pixel mt-3 border-2 border-dashed px-4 py-3">
+						<div class="border-pixel mt-3 pixel-notch border-2 border-dashed px-4 py-3">
 							<p class="mb-2 flex items-center gap-2 text-sm font-medium">
 								<MessageCircleIcon aria-hidden="true" />
 								The author stepped in {step.interventions.length === 1 ? 'once' : `${step.interventions.length} times`}

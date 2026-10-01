@@ -4,19 +4,11 @@
 	import NoteIcon from '~icons/pixelarticons/note';
 	import PlayIcon from '~icons/pixelarticons/play';
 	import TrophyIcon from '~icons/pixelarticons/trophy';
-	import {
-		Badge,
-		Card,
-		CardContent,
-		CardFooter,
-		CardHeader,
-		CardTitle,
-		Progress,
-		Table
-	} from '$shared/ui/8bit';
+	import { Badge, Progress, Table } from '$shared/ui/8bit';
+	import { ArtCard } from '$shared/ui/pixel';
 	import { plural } from '$shared/lib/format';
-	import { RUBRIC_URL } from '$shared/lib/site';
-	import { FileImage, ScoreMeter } from '$entities/generation';
+	import { RUBRIC_URL, SITE_NAME } from '$shared/lib/site';
+	import { ScoreMeter } from '$entities/generation';
 	import type { BenchmarksPageData } from '../model/types';
 
 	interface Props {
@@ -35,7 +27,7 @@
 </script>
 
 <svelte:head>
-	<title>Benchmarks: Aseprite AI Artist</title>
+	<title>Benchmarks: {SITE_NAME}</title>
 	<meta
 		name="description"
 		content="Fixed pixel-art tasks run by different models on different plugin versions, scored criterion by criterion."
@@ -102,7 +94,7 @@
 				</Table.Root>
 			</div>
 		{:else}
-			<p class="text-muted-foreground border-pixel mt-6 border-2 border-dashed p-4 text-sm">
+			<p class="text-muted-foreground border-pixel mt-6 pixel-notch border-2 border-dashed p-4 text-sm">
 				No model has been ranked yet. The maintainers run the benchmarks; new models are added as they are tested.
 			</p>
 		{/if}
@@ -113,47 +105,39 @@
 		<ul class="mt-8 grid grid-cols-1 gap-x-8 gap-y-10 px-1.5 sm:grid-cols-2 lg:grid-cols-3">
 			{#each cards as card (card.id)}
 				<li>
-					<a
+					<ArtCard
 						href={resolve('/benchmarks/[prompt]', { prompt: card.id })}
-						class="group block h-full outline-offset-8 transition-transform hover:-translate-y-1 motion-reduce:hover:translate-y-0"
+						art={card.cover ? { src: card.cover.url, width: card.cover.width, height: card.cover.height, pixel: card.cover.pixel } : null}
+						alt={card.title}
+						title={card.title}
+						class="h-full"
 					>
-						<Card font="normal" class="h-full gap-4 pt-0">
-							<div class="canvas-checker grid aspect-[4/3] place-items-center overflow-hidden p-4">
-								{#if card.cover}
-									<FileImage file={card.cover} alt="" max={200} />
-								{:else}
-									<span class="retro text-muted-foreground text-[0.625rem]">Not run yet</span>
-								{/if}
-							</div>
-							<CardHeader class="px-4">
-								<CardTitle class="text-xs leading-relaxed group-hover:underline">{card.title}</CardTitle>
-							</CardHeader>
-							<CardContent font="normal" class="space-y-3 px-4 text-sm">
-								<p class="text-muted-foreground">{card.summary}</p>
-								<ul class="flex flex-wrap gap-3 px-1.5" aria-label="What it tests">
-									{#each card.chips as chip (chip)}
-										<li><Badge variant="secondary" class="text-[0.625rem]">{chip}</Badge></li>
+						{#snippet empty()}
+							<span class="retro text-muted-foreground text-[0.625rem]">Not run yet</span>
+						{/snippet}
+						{#snippet caption()}
+							<p class="text-muted-foreground text-sm">{card.summary}</p>
+							<ul class="flex flex-wrap gap-x-3 gap-y-2 px-1.5 pt-1.5" aria-label="What it tests">
+								{#each card.chips as chip (chip)}
+									<li><Badge variant="secondary" class="text-[0.625rem]">{chip}</Badge></li>
+								{/each}
+							</ul>
+							{#if card.top.length > 0}
+								<ol class="space-y-2 pt-2 text-sm">
+									{#each card.top as entry, rank (entry.modelLabel)}
+										<li class="flex items-center gap-2">
+											<span class="retro text-muted-foreground w-5 text-[0.625rem]">{rank + 1}</span>
+											<span class="min-w-0 flex-1 truncate">{entry.modelLabel}</span>
+											<ScoreMeter score={entry.best} />
+										</li>
 									{/each}
-								</ul>
-							</CardContent>
-							<CardFooter font="normal" class="flex-col items-stretch gap-2 px-4 text-sm">
-								{#if card.top.length > 0}
-									<ol class="space-y-2">
-										{#each card.top as entry, rank (entry.modelLabel)}
-											<li class="flex items-center gap-2">
-												<span class="retro text-muted-foreground w-5 text-[0.625rem]">{rank + 1}</span>
-												<span class="min-w-0 flex-1 truncate">{entry.modelLabel}</span>
-												<ScoreMeter score={entry.best} />
-											</li>
-										{/each}
-									</ol>
-								{:else}
-									<p class="text-muted-foreground">Waiting for its first maintainer run.</p>
-								{/if}
-								<p class="text-muted-foreground text-xs">{plural(card.steps, 'step')}, {plural(card.runs, 'ranked run')}</p>
-							</CardFooter>
-						</Card>
-					</a>
+								</ol>
+							{:else}
+								<p class="text-muted-foreground pt-2 text-sm">Waiting for its first maintainer run.</p>
+							{/if}
+							<p class="text-muted-foreground text-xs">{plural(card.steps, 'step')}, {plural(card.runs, 'ranked run')}</p>
+						{/snippet}
+					</ArtCard>
 				</li>
 			{:else}
 				<li class="text-muted-foreground">No benchmark prompts are defined yet.</li>

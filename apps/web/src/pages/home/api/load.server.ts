@@ -10,7 +10,7 @@ export function load(): HomePageData {
 			models: new Set(generations.flatMap((generation) => generation.models)).size,
 			prompts: prompts.length
 		},
-		latest: generations.slice(0, 8).map((generation) => summary(generation, prompts)),
+		latest: generations.slice(0, 12).map((generation) => summary(generation, prompts)),
 		teasers: benchmarks.map((benchmark) => benchmarkCard(benchmark))
 	};
 }

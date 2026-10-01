@@ -1,5 +1,7 @@
 # apps/web — `@pebbly/web`
 
+Pixeli, live at [pixeli.pebbly.space](https://pixeli.pebbly.space/).
+
 A SvelteKit site for [`@pebbly/aseprite-ai-artist`](https://github.com/with-pebbly/aseprite-ai-artist): a gallery of pieces made with the plugin, a benchmark that scores models on the same fixed prompts, and the contribution flow.
 
 The whole site is prerendered to static HTML against `gallery/` at build time, and ships with `@sveltejs/adapter-vercel`.
@@ -25,11 +27,11 @@ pnpm --filter @pebbly/web run build               # prerenders every page + file
 
 ```
 app       layout shell (`layout/`), global CSS and theme tokens (`styles/`), ambient types
-pages     home, gallery, benchmarks, benchmark, generation, contribute, notFound: one slice per route
+pages     home, gallery, benchmarks, benchmark, benchmarkCompare, generation, contribute, notFound: one slice per route
 widgets   siteHeader, siteFooter, promptTimeline (used by two pages)
 features  copyPrompt, filterGenerations
 entities  generation (cards, score meter, gallery data), prompt, benchmark (ranking data)
-shared    ui (shadcn + 8bitcn ports, pixel art), lib, config (PICO-8, Pebbly sprites), brand (icons)
+shared    ui (shadcn + 8bitcn ports, pixel art and ArtCard, masonry, lightbox), lib (gif decoder, pixel-fit), config (PICO-8, Pebbly sprites), brand (icons)
 ```
 
 A component used by one page is not a widget: it lives in that page's `ui/`. A slice gets promoted when a second slice needs it.

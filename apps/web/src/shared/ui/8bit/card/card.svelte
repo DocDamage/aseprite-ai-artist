@@ -1,5 +1,7 @@
 <script lang="ts">
-	// Ported to Svelte 5 from 8bitcn/ui (MIT, see ../LICENSE): components/ui/8bit/card.tsx
+	// Ported to Svelte 5 from 8bitcn/ui (MIT, see ../LICENSE): components/ui/8bit/card.tsx.
+	// Deviation: a rounded 4px frame instead of 8bitcn's square notched one, so every card on the
+	// site matches the art cards (shared/ui/pixel/ArtCard).
 	import type { HTMLAttributes } from 'svelte/elements';
 	import { Card as ShadcnCard } from '$shared/ui/card';
 	import { cn } from '$shared/lib/utils';
@@ -12,7 +14,7 @@
 	}: HTMLAttributes<HTMLDivElement> & { font?: 'normal' | 'retro' } = $props();
 </script>
 
-<div class={cn('bg-card text-card-foreground border-foreground dark:border-ring relative border-y-6 p-0!', className)}>
+<div class={cn('pixel-frame bg-card text-card-foreground relative overflow-hidden p-0!', className)}>
 	<ShadcnCard
 		{...restProps}
 		class={cn(
@@ -23,5 +25,4 @@
 	>
 		{@render children?.()}
 	</ShadcnCard>
-	<div class="pointer-events-none absolute inset-0 -mx-1.5 border-x-6 border-inherit" aria-hidden="true"></div>
 </div>

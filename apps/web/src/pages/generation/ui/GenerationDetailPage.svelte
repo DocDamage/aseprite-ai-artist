@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { SITE_NAME } from '$shared/lib/site';
 	import { resolve } from '$app/paths';
 	import ArrowLeftIcon from '~icons/pixelarticons/arrow-left';
 	import DownloadIcon from '~icons/pixelarticons/download';
 	import ExternalLinkIcon from '~icons/pixelarticons/external-link';
-	import { Badge, Button, Card } from '$shared/ui/8bit';
+	import { Badge, Button } from '$shared/ui/8bit';
 	import { FileImage, ScoreMeter } from '$entities/generation';
 	import { sequenceText } from '$entities/prompt';
 	import { CopyButton } from '$features/copyPrompt';
@@ -38,7 +39,7 @@
 </script>
 
 <svelte:head>
-	<title>{g.title}: Aseprite AI Artist</title>
+	<title>{g.title}: {SITE_NAME}</title>
 	<meta name="description" content={g.description ?? `${g.title}, drawn by ${g.modelLabel} with Aseprite AI Artist v${g.plugin}.`} />
 </svelte:head>
 
@@ -50,11 +51,12 @@
 
 	<div class="mt-4 grid gap-10 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
 		<div class="self-start px-1.5">
-			<Card font="normal" class="gap-0 py-0">
-				<div class="canvas-checker grid min-h-72 place-items-center overflow-hidden p-6 sm:p-10">
-					<FileImage file={g.cover} alt={g.title} max={560} eager />
-				</div>
-			</Card>
+			<div
+				class="pixel-frame canvas-checker overflow-hidden"
+				style:view-transition-name="art-{g.id}"
+			>
+				<FileImage file={g.cover} alt={g.title} minHeight={280} eager zoomable />
+			</div>
 		</div>
 
 		<div>

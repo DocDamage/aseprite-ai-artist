@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SITE_NAME } from '$shared/lib/site';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import GithubIcon from '~icons/pixelarticons/github';
@@ -22,11 +23,11 @@
 >
 	Skip to content
 </a>
-<header class="bg-background/95 border-pixel sticky top-0 z-40 border-b-4 backdrop-blur">
-	<div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2.5 sm:px-6">
-		<a href={resolve('/')} class="flex items-center gap-3 py-1.5" aria-label="Aseprite AI Artist, home">
+<header class="site-header bg-background/95 border-pixel sticky top-0 z-40 border-b-4 backdrop-blur">
+	<div class="flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2.5 sm:px-6 lg:px-10">
+		<a href={resolve('/')} class="flex items-center gap-3 py-1.5" aria-label="{SITE_NAME}, home">
 			<PixelSprite rows={PEBBLY_MARK} scale={2} inheritOutline label="Pebbly, the site's mascot" />
-			<span class="retro text-xs whitespace-nowrap sm:text-sm">AI Artist</span>
+			<span class="retro text-xs whitespace-nowrap sm:text-sm">{SITE_NAME}</span>
 		</a>
 		<nav aria-label="Main" class="order-last -mx-2 flex w-full sm:order-none sm:mx-0 sm:w-auto">
 			<ul class="flex gap-1">

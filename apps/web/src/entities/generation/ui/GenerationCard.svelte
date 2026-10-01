@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '$shared/ui/8bit';
 	import { formatDate } from '$shared/lib/format';
+	import { ArtCard } from '$shared/ui/pixel';
 	import type { GenerationSummary } from '../model/types';
-	import FileImage from './FileImage.svelte';
-	import ScoreMeter from './ScoreMeter.svelte';
 
 	interface Props {
 		generation: GenerationSummary;
@@ -14,30 +12,31 @@
 	let { generation, eager = false }: Props = $props();
 </script>
 
-<a
+{#snippet scoreGem()}
+	{#if generation.score}
+		<span aria-label="{generation.score.passed} of {generation.score.total} criteria passed">{generation.score.passed}/{generation.score.total}</span>
+	{/if}
+{/snippet}
+
+<ArtCard
 	href={resolve('/g/[id]', { id: generation.id })}
-	class="group block h-full outline-offset-8 transition-transform hover:-translate-y-1 motion-reduce:hover:translate-y-0"
+	art={{ src: generation.cover.url, width: generation.cover.width, height: generation.cover.height, pixel: generation.cover.pixel }}
+	alt={generation.title}
+	title={generation.title}
+	badge={generation.score ? scoreGem : undefined}
+	transitionName="art-{generation.id}"
+	{eager}
 >
-	<Card font="normal" class="h-full gap-4 pt-0">
-		<div class="canvas-checker grid aspect-square place-items-center overflow-hidden p-4">
-			<FileImage file={generation.cover} alt="" max={224} {eager} />
-		</div>
-		<CardHeader class="px-4">
-			<CardTitle class="text-xs leading-relaxed group-hover:underline">{generation.title}</CardTitle>
-		</CardHeader>
-		<CardContent font="normal" class="text-muted-foreground px-4 text-sm">
+	{#snippet caption()}
+		<p class="text-sm">
 			<span class="text-foreground font-medium">{generation.modelLabel}</span>
-			<br />v{generation.plugin} in {generation.harness}, {formatDate(generation.date)}
-		</CardContent>
+			<span class="text-muted-foreground">· v{generation.plugin} in {generation.harness}</span>
+		</p>
+		<p class="text-muted-foreground text-xs">{formatDate(generation.date)}</p>
 		{#if generation.benchmark}
-			<CardFooter font="normal" class="flex flex-wrap items-center justify-between gap-2 px-4 text-sm">
-				<span class="text-muted-foreground">
-					{generation.benchmark.promptTitle}{#if generation.outdated}, unranked{/if}
-				</span>
-				{#if generation.score}
-					<ScoreMeter score={generation.score} />
-				{/if}
-			</CardFooter>
+			<p class="text-muted-foreground text-xs">
+				{generation.benchmark.promptTitle}{#if generation.outdated}, unranked{/if}
+			</p>
 		{/if}
-	</Card>
-</a>
+	{/snippet}
+</ArtCard>

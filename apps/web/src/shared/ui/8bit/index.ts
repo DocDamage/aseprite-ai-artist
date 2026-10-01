@@ -4,6 +4,7 @@
 export * from './badge';
 export * from './button';
 export * from './card';
+export * from './checkbox';
 export * as Collapsible from './collapsible';
 export * from './empty';
 export * from './input';
@@ -12,5 +13,6 @@ export * from './progress';
 export * from './retro-mode-switcher';
 export * as Select from './select';
 export * from './separator';
+export * from './slider';
 export * as Table from './table';
 export * from './toast';

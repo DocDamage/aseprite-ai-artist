@@ -10,6 +10,7 @@
 	import SearchIcon from '~icons/pixelarticons/search';
 	import { onMount } from 'svelte';
 	import { GenerationCard } from '$entities/generation';
+	import { Masonry, WALL_COLUMNS } from '$shared/ui/masonry';
 	import {
 		Button,
 		Empty,
@@ -184,18 +185,23 @@
 </div>
 
 {#if visible.length > 0}
-	<ul class="mt-6 grid grid-cols-1 gap-x-8 gap-y-10 px-1.5 min-[480px]:grid-cols-2 lg:grid-cols-4">
-		{#each visible as generation, index (generation.id)}
-			<li><GenerationCard {generation} eager={index < 4} /></li>
-		{/each}
-	</ul>
+	<Masonry
+		items={visible}
+		key={(generation) => generation.id}
+		breakpoints={WALL_COLUMNS}
+		class="mt-6 px-1.5"
+	>
+		{#snippet item(generation, index)}
+			<GenerationCard {generation} eager={index < 4} />
+		{/snippet}
+	</Masonry>
 	{#if visible.length < matching.length}
 		<div class="mt-12 flex justify-center">
 			<Button variant="outline" onclick={showMore}>Show more ({matching.length - visible.length} left)</Button>
 		</div>
 	{/if}
 {:else}
-	<Empty class="border-pixel mt-6 border-4 border-dashed">
+	<Empty class="border-pixel mt-6 pixel-notch [--notch:4px] border-4 border-dashed">
 		<EmptyHeader>
 			<EmptyMedia variant="icon"><SearchIcon aria-hidden="true" /></EmptyMedia>
 			<EmptyTitle class="text-sm leading-relaxed">No piece matches all of these filters</EmptyTitle>
