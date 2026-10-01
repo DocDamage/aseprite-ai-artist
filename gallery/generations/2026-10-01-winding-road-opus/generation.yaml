@@ -151,3 +151,20 @@ benchmark:
       note: Hidden on frame 1, only the canopy tip above the crest on frame 2, 4 px wide on frame 4, 9 px on the bridge, 13 px on frame 20, gone by frame 24. It switches to a side view while it drives across the bridge.
     - criterion: loop-validate
       pass: true
+ratings:
+  - judge: human:fedorovvvv
+    scores:
+      read: 0
+      form: 0
+      motion: 0
+      cohesion: 0
+      appeal: 0
+    note: Overall 1/10, given as one number; each axis set to round(1/10 × 4) = 0.
+  - judge: model:gpt-5.5
+    scores:
+      read: 2
+      form: 2
+      motion: 2
+      cohesion: 3
+      appeal: 2
+    note: The scene and the road read, but the distant landmarks and the moving details are muddy, and the animation feels mechanical rather than atmospheric.

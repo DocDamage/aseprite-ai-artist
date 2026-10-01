@@ -147,3 +147,20 @@ benchmark:
     - criterion: grow-validate
       pass: true
       note: Passed with outline warnings only; palette still 16 entries.
+ratings:
+  - judge: human:fedorovvvv
+    scores:
+      read: 1
+      form: 1
+      motion: 1
+      cohesion: 1
+      appeal: 1
+    note: Overall 2/10, given as one number; each axis set to round(2/10 × 4) = 1.
+  - judge: model:gpt-5.5
+    scores:
+      read: 3
+      form: 2
+      motion: 2
+      cohesion: 2
+      appeal: 2
+    note: The tree reads and the growth is clear, but the canopy breaks into vertical clumps in the animation, weaker than the still, and it plays as staged appearance rather than organic growth.
