@@ -6,6 +6,13 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **Site: borders and corners.** Borders step down with nesting — 6px outside,
+  4px inside, 2px deeper — and every stepped corner gets the inner corner pixel
+  the 8-bit components draw, instead of edges that stop short of each other.
+  The lightbox closes with the site's pixel icon button.
+
 ## [0.5.0] — 2026-10-02
 
 ### Added
