@@ -6,7 +6,7 @@ summary: >-
   appear and disappear in the right order, shading that follows a light which
   stays put while the object turns, a cast shadow that changes with the
   footprint, and correct occlusion.
-revision: 1
+revision: 2
 tags: [object, 3d, rotation, lighting, animation, loop, 128x128, pico-8]
 setup:
   canvas:
@@ -61,7 +61,7 @@ steps:
     text: |-
       The open document holds a cottage on a round grass plinth (canvas 128×128, PICO-8 palette, layers `ground`, `shadow`, `house`) in a three-quarter view at angle 0°, with a fixed light from behind-left. Keep the palette — use only its 16 colours — and keep the cottage on model at every angle: same size, proportions, colours and details. This brief is complete: do not ask me to confirm it. Decide anything it leaves open yourself and list those decisions in your final report. Coordinates are 0-based pixels, x to the right, y down.
 
-      Animate a turntable: the cottage turns one full revolution around the vertical axis through the pivot (64, 90), and the animation loops forever with no hitch. Exactly 16 frames, every frame 80 ms, one tag named `spin` covering every frame, direction forward. The existing frame is frame 1.
+      Animate a turntable: the cottage turns one full revolution around the vertical axis through the pivot (64, 90), and the animation loops forever with no hitch. Exactly 16 frames, every frame 120 ms, one tag named `spin` covering every frame, direction forward. The existing frame is frame 1.
 
       The rotation
       - Frame k shows the cottage turned (k − 1) × 22.5° from frame 1 — an even step every frame. Frame 16 is at 337.5°, so playing frame 16 into frame 1 is exactly one more step.
@@ -103,7 +103,7 @@ criteria:
       and the #1d2b53 shadow falls to the right and toward the viewer, attached to the base and entirely on the plinth (look with layer="shadow").
   - id: spin-tagged
     step: 2
-    text: frame op="list" shows exactly 16 frames, every one 80 ms, and tag op="list" shows a forward tag named `spin` covering all of them.
+    text: frame op="list" shows exactly 16 frames, every one 120 ms, and tag op="list" shows a forward tag named `spin` covering all of them.
   - id: spin-ground
     step: 2
     text: The `ground` layer is identical on every frame — its cels are linked (cel op="list") or look op="diff" with layer="ground" reports nothing changed.
