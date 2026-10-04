@@ -1,5 +1,5 @@
 title: Turntable cottage
-description: The turntable-house benchmark, revision 1 (16 frames at 80 ms; revision 2 slowed it to 125 ms after this run, so this run is shown but not ranked). A detailed timber-framed cottage on a round plinth in PICO-8, then a 16-frame 360° turntable with a fixed light and a recomputed shadow. Each step ran in its own fresh omp session (claude-opus-5-5), launched through Herdr, with the step text sent verbatim after the `/skill:studio ` command prefix. The operator created the document and loaded the PICO-8 palette before step 1, and handed step 2 a copy of the step-1 file. Both sessions ended with unsaved edits, which the operator saved unchanged. No image model, no reference, no messages beyond the step text.
+description: The turntable-house benchmark, revision 1 (16 frames at 80 ms; revision 2 slowed it to 125 ms after this run, so this run is shown but not ranked). A detailed timber-framed cottage on a round plinth in PICO-8, then a 16-frame 360° turntable with a fixed light and a recomputed shadow. Each step ran in its own fresh omp session (claude-opus-5-5), launched through Herdr, with the step text sent verbatim after the `/skill:studio ` command prefix. The operator created the document and loaded the PICO-8 palette before step 1, and handed step 2 a copy of the step-1 file. Both sessions ended with unsaved edits, which the operator saved unchanged. No image model, no reference, no messages beyond the step text. The cover GIF was re-exported by the operator at 125 ms per frame (one turn in 2 s) to match revision 2's pace; its pixels are the model's frames unchanged, and spin.aseprite keeps the model's own 80 ms timing.
 date: 2026-10-05
 author:
   name: Nik Fedorov
@@ -80,7 +80,7 @@ tags:
 files:
   - path: spin.gif
     role: cover
-    label: The turntable, 4×
+    label: The turntable, 4×, re-timed to 125 ms
     step: 2
   - path: cottage.aseprite
     role: source
