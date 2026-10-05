@@ -9,7 +9,7 @@
 
 <ShadcnTableRow
 	{...restProps}
-	class={cn(className, 'border-b-4 border-dashed border-foreground dark:border-ring')}
+	class={cn(className, 'border-b-4 border-dashed border-pixel')}
 >
 	{@render children?.()}
 </ShadcnTableRow>

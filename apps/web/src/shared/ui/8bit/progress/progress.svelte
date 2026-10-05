@@ -69,11 +69,11 @@
 		{/if}
 	</ProgressPrimitive.Root>
 	<div
-		class="pointer-events-none absolute inset-0 -my-1 border-y-4 border-foreground dark:border-ring"
+		class="pointer-events-none absolute inset-0 -my-1 border-y-4 border-pixel"
 		aria-hidden="true"
 	></div>
 	<div
-		class="pointer-events-none absolute inset-0 -mx-1 border-x-4 border-foreground dark:border-ring"
+		class="pointer-events-none absolute inset-0 -mx-1 border-x-4 border-pixel"
 		aria-hidden="true"
 	></div>
 </div>

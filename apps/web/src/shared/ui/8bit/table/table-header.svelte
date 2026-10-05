@@ -13,7 +13,7 @@
 
 <ShadcnTableHeader
 	{...restProps}
-	class={cn(className, 'border-b-4 border-foreground dark:border-ring')}
+	class={cn(className, 'border-b-4 border-pixel')}
 >
 	{@render children?.()}
 </ShadcnTableHeader>

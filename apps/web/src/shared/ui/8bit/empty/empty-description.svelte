@@ -9,7 +9,7 @@
 <p
 	data-slot="empty-description"
 	class={cn(
-		'text-sm/relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary',
+		'text-sm/relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary-ink',
 		className
 	)}
 	{...restProps}

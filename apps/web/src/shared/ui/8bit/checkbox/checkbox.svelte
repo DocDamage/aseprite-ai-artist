@@ -15,7 +15,7 @@
 
 <div
 	class={cn(
-		'relative flex shrink-0 items-center justify-center border-y-[6px] border-foreground dark:border-ring',
+		'relative flex shrink-0 items-center justify-center border-y-[6px] border-pixel',
 		className
 	)}
 >
@@ -31,7 +31,7 @@
 		{/snippet}
 	</CheckboxPrimitive.Root>
 	<div
-		class="pointer-events-none absolute inset-0 -mx-1.5 border-x-[6px] border-foreground dark:border-ring"
+		class="pointer-events-none absolute inset-0 -mx-1.5 border-x-[6px] border-pixel"
 		aria-hidden="true"
 	></div>
 </div>

@@ -14,7 +14,7 @@
 
 <div
 	class={cn(
-		'relative border-y-6 border-foreground dark:border-ring',
+		'relative border-y-6 border-pixel',
 		className,
 		font !== 'normal' && 'retro'
 	)}
@@ -23,7 +23,7 @@
 		{@render children?.()}
 	</ShadcnSelectTrigger>
 	<div
-		class="pointer-events-none absolute inset-0 -mx-1.5 border-x-6 border-foreground dark:border-ring"
+		class="pointer-events-none absolute inset-0 -mx-1.5 border-x-6 border-pixel"
 		aria-hidden="true"
 	></div>
 </div>

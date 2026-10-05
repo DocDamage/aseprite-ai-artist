@@ -41,22 +41,22 @@
 	</div>
 	{#if variant !== 'default'}
 		<div
-			class="pointer-events-none absolute top-0 left-0 h-1.5 w-full bg-foreground dark:bg-ring"
+			class="pointer-events-none absolute top-0 left-0 h-1.5 w-full bg-pixel"
 		></div>
 		<div
-			class="pointer-events-none absolute bottom-0 h-1.5 w-full bg-foreground dark:bg-ring"
+			class="pointer-events-none absolute bottom-0 h-1.5 w-full bg-pixel"
 		></div>
 		<div
-			class="pointer-events-none absolute top-1.5 -left-1.5 h-1/2 w-1.5 bg-foreground dark:bg-ring"
+			class="pointer-events-none absolute top-1.5 -left-1.5 h-1/2 w-1.5 bg-pixel"
 		></div>
 		<div
-			class="pointer-events-none absolute bottom-1.5 -left-1.5 h-1/2 w-1.5 bg-foreground dark:bg-ring"
+			class="pointer-events-none absolute bottom-1.5 -left-1.5 h-1/2 w-1.5 bg-pixel"
 		></div>
 		<div
-			class="pointer-events-none absolute top-1.5 -right-1.5 h-1/2 w-1.5 bg-foreground dark:bg-ring"
+			class="pointer-events-none absolute top-1.5 -right-1.5 h-1/2 w-1.5 bg-pixel"
 		></div>
 		<div
-			class="pointer-events-none absolute -right-1.5 bottom-1.5 h-1/2 w-1.5 bg-foreground dark:bg-ring"
+			class="pointer-events-none absolute -right-1.5 bottom-1.5 h-1/2 w-1.5 bg-pixel"
 		></div>
 	{/if}
 </div>

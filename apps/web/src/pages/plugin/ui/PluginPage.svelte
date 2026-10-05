@@ -244,7 +244,7 @@
 		<ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each skills as skill (skill.name)}
 				<li class="flex flex-col border-4 border-pixel bg-card p-5">
-					<code class="retro text-[0.625rem] text-primary">/aseprite:{skill.name}</code>
+					<code class="retro text-[0.625rem] text-primary-ink">/aseprite:{skill.name}</code>
 					<h3 class="mt-3 font-sans text-lg leading-snug font-semibold">{skill.title}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">{skill.description}</p>
 					<a

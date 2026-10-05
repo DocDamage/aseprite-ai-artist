@@ -5,7 +5,7 @@
 		base: '',
 		variants: {
 			variant: {
-				default: 'border-foreground dark:border-ring border-y-6 p-4 py-2.5',
+				default: 'border-pixel border-y-6 p-4 py-2.5',
 				borderless: ''
 			},
 			font: { normal: '', retro: 'retro' }
@@ -43,7 +43,7 @@
 	</ShadcnTable>
 	{#if variant !== 'borderless'}
 		<div
-			class="pointer-events-none absolute inset-0 -mx-1.5 border-x-6 border-foreground dark:border-ring"
+			class="pointer-events-none absolute inset-0 -mx-1.5 border-x-6 border-pixel"
 			aria-hidden="true"
 		></div>
 	{/if}

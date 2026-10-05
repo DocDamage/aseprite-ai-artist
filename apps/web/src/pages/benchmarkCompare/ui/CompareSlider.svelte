@@ -127,7 +127,7 @@
 					<div
 						class="absolute top-1/2 left-1/2 grid h-10 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center border-4 border-foreground bg-background/70 backdrop-blur-md dark:border-ring"
 					>
-						<span class="block h-4 w-1 bg-foreground dark:bg-ring"></span>
+						<span class="block h-4 w-1 bg-pixel"></span>
 					</div>
 				</div>
 				<span

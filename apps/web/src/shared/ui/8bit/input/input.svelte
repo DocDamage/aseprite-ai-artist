@@ -30,7 +30,7 @@
 		class={cn('w-full! rounded-none ring-0', font !== 'normal' && 'retro', className)}
 	/>
 	<div
-		class="pointer-events-none absolute inset-0 -mx-1.5 border-x-6 border-foreground dark:border-ring"
+		class="pointer-events-none absolute inset-0 -mx-1.5 border-x-6 border-pixel"
 		aria-hidden="true"
 	></div>
 </div>
