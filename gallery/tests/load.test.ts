@@ -329,6 +329,34 @@ test('a benchmark a model never ran counts against it in the leaderboard', () =>
   }
 });
 
+test('leaderboard history replays each day from the model\'s first run, keeping its best so far', () => {
+  const pass = { prompt: 'knight', revision: 2, results: [{ criterion: 'a', pass: true }, { criterion: 'b', pass: true }] };
+  const fail = { prompt: 'knight', revision: 2, results: [{ criterion: 'a', pass: false }, { criterion: 'b', pass: false }] };
+  const { root, cleanup } = makeRepo({
+    '2026-09-28-a': generation({ date: '2026-09-28', plugin: '0.3.1', benchmark: pass }),
+    '2026-09-29-b': generation({ date: '2026-09-29' }),
+    '2026-09-29-c': generation({ date: '2026-09-29', models: ['model-y'], benchmark: fail }),
+    '2026-09-30-d': generation({ date: '2026-09-30', models: ['model-y'] }),
+  });
+  try {
+    const result = inspectGallery(root);
+    assert.deepEqual(errorsOf(result), []);
+    const history = Object.fromEntries(result.gallery.leaderboard.map((entry) => [entry.modelLabel, entry.history]));
+    assert.deepEqual(history['model-x'], [
+      { date: '2026-09-28', score: 59, benchmarks: 1, ran: true },
+      { date: '2026-09-29', score: 59, benchmarks: 1, ran: true },
+      { date: '2026-09-30', score: 59, benchmarks: 1, ran: false },
+    ], 'a worse later run does not lower the line, and a day without runs carries it');
+    assert.deepEqual(history['model-y'], [
+      { date: '2026-09-29', score: 0, benchmarks: 1, ran: true },
+      { date: '2026-09-30', score: 29, benchmarks: 1, ran: true },
+    ], 'the line starts on the model\'s first run, not the suite\'s');
+    for (const entry of result.gallery.leaderboard) assert.equal(entry.history.at(-1)!.score, entry.score);
+  } finally {
+    cleanup();
+  }
+});
+
 test('points weigh criteria 50%, craft 35% and speed 15%, rounded to an integer 0–100', () => {
   const full = { compliance: 1, craft: 1, speed: 1, minutes: 10 };
   assert.equal(pointsOf(full), 100);

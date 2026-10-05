@@ -21,4 +21,6 @@ export interface BenchmarkPageData {
 	/** Every run of this prompt, newest first, including runs on older revisions. */
 	runs: GenerationSummary[];
 	facets: Facets;
+	/** Every ranked model in overall leaderboard order; a model's chart colour is its place here, so it matches on every page. */
+	modelOrder: string[];
 }

@@ -7,7 +7,7 @@ import type { BenchmarkPageData, ContenderView } from '../model/types';
 export const entries = () => gallery().prompts.map((prompt) => ({ prompt: prompt.id }));
 
 export function load({ params }: { params: { prompt: string } }): BenchmarkPageData {
-	const { benchmarks, generations, prompts } = gallery();
+	const { benchmarks, generations, prompts, leaderboard } = gallery();
 	const benchmark = benchmarks.find((candidate) => candidate.prompt.id === params.prompt);
 	if (!benchmark) error(404, `No benchmark prompt called "${params.prompt}"`);
 	const runs = generations.filter(
@@ -41,6 +41,7 @@ export function load({ params }: { params: { prompt: string } }): BenchmarkPageD
 		chips: criterionChips(benchmark.prompt),
 		contenders,
 		runs: summaries,
-		facets: facets(runs, prompts)
+		facets: facets(runs, prompts),
+		modelOrder: leaderboard.map((entry) => entry.modelLabel)
 	};
 }

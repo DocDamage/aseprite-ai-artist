@@ -11,6 +11,7 @@
 	import { Seo } from '#shared/ui/seo/index.js';
 	import { ScoreMeter } from '#entities/generation/index.js';
 	import type { BenchmarksPageData } from '../model/types';
+	import LeaderboardHistory from './LeaderboardHistory.svelte';
 
 	interface Props {
 		data: BenchmarksPageData;
@@ -105,6 +106,7 @@
 					</Table.Body>
 				</Table.Root>
 			</div>
+			<LeaderboardHistory {leaderboard} {total} />
 		{:else}
 			<p
 				class="pixel-notch mt-6 border-6 border-dashed border-pixel p-4 text-sm text-muted-foreground [--notch:6px]"

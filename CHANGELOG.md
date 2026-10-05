@@ -6,6 +6,26 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Site: score charts.** Each benchmark page has a *Run by run* chart —
+  every model's runs of that prompt, all models on one set of axes — and the
+  benchmarks index has *Score over time* under the leaderboard: each model's
+  leaderboard score on every day it ran, ending exactly on today's table.
+  Both are drawn against dates: the window runs from just before the first
+  run to today, a year at most, with days, weeks or months on the axis to
+  suit. A marker is a run; the line is solid between runs and dashed across
+  gaps of more than a week and before the first and after the last run. A
+  model keeps one colour and marker shape on every chart; point at a run (or
+  arrow-key through them) for every model's value that day, and pick a model
+  in the legend to bring its line forward. The gallery now exports each
+  leaderboard entry's `history`.
+
+### Changed
+
+- **Site: the benchmark hero is a podium.** It shows the top three models;
+  the rest are in the full ranking below.
+
 ## [0.6.0] — 2026-10-06
 
 ### Added

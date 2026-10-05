@@ -48,6 +48,14 @@ export function benchmarkView(benchmark: Benchmark, prompt: PromptView): Benchma
 			modelLabel: run.modelLabel,
 			plugin: run.plugin,
 			revision: run.benchmark!.revision
+		})),
+		progress: benchmark.models.map((modelLabel) => ({
+			modelLabel,
+			runs: benchmark.cells
+				.filter((cell) => cell.modelLabel === modelLabel)
+				.flatMap((cell) => cell.runs)
+				.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
+				.map((run) => ({ id: run.id, date: run.date, plugin: run.plugin, points: run.points! }))
 		}))
 	};
 }
@@ -101,6 +109,7 @@ export function leaderboardView(leaderboard: Gallery['leaderboard']): Leaderboar
 		craft: entry.craft,
 		speed: entry.speed,
 		benchmarks: entry.benchmarks,
-		runs: entry.runs
+		runs: entry.runs,
+		history: entry.history.map((snapshot) => ({ ...snapshot }))
 	}));
 }

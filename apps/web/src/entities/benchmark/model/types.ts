@@ -43,6 +43,23 @@ export interface BenchmarkView {
 	models: string[];
 	cells: CellView[];
 	outdatedRuns: OutdatedRunView[];
+	/** Every ranked run of each model, oldest first; models in `models` order. */
+	progress: ModelProgressView[];
+}
+
+export interface ModelProgressView {
+	modelLabel: string;
+	/** Across plugin versions, in the order they were run: by date, then by id within a day. */
+	runs: { id: string; date: string; plugin: string; points: number }[];
+}
+
+export interface LeaderboardSnapshotView {
+	date: string;
+	/** Mean points, 0–100, from the runs dated on or before `date`. */
+	score: number;
+	benchmarks: number;
+	/** True when the model added a run that day; otherwise the score carries over. */
+	ran: boolean;
 }
 
 export interface LeaderboardEntryView {
@@ -55,6 +72,8 @@ export interface LeaderboardEntryView {
 	speed: number;
 	benchmarks: number;
 	runs: number;
+	/** The score at the end of each day runs were added, oldest first; the last is `score`. */
+	history: LeaderboardSnapshotView[];
 }
 
 export interface BenchmarkCardView {

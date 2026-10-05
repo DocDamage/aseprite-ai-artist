@@ -156,6 +156,24 @@ export interface LeaderboardEntry {
   runs: number;
   /** The model's best cell per benchmark, keyed by prompt id. */
   best: Record<string, BenchmarkCell>;
+  /**
+   * The score this entry would have shown at the end of each day ranked runs
+   * were added, oldest first, from the model's first run on. Past runs are
+   * scored as they are today and the suite is today's, so the last point is
+   * `score` exactly and the line only moves when the model's own runs do.
+   */
+  history: LeaderboardSnapshot[];
+}
+
+export interface LeaderboardSnapshot {
+  /** A day on which any model added a ranked run. */
+  date: string;
+  /** Mean points, 0–100, from the runs dated on or before `date`. */
+  score: number;
+  /** Benchmarks with a ranked run by then. */
+  benchmarks: number;
+  /** True when this model itself added a run that day. */
+  ran: boolean;
 }
 
 export interface LoadResult {
@@ -492,7 +510,7 @@ function buildLeaderboard(benchmarks: Benchmark[]): LeaderboardEntry[] {
     for (const cell of benchmark.cells) {
       let entry = byModel.get(cell.modelLabel);
       if (!entry) {
-        entry = { modelLabel: cell.modelLabel, score: 0, compliance: 0, craft: 0, speed: 0, benchmarks: 0, runs: 0, best: {} };
+        entry = { modelLabel: cell.modelLabel, score: 0, compliance: 0, craft: 0, speed: 0, benchmarks: 0, runs: 0, best: {}, history: [] };
         byModel.set(cell.modelLabel, entry);
       }
       entry.runs += cell.runs.length;
@@ -513,7 +531,36 @@ function buildLeaderboard(benchmarks: Benchmark[]): LeaderboardEntry[] {
     entry.craft = mean((cell) => cell.components.craft);
     entry.speed = mean((cell) => cell.components.speed);
   }
+  const days = [...new Set(benchmarks.flatMap((benchmark) => benchmark.cells.flatMap((cell) => cell.runs.map((run) => run.date))))].sort();
+  for (const entry of entries) entry.history = leaderboardHistory(entry.modelLabel, benchmarks, days);
   return entries.sort((a, b) => b.score - a.score || b.benchmarks - a.benchmarks || a.modelLabel.localeCompare(b.modelLabel));
+}
+
+/**
+ * Replays one model's leaderboard score day by day. Its standing on a benchmark
+ * is its highest-points run so far — the same run `buildLeaderboard` ranks by,
+ * since `compareRuns` orders by points first.
+ */
+function leaderboardHistory(modelLabel: string, benchmarks: Benchmark[], days: string[]): LeaderboardSnapshot[] {
+  const runsByBenchmark = benchmarks.map((benchmark) =>
+    benchmark.cells.filter((cell) => cell.modelLabel === modelLabel).flatMap((cell) => cell.runs),
+  );
+  const own = new Set(runsByBenchmark.flat().map((run) => run.date));
+  const first = [...own].sort()[0];
+  const suite = benchmarks.length;
+  return days
+    .filter((day) => first !== undefined && day >= first)
+    .map((day) => {
+      let total = 0;
+      let covered = 0;
+      for (const runs of runsByBenchmark) {
+        const held = runs.filter((run) => run.date <= day);
+        if (held.length === 0) continue;
+        covered += 1;
+        total += Math.max(...held.map((run) => run.points!));
+      }
+      return { date: day, score: suite === 0 ? 0 : total / suite, benchmarks: covered, ran: own.has(day) };
+    });
 }
 
 function craftOf(ratings: Rating[]): Craft | null {

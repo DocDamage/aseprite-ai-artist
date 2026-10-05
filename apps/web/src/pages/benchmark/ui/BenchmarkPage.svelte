@@ -13,6 +13,7 @@
 	import ContenderCard from './ContenderCard.svelte';
 	import PromptCriteria from './PromptCriteria.svelte';
 	import PromptMethod from './PromptMethod.svelte';
+	import RunProgress from './RunProgress.svelte';
 
 	interface Props {
 		data: BenchmarkPageData;
@@ -20,11 +21,11 @@
 
 	let { data }: Props = $props();
 
-	const { benchmark, chips, contenders, runs, facets } = $derived(data);
+	const { benchmark, chips, contenders, runs, facets, modelOrder } = $derived(data);
 	const prompt = $derived(benchmark.prompt);
 	const winner = $derived(contenders[0]);
-	/** The stage holds the winner and up to three runners-up; the rest are in the ranking. */
-	const runnersUp = $derived(contenders.slice(1, 4));
+	/** The stage is the podium: the winner and at most two runners-up; the rest are in the ranking. */
+	const runnersUp = $derived(contenders.slice(1, 3));
 	const offStage = $derived(contenders.length - 1 - runnersUp.length);
 	/** The summary's first sentence: what is being drawn. The rest explains the test, further down. */
 	const lede = $derived(prompt.summary.split(/(?<=\.)\s/)[0]!);
@@ -71,7 +72,9 @@ test works comes last, for whoever wants to check it. -->
 
 		<p class="mt-5 max-w-[60ch] text-lg text-muted-foreground">
 			{lede}
-			{#if contenders.length > 1}
+			{#if offStage > 0}
+				{plural(contenders.length, 'model')} got the same prompt. These are the top three.
+			{:else if contenders.length > 1}
 				{plural(contenders.length, 'model')} got the same prompt. This is what each one drew.
 			{:else if contenders.length === 1}
 				This is the best run so far.
@@ -129,6 +132,10 @@ test works comes last, for whoever wants to check it. -->
 <div class="mx-auto max-w-6xl px-4 pt-16 sm:px-6">
 	{#if showRanking}
 		<BenchmarkMatrix {benchmark} />
+	{/if}
+
+	{#if benchmark.cells.length > 0}
+		<RunProgress title={prompt.title} progress={benchmark.progress} {modelOrder} />
 	{/if}
 
 	{#if runs.length > 0}

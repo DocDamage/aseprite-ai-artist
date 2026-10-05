@@ -92,7 +92,8 @@
 	--input: #3a3449;
 	--ring: #6a6080;
 	--chart-1: #83769c;
-	--chart-2: #008751;
+	/* Moss #008751 disappears on the dark card as a 3px line; the PICO-8 bright green does not. */
+	--chart-2: #00e436;
 	--chart-3: #ffa300;
 	--chart-4: #ff77a8;
 	--chart-5: #29adff;
