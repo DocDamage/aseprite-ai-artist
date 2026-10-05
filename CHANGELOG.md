@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-10-06
+
 ### Added
 
 - **Site: a page for the plugin** at `/plugin`: what it is, repository and
@@ -32,6 +34,18 @@ All notable changes to this project are documented here. Format follows
 
 ### Changed
 
+- **`look` op `ascii` and `diff`: glyphs are bound to palette indices.** Glyph
+  *n* is palette entry *n* on every read of a sprite, so a large sprite read in
+  pieces has one legend, and rows from one piece draw back correctly in
+  another. Before, glyphs were assigned per read, and the same letter could be
+  two different colours in neighbouring regions. Colours outside the palette
+  take the slots after it and are listed in the new `offPalette` field — the
+  only glyphs that can change between reads. The alphabet grew from 72 to 261
+  characters (Latin-1 and Latin Extended-A letters after ASCII), enough for a
+  full 256-colour palette.
+- **Text grids are bounded by the canvas, not by fixed sizes.** `look` op
+  `ascii` reads the whole canvas (was 4096 cells), and `draw` kind `grid`
+  accepts up to the canvas size on each side (was 256).
 - **Site: SvelteKit 3,** adapter-vercel 7, and every other dependency at its
   latest, except TypeScript, held at 6: SvelteKit 3.0 and svelte-check still
   need TypeScript's JavaScript API, which TypeScript 7 no longer ships. The

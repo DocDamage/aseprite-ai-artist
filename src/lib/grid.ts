@@ -17,8 +17,11 @@ import { LiveError } from "./protocol.js";
 
 export const TRANSPARENT_GLYPH = ".";
 
-/** Larger than a 64×64 sprite four times over, small enough to stay one readable call. */
-export const MAX_GRID_SIDE = 256;
+/** The sprite's canvas. A grid may be as large as it and no larger. */
+export interface CanvasSize {
+  width: number;
+  height: number;
+}
 
 export interface GridOp {
   x: number;
@@ -46,7 +49,7 @@ interface Rect {
   height: number;
 }
 
-export function compileGrid(op: GridOp): CompiledGrid {
+export function compileGrid(op: GridOp, canvas: CanvasSize): CompiledGrid {
   const legend = new Map<string, string | null>();
   if (!Object.hasOwn(op.legend, TRANSPARENT_GLYPH)) legend.set(TRANSPARENT_GLYPH, null);
   for (const [glyph, color] of Object.entries(op.legend)) {
@@ -67,11 +70,12 @@ export function compileGrid(op: GridOp): CompiledGrid {
   if (height === 0 || width === 0) {
     throw new LiveError("invalid_args", "A grid needs at least one row with at least one cell.");
   }
-  if (width > MAX_GRID_SIDE || height > MAX_GRID_SIDE) {
+  if (width > canvas.width || height > canvas.height) {
     throw new LiveError(
       "too_large",
-      `Grid is ${width}×${height}; the limit is ${MAX_GRID_SIDE} on each side. Split it into several grid ops at different x/y.`,
-      { width, height, max: MAX_GRID_SIDE },
+      `Grid is ${width}×${height} but the canvas is ${canvas.width}×${canvas.height}. A grid can cover the whole canvas, not more — ` +
+        `check for extra rows or columns.`,
+      { width, height, canvasWidth: canvas.width, canvasHeight: canvas.height },
     );
   }
 

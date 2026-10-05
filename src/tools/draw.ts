@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { AsepriteLink } from "../bridge/link.js";
 import { LiveError } from "../lib/protocol.js";
-import { compileGrid, MAX_GRID_SIDE } from "../lib/grid.js";
+import { compileGrid, type CanvasSize } from "../lib/grid.js";
 import { layoutText, loadFont, type TextAnchor } from "../lib/text.js";
 import { fail, hexColor, ok, targetShape } from "./kit.js";
 
@@ -151,8 +151,7 @@ const drawOp = z.discriminatedUnion("kind", [
     rows: z
       .array(z.string().min(1))
       .min(1)
-      .max(MAX_GRID_SIDE)
-      .describe("Top to bottom, one character per pixel, every row the same width."),
+      .describe("Top to bottom, one character per pixel, every row the same width. Up to the canvas size."),
     transparent: z
       .enum(["erase", "skip"])
       .default("erase")
@@ -260,13 +259,17 @@ export function registerDrawTools(server: McpServer, live: AsepriteLink): void {
           );
         }
 
+        // A grid is bounded by the canvas, which only Aseprite knows.
+        const canvas: CanvasSize | undefined = args.ops.some((op) => op.kind === "grid")
+          ? await live.call<CanvasSize>("sprite.info", { sprite: args.sprite, includePalette: false }, { expect: ["width", "height"] })
+          : undefined;
         const expandedOps: Record<string, unknown>[] = [];
         for (const op of args.ops) {
           if (op.kind === "text") {
             const layout = layoutText({ ...op, font: loadFont(op.font) });
             if (layout.pixels.length > 0) expandedOps.push({ kind: "pixels", points: layout.pixels });
           } else if (op.kind === "grid") {
-            expandedOps.push(...compileGrid(op).ops);
+            expandedOps.push(...compileGrid(op, canvas!).ops);
           } else {
             expandedOps.push(op);
           }

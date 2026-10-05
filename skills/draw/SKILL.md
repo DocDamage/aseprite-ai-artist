@@ -123,7 +123,8 @@ The text grid is where you catch the pixel one row too low and the line run of
 To fix what it shows, edit the grid itself: `look op="ascii" layer="base"
 rulers=false region=…` returns bare rows plus `origin`; change the cells that
 are wrong and send the rows back as `draw` kind `grid` at that origin, with the
-legend `look` gave you. Only the region you send is touched.
+legend `look` gave you. Only the region you send is touched. A glyph is a
+palette index and means the same colour in every region you read.
 
 ### 8. Validate and report
 

@@ -3,6 +3,7 @@ import { test } from "node:test";
 import type { PixelRegion } from "../dist/lib/render.js";
 import {
   filmstripLayout,
+  GLYPH_COUNT,
   previewScale,
   renderAscii,
   renderDiff,
@@ -30,11 +31,6 @@ test("renderAscii keeps absolute coordinates in the row labels", () => {
   const lines = view.text.split("\n");
   assert.ok(lines[2]!.startsWith("7 "), `expected row label 7, got '${lines[2]}'`);
   assert.equal(view.originX, 10);
-});
-
-test("renderAscii refuses a grid too large to read", () => {
-  const big = region(100, 100, new Array(10000).fill(0), []);
-  assert.throws(() => renderAscii(big), /exceeds the .* text-grid limit/);
 });
 
 test("renderDiff marks unchanged, erased and repainted pixels distinctly", () => {
@@ -90,21 +86,50 @@ test("previewScale actually reaches the target for small sprites", () => {
   assert.ok(previewScale(1, 1, 1024) * 1 <= 2048);
 });
 
-test("renderAscii refuses a region with more colours than it has glyphs", () => {
+test("renderAscii refuses colours past the alphabet instead of sharing a glyph", () => {
   // Past the alphabet every extra colour used to collapse onto "?" and
   // overwrite the same legend entry, so the grid quietly misreported which
   // colour was where — in the exact tool an agent uses to verify its own edits.
-  const many = 100;
+  const many = GLYPH_COUNT + 1;
   const colors = ["#00000000"];
   const grid: number[] = [];
   for (let i = 0; i < many; i++) {
-    colors.push(`#${i.toString(16).padStart(2, "0")}0000`);
+    colors.push(`#${i.toString(16).padStart(4, "0")}00`);
     grid.push(i + 1);
   }
-  assert.throws(
-    () => renderAscii({ x: 0, y: 0, width: many, height: 1, colors, grid }),
-    /distinct colours .* glyphs/s,
-  );
+  assert.throws(() => renderAscii({ x: 0, y: 0, width: many, height: 1, colors, grid }), /has no glyph/);
+  colors.pop();
+  grid.pop();
+  const fits = renderAscii({ x: 0, y: 0, width: many - 1, height: 1, colors, grid });
+  assert.equal(new Set(fits.rows[0]).size, many - 1, "every colour gets its own glyph");
+});
+
+test("glyphs follow palette indices, whatever order a region meets the colours in", () => {
+  const palette = ["#000000", "#ff0000", "#00ff00", "#0000ff"];
+  const a = renderAscii(region(2, 1, [1, 2], ["#0000ff", "#ff0000"]), { palette });
+  const b = renderAscii(region(2, 1, [1, 2], ["#ff0000", "#00ff00"]), { palette });
+  assert.deepEqual(a.legend, { D: "#0000ff", B: "#ff0000" });
+  assert.deepEqual(b.legend, { B: "#ff0000", C: "#00ff00" });
+  assert.deepEqual(a.offPalette, []);
+});
+
+test("off-palette colours take glyphs after the palette and are reported as unstable", () => {
+  const view = renderAscii(region(2, 1, [1, 2], ["#123456", "#ff0000"]), { palette: ["#000000", "#ff0000"] });
+  assert.deepEqual(view.legend, { C: "#123456", B: "#ff0000" });
+  assert.deepEqual(view.offPalette, ["C"]);
+});
+
+test("an indexed sprite's opaque pixel matches a palette entry that carries alpha", () => {
+  const view = renderAscii(region(1, 1, [1], ["#ff0000"]), { palette: ["#000000", "#ff000080"] });
+  assert.deepEqual(view.legend, { B: "#ff0000" });
+  assert.deepEqual(view.offPalette, []);
+});
+
+test("renderDiff uses the same palette glyphs as renderAscii", () => {
+  const palette = ["#000000", "#ff0000", "#00ff00"];
+  const diff = renderDiff(region(1, 1, [1], ["#ff0000"]), region(1, 1, [1], ["#00ff00"]), palette);
+  assert.equal(diff.text, "C");
+  assert.deepEqual(diff.legend, { C: "#00ff00" });
 });
 
 test("filmstripLayout stays as square as whole cells allow", () => {

@@ -24,7 +24,7 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
       description:
         "See what is actually on the canvas. Ops:\n" +
         "• 'preview' — a nearest-neighbour upscaled PNG of the active frame (~1024px long edge). Use for overall read: silhouette, colour, whether it looks like the thing.\n" +
-        "• 'ascii' — an exact text grid, one glyph per pixel with a colour legend and coordinate rulers. Use to verify precise pixel positions and values, to count cells, or on any client without vision. Capped at 64×64; pass a region to crop. `rulers=false` prints the bare rows, which `draw` kind 'grid' takes back as-is: read a layer, edit the rows, send them at the same x/y.\n" +
+        "• 'ascii' — an exact text grid, one glyph per pixel with a colour legend and coordinate rulers. Use to verify precise pixel positions and values, to count cells, or on any client without vision. Reads up to the whole canvas; pass a region to crop. Glyphs are bound to palette indices, so every region and frame of a sprite agrees on what a glyph means; each read's legend lists only the colours it contains, so merge legends when rows from one piece go into another. Only colours outside the palette (listed in `offPalette`) get per-read glyphs. `rulers=false` prints the bare rows, which `draw` kind 'grid' takes back as-is: read a layer, edit the rows, send them at the same x/y.\n" +
         "• 'filmstrip' — every frame composited into one image. The only reliable way to review an animation, since a vision model reads just the first frame of a GIF.\n" +
         "• 'onion' — the target frame at full opacity over ghosted neighbouring frames, oldest-first. Use to check in-betweens and spacing while animating, without stepping through frames one at a time. Over an opaque background the target hides every ghost — pass `layer` to onion-skin just the part that moves.\n" +
         "• 'diff' — a pixel-level text diff between two frames: '.' unchanged, '-' erased, glyph = the new colour. Use it to confirm exactly what an edit touched.\n" +
@@ -66,7 +66,7 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
             height: z.number().int().positive(),
           })
           .optional()
-          .describe("Crop. Required for 'ascii' on sprites larger than 64×64."),
+          .describe("Crop. Omit to read the whole canvas."),
         layer: z
           .string()
           .optional()
@@ -94,7 +94,11 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
         height: z.number().int(),
         scale: z.number().int().optional(),
         text: z.string().optional().describe("The grid, for 'ascii' and 'diff'."),
-        legend: z.record(z.string()).optional().describe("glyph → #rrggbb."),
+        legend: z.record(z.string()).optional().describe("glyph → #rrggbb. Palette colours keep the same glyph across every read of the sprite."),
+        offPalette: z
+          .array(z.string())
+          .optional()
+          .describe("ascii/diff: glyphs whose colour is not in the palette. Their assignment can change between reads — do not reuse them across regions."),
         gridRows: z
           .array(z.string())
           .optional()
@@ -121,8 +125,8 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
       try {
         switch (args.op) {
           case "ascii": {
-            const region = await readRegion(live, args);
-            const view = renderAscii(region, { showRulers: args.rulers });
+            const [region, palette] = await Promise.all([readRegion(live, args), readPalette(live, args.sprite)]);
+            const view = renderAscii(region, { showRulers: args.rulers, palette });
             return ok(
               {
                 op: "ascii",
@@ -131,21 +135,23 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
                 height: view.height,
                 text: view.text,
                 legend: view.legend,
+                offPalette: view.offPalette,
                 gridRows: view.rows,
                 origin: { x: view.originX, y: view.originY },
               },
-              `${view.width}×${view.height} at (${view.originX},${view.originY})\n\n${view.text}\n\nLegend: ${formatLegend(view.legend)}\n'.' = transparent`,
+              `${view.width}×${view.height} at (${view.originX},${view.originY})\n\n${view.text}\n\nLegend: ${formatLegend(view.legend)}\n'.' = transparent${offPaletteNote(view.offPalette)}`,
             );
           }
 
           case "diff": {
             const from = args.fromFrame ?? 1;
             const to = args.toFrame ?? from + 1;
-            const [before, after] = await Promise.all([
+            const [before, after, palette] = await Promise.all([
               readRegion(live, { ...args, frame: from }),
               readRegion(live, { ...args, frame: to }),
+              readPalette(live, args.sprite),
             ]);
-            const view = renderDiff(before, after);
+            const view = renderDiff(before, after, palette);
             return ok(
               {
                 op: "diff",
@@ -154,12 +160,13 @@ export function registerLookTools(server: McpServer, live: AsepriteLink): void {
                 height: before.height,
                 text: view.text,
                 legend: view.legend,
+                offPalette: view.offPalette,
                 changedPixels: view.changed,
                 totalPixels: view.total,
                 changedBounds: view.changedBounds,
                 percentChanged: view.percentChanged,
               },
-              `Frame ${from} → ${to}: ${view.changed} of ${view.total} pixels changed (${view.percentChanged}%).\n\n${view.text}\n\nLegend: ${formatLegend(view.legend)}\n'.' unchanged  '-' erased`,
+              `Frame ${from} → ${to}: ${view.changed} of ${view.total} pixels changed (${view.percentChanged}%).\n\n${view.text}\n\nLegend: ${formatLegend(view.legend)}\n'.' unchanged  '-' erased${offPaletteNote(view.offPalette)}`,
             );
           }
 
@@ -396,6 +403,17 @@ async function readRegion(
     composite: args.composite ?? args.layer === undefined,
   });
   return { ...data, spriteName: data.sprite };
+}
+
+async function readPalette(live: AsepriteLink, sprite: string | undefined): Promise<string[]> {
+  const data = await live.call<{ colors?: string[] }>("palette.get", { sprite });
+  return data.colors ?? [];
+}
+
+function offPaletteNote(glyphs: string[]): string {
+  return glyphs.length === 0
+    ? ""
+    : `\nOff-palette (glyphs not stable between reads): ${glyphs.join(" ")}`;
 }
 
 function tempPng(prefix: string): string {

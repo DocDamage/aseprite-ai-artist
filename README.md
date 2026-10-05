@@ -131,6 +131,10 @@ It sees the whole shape while writing it, so silhouettes stay even, limbs keep
 their length between frames, and an edit never spills into its neighbours.
 Animation is the same trick: copy the last frame's rows, move the arm, draw.
 
+Since 0.6.0 every character stands for one palette entry, the same on every
+read, so a big canvas can be read and edited in pieces without the letters
+changing meaning between them. A grid can be as large as the canvas.
+
 Early signal, not a measurement: with the same model and prompts, the mage
 benchmark went 3 → 4/10 and the road 1 → 3/10; the tree stayed at 2
 ([compare them](https://pixeli.pebbly.space/benchmarks)).

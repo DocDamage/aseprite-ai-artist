@@ -26,8 +26,10 @@ has to see them to recover.
   the output never exceeds ~2048px). For judging the overall read.
 - **`ascii`** — exact text grid, one glyph per pixel, with coordinate rulers and
   a colour legend. For verifying precise positions, and for clients with no
-  vision. Capped at 64×64 cells and 71 distinct colours; above either it refuses
-  — pass a smaller `region`. `rulers: false` prints the bare rows; either way
+  vision. Reads up to the whole canvas; pass a `region` to crop. Glyph *n* is
+  palette entry *n* on every read, so regions of one sprite share a legend;
+  colours outside the palette are listed in `offPalette` and are the only
+  glyphs that can change between reads. `rulers: false` prints the bare rows; either way
   the result carries `gridRows`, `legend` and `origin`, which `draw` kind `grid`
   takes back unchanged — read, edit the rows, write.
 - **`filmstrip`** — every frame in one image. A vision model reads only the

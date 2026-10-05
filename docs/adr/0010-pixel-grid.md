@@ -55,8 +55,18 @@ can start as frame N's rows, which keeps volume from drifting across a cycle.
 a real headless Aseprite.
 
 **Bad.** Large grids reintroduce the counting problem the research describes. The
-skills steer to grids up to ~32 wide and one grid per part beyond that; the
-256×256 hard cap only bounds a single call.
+skills steer to grids up to ~32 wide and one grid per part beyond that. The
+hard cap is the canvas: `look ascii` reads it whole and `draw` kind `grid`
+takes up to its size, so the read and write halves bound the same thing.
+
+**Amended (0.6.0): glyphs follow the palette.** Glyph *n* is palette entry *n*
+on every read, so pieces of one sprite share a legend and the rows of one piece
+draw back correctly with another's. Assigning glyphs per read made the same
+letter two colours in neighbouring regions — a paste that recoloured art and
+reported success. Colours outside the palette take the slots after it and are
+listed in `offPalette`; only those can change between reads. The alphabet is
+ASCII first, then Latin-1 and Latin Extended-A letters, 261 in all, so a full
+256-colour palette fits.
 
 **Deferred, on purpose.** Cell separators (`O O S S`) have evidence for reading
 ARC grids but double the tokens, and nothing shows they help a model *write*

@@ -156,14 +156,14 @@ locally rather than on a pull request.
   Aseprite is unfocused, but the extension's reconnect timer is driven by the UI
   loop, so re-establishing a *dropped* connection can wait until the window is
   focused once.
-- **Text grids are capped at 64×64 cells and 71 distinct colours.** Above
-  either, `look` op `ascii` refuses and asks for a smaller region — a grid whose
-  glyphs collide would misreport which colour is where.
+- **Text grids are bounded by the canvas.** `look` op `ascii` reads up to the
+  whole canvas and `draw` kind `grid` accepts up to its size. Glyphs follow
+  palette indices — 261 of them — and `ascii` refuses only when the palette
+  plus off-palette colours outgrow that: a grid whose glyphs collide would
+  misreport which colour is where.
 - **`transform` acts on one cel**, the target layer's image on the target frame.
   There is no selection- or sprite-scoped transform; crop a region out with
   `draw` op `blit` first if you need one.
-- **Text grids are capped at 64×64.** Above that, `look` op `ascii` refuses and
-  asks for a region. A wall of text is worse than no answer.
 - **blob47 export assumes canonical ordering.** The wangset it writes maps
   atlas slot *n* to the *n*-th canonical blob mask in ascending order. A tileset
   authored in a different order exports a wangset that autotiles wrongly, so

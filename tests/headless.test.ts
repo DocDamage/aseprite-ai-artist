@@ -235,8 +235,7 @@ test("headless drives a real batch Aseprite end to end", { skip: aseprite ? fals
     assert.equal(scoped.changedPixels, 0, "a layer the edit never touched reports no change");
 
     // draw kind 'grid' writes exactly its rows, and look ascii rulers=false
-    // reads them back cell for cell. Glyphs are reassigned on read, so compare
-    // colours, not characters.
+    // reads them back cell for cell.
     await call("layer", { op: "create", name: "grid" });
     const legend = { A: "#ff004d", B: "#29adff" };
     const rows = ["..AB..", ".ABBA.", "AB..BA"];
@@ -249,6 +248,20 @@ test("headless drives a real batch Aseprite end to end", { skip: aseprite ? fals
     };
     const expected = rows.map((row) => Array.from(row, (g) => (g === "." ? "." : legend[g as "A" | "B"])));
     assert.deepEqual(await colours(), expected);
+
+    // Glyphs are palette indices on a real sprite: two regions meeting the
+    // colours in different orders agree, and an off-palette colour is flagged.
+    // With per-read glyphs 'A' was #29adff on the right and #ff004d on the left.
+    await call("palette", { op: "preset", preset: "pico8", replace: true });
+    // (7,2) sits outside the 6×3 rectangle the selection check below reads.
+    await call("draw", { layer: "grid", frame: 1, paletteLock: false, ops: [{ kind: "pixels", points: [{ x: 7, y: 2 }], color: "#123456" }] });
+    const piece = async (x: number, width: number) =>
+      call("look", { op: "ascii", layer: "grid", frame: 1, rulers: false, region: { x, y: 2, width, height: 3 } });
+    const [left, right] = [await piece(1, 3), await piece(4, 4)];
+    assert.deepEqual(left.legend, { I: "#ff004d", M: "#29adff" }, "PICO-8 index 8 → I, 12 → M");
+    assert.deepEqual(right.legend, { I: "#ff004d", M: "#29adff", Q: "#123456" });
+    assert.deepEqual(left.offPalette, []);
+    assert.deepEqual(right.offPalette, ["Q"], "only the off-palette colour gets an unstable glyph");
 
     // Transparent cells erase — but only inside the selection when selectionOnly is set.
     await call("select", { op: "rect", rect: { x: 1, y: 2, width: 3, height: 3 } });

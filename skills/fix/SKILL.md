@@ -52,7 +52,10 @@ For a pixel-level fix, edit the text, not coordinates: `look op="ascii"
 layer=… rulers=false region=…` gives bare rows, the legend and `origin`; change
 the wrong cells and send the same rows back as one `draw` kind `grid` at that
 origin. Only that rectangle is touched, and its transparent cells erase — pass
-`transparent:"skip"` when you mean to add pixels without clearing any.
+`transparent:"skip"` when you mean to add pixels without clearing any. Glyphs
+are palette indices, so pieces read separately share one legend: merge their
+legends when rows from one piece land in another. Only glyphs listed in
+`offPalette` (colours outside the palette) can change between reads.
 
 ### 5. Verify what actually changed
 
