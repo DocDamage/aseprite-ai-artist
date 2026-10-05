@@ -1,5 +1,5 @@
 title: Turntable cottage
-description: The turntable-house benchmark, revision 2 (16 frames at 125 ms). Step 1 is the same session and file as the revision-1 run (2026-10-05-turntable-house-opus); step 2 was run again in a fresh omp session (claude-opus-5-5) on a copy of that step-1 file with the revision-2 text, sent verbatim after the `/skill:studio ` command prefix through Herdr. Both sessions ended with unsaved edits, which the operator saved unchanged. No image model, no reference, no messages beyond the step text.
+description: The turntable-house benchmark, revision 2 (16 frames at 125 ms). Step 1 ran in a fresh omp session (claude-opus-5-5); step 2 ran in another fresh omp session (claude-opus-5-5) on a copy of that step-1 file with the revision-2 text, sent verbatim after the `/skill:studio ` command prefix through Herdr. Both sessions ended with unsaved edits, which the operator saved unchanged. No image model, no reference, no messages beyond the step text.
 date: 2026-10-05
 author:
   name: Nik Fedorov
