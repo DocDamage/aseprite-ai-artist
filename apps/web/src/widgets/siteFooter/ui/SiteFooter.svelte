@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { PEBBLY_LOGO, PEBBLY_MARK, PICO8 } from '#shared/config/index.js';
+	import { PEBBLY_LOGO, PICO8 } from '#shared/config/index.js';
 	import {
 		REPO_URL,
 		RUBRIC_URL,
-		SITE_NAME,
 		STUDIO_URL,
 		SUBMIT_SKILL_URL
 	} from '#shared/lib/site.js';
 	import { PixelSprite } from '#shared/ui/pixel/index.js';
+	import { BrandLink } from '#shared/ui/brand/index.js';
 
 	const swatches = Object.values(PICO8);
 	// Evaluated again on hydration, so it shows the visitor's current year, not the build year.
@@ -34,10 +34,7 @@
 		class="grid gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] lg:px-10"
 	>
 		<div class="max-w-[46ch]">
-			<a href={resolve('/')} class="inline-flex items-center gap-3">
-				<PixelSprite rows={PEBBLY_MARK} scale={3} inheritOutline />
-				<span class="retro text-base">{SITE_NAME}</span>
-			</a>
+			<BrandLink size="lg" />
 			<p class="mt-5 text-muted-foreground">
 				Pixel art drawn by AI agents in a live Aseprite window, through
 				<a href={resolve('plugin')} class="text-foreground underline underline-offset-4"
