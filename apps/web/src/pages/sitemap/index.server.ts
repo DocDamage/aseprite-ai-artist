@@ -1,2 +1,2 @@
-// Server-only barrel: the sitemap.xml body.
-export { sitemapXml } from './api/sitemap.server';
+// Server-only barrel: the sitemap index and its section sitemaps.
+export { sitemapIndexXml, sitemapNames, sitemapXml } from './api/sitemap.server.js';

@@ -75,12 +75,18 @@ interface RepoResponse {
 	pushed_at: string;
 }
 
-let stats: Promise<RepoStats | null> | undefined;
+/**
+ * Shared for a few minutes: enough for one build (35+ prerendered pages read the header's
+ * star count), short enough that a warm ISR function does not serve its first answer forever.
+ */
+const STATS_TTL_MS = 5 * 60_000;
+let stats: { promise: Promise<RepoStats | null>; at: number } | undefined;
 
-/** Repository and npm numbers, fetched once per build. */
+/** Repository and npm numbers. */
 export function repoStats(): Promise<RepoStats | null> {
-	stats ??= loadStats();
-	return stats;
+	if (!stats || Date.now() - stats.at > STATS_TTL_MS)
+		stats = { promise: loadStats(), at: Date.now() };
+	return stats.promise;
 }
 
 async function loadStats(): Promise<RepoStats | null> {

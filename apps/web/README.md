@@ -67,9 +67,13 @@ A subpath import names the file, with the extension the compiled module will hav
 
 The repo's `gallery/` is the default. Override with `GALLERY_ROOT=<path>` to point at a fixture (its parent must hold a `CHANGELOG.md` for plugin versions to validate). The path is resolved in `vite.config.ts` and baked into the server bundle through `define.__GALLERY_ROOT__` — it cannot be changed after the build starts.
 
-## GitHub data on `/plugin`
+## GitHub data: `/plugin`, `/plugin/install`, the header's stars
 
-`/plugin` and `/plugin/install` are prerendered like everything else: the README, `docs/INSTALL.md` and the repository numbers are fetched from the GitHub and npm APIs while the site builds, so they are as fresh as the last deploy. Without a token GitHub allows 60 calls an hour per IP, shared on build machines; set `GITHUB_TOKEN` (no scopes needed, the repo is public) in the Vercel project to lift that. Turbo passes it through without hashing it. A failed call never fails the build: the page links to GitHub instead. The skills and agents are read from `skills/` and `agents/` in the same checkout (`define.__PLUGIN_ROOT__`).
+These are the only pages that are not prerendered. They are Vercel ISR routes (`GITHUB_ISR` in `shared/config/isr.ts`): cached on the CDN and re-rendered at most every two hours, fetching the README, `docs/INSTALL.md` and the repository and npm numbers from the GitHub and npm APIs. The header's star count is baked into every prerendered page at build time, then refreshed in the browser from `/api/stars`, which sits on the same two-hour window — so the header and `/plugin` always agree. Without a token GitHub allows 60 calls an hour per IP; set `GITHUB_TOKEN` (no scopes needed, the repo is public) in the Vercel project, for builds and functions. Turbo passes it through without hashing it. A failed call never fails a build or a render: the page links to GitHub instead, and the header drops the count. The skills and agents are bundled from `skills/` and `agents/` at build time (`import.meta.glob`), because the ISR function has no repository on disk.
+
+## Sitemap
+
+`/sitemap.xml` is a sitemap index over `/sitemaps/{pages,benchmarks,gallery}.xml` (`pages/sitemap`). A new top-level page goes into the `pages` list by hand.
 
 ## Icons and share card
 

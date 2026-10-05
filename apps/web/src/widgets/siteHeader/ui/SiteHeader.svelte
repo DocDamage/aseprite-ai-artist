@@ -2,6 +2,7 @@
 	import { SITE_NAME } from '#shared/lib/site.js';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { onMount } from 'svelte';
 	import GithubIcon from '~icons/pixelarticons/github';
 	import PlusIcon from '~icons/pixelarticons/plus';
 	import { Button, RetroModeSwitcher } from '#shared/ui/8bit/index.js';
@@ -20,9 +21,21 @@
 	const current = (href: string) =>
 		page.url.pathname === href || page.url.pathname.startsWith(`${href}/`);
 
-	// From the root layout's load, fetched at build time; absent when GitHub was unreachable.
-	const stars = $derived(typeof page.data.stars === 'number' ? page.data.stars : null);
+	// The page's own count (from its build or ISR render) until /api/stars answers with the
+	// current one: that endpoint shares /plugin's two-hour cache, so both always agree. A failed
+	// request keeps what the page had.
+	let live = $state<number | null>(null);
+	const stars = $derived(live ?? (typeof page.data.stars === 'number' ? page.data.stars : null));
 	const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
+
+	onMount(() => {
+		fetch('/api/stars')
+			.then((response) => (response.ok ? response.json() : null))
+			.then((body: { stars?: unknown } | null) => {
+				if (typeof body?.stars === 'number') live = body.stars;
+			})
+			.catch(() => {});
+	});
 </script>
 
 <a

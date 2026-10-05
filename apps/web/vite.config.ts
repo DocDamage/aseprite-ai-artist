@@ -13,13 +13,10 @@ import { defineConfig } from 'vite';
 const galleryRoot = process.env.GALLERY_ROOT
 	? resolve(process.env.GALLERY_ROOT)
 	: fileURLToPath(new URL('../../gallery', import.meta.url));
-// The plugin's own skills/ and agents/ folders, listed on /plugin. Same reason as above.
-const pluginRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export default defineConfig(({ command }) => ({
 	define: {
-		__GALLERY_ROOT__: JSON.stringify(galleryRoot),
-		__PLUGIN_ROOT__: JSON.stringify(pluginRoot)
+		__GALLERY_ROOT__: JSON.stringify(galleryRoot)
 	},
 	ssr: {
 		// The built server imports externals from .svelte-kit/output, where `zod` resolves to the

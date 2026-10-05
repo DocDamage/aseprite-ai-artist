@@ -12,12 +12,14 @@ All notable changes to this project are documented here. Format follows
   npm numbers, every skill and agent with its description, and the README as
   GitHub renders it. `/plugin/install` is the install guide — a three-step
   quick start with copy buttons, then `docs/INSTALL.md` in full. Header,
-  footer and the contribute page link to both. When GitHub cannot be reached
-  at build time, the page links there instead.
+  footer and the contribute page link to both. Both pages refresh their GitHub
+  data every two hours (Vercel ISR), and so does the header's star count;
+  when GitHub cannot be reached, the page links there instead.
 - **Site: SEO.** Every page has its own title, description, Open Graph and
   Twitter card, plus JSON-LD where it fits (`SoftwareApplication`, `HowTo`,
-  `VisualArtwork`, `WebSite`). New `sitemap.xml`, `robots.txt` pointing at it,
-  a web manifest, and a share card.
+  `VisualArtwork`, `WebSite`). New `sitemap.xml` — an index over per-section
+  sitemaps for pages, benchmarks and the gallery — `robots.txt` pointing at
+  it, a web manifest, and a share card.
 - **Site: a full favicon set** — `.ico`, SVG, 96 px, Apple touch and manifest
   icons — generated from the 16×16 Pebbly icon by
   `pnpm --filter @pebbly/web run generate:icons` (RealFaviconGenerator), every

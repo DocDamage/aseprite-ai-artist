@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import { gallery } from '#entities/generation/index.server.js';
 import { SITE_URL } from '#shared/lib/site.js';
 
@@ -6,36 +7,64 @@ interface Entry {
 	lastmod?: string;
 }
 
+const XML = '<?xml version="1.0" encoding="UTF-8"?>';
+const NS = 'http://www.sitemaps.org/schemas/sitemap/0.9';
+
 /**
- * Every public page. Kept as an explicit list rather than crawled: a page that should not be
- * indexed (the raw file routes, the 404) simply is not here. A new top-level page is added
- * here by hand.
+ * /sitemap.xml is a sitemap index over one sitemap per kind of page, so the gallery can grow
+ * past the 50 000-URL limit of a single file and Search Console reports coverage per section.
+ * Kept as explicit lists rather than crawled: a page that should not be indexed (the raw file
+ * routes, the 404) simply is not here. A new top-level page is added to `pages` by hand.
  */
-export function sitemapXml(): string {
+function sections(): Record<string, Entry[]> {
 	const { generations, prompts } = gallery();
 	const newest = generations
 		.map((generation) => generation.date)
 		.sort()
 		.at(-1);
-	const entries: Entry[] = [
-		{ path: '/', lastmod: newest },
-		{ path: '/plugin' },
-		{ path: '/plugin/install' },
-		{ path: '/gallery', lastmod: newest },
-		{ path: '/benchmarks' },
-		{ path: '/contribute' },
-		...prompts.flatMap((prompt) => [
+	return {
+		pages: [
+			{ path: '/', lastmod: newest },
+			{ path: '/plugin' },
+			{ path: '/plugin/install' },
+			{ path: '/gallery', lastmod: newest },
+			{ path: '/benchmarks' },
+			{ path: '/contribute' }
+		],
+		benchmarks: prompts.flatMap((prompt) => [
 			{ path: `/benchmarks/${prompt.id}` },
 			{ path: `/benchmarks/${prompt.id}/compare` }
 		]),
-		...generations.map((generation) => ({ path: `/g/${generation.id}`, lastmod: generation.date }))
-	];
-	// Paths are route slugs, so `&` is the only character XML needs escaped in them.
-	const urls = entries
-		.map(
-			({ path, lastmod }) =>
-				`<url><loc>${`${SITE_URL}${path}`.replace(/&/g, '&amp;')}</loc>${lastmod ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>` : ''}</url>`
-		)
-		.join('\n');
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+		gallery: generations.map((generation) => ({
+			path: `/g/${generation.id}`,
+			lastmod: generation.date
+		}))
+	};
+}
+
+// Paths are route slugs, so `&` is the only character XML needs escaped in them.
+const loc = (path: string) => `<loc>${`${SITE_URL}${path}`.replace(/&/g, '&amp;')}</loc>`;
+const lastmod = (date: string | undefined) =>
+	date ? `<lastmod>${date.slice(0, 10)}</lastmod>` : '';
+
+/** The section names, for prerendering /sitemaps/[name].xml. */
+export const sitemapNames = () => Object.keys(sections());
+
+export function sitemapIndexXml(): string {
+	const items = Object.entries(sections()).map(([name, entries]) => {
+		const newest = entries
+			.map((entry) => entry.lastmod)
+			.filter((date): date is string => Boolean(date))
+			.sort()
+			.at(-1);
+		return `<sitemap>${loc(`/sitemaps/${name}.xml`)}${lastmod(newest)}</sitemap>`;
+	});
+	return `${XML}\n<sitemapindex xmlns="${NS}">\n${items.join('\n')}\n</sitemapindex>\n`;
+}
+
+export function sitemapXml(name: string): string {
+	const entries = sections()[name];
+	if (!entries) error(404, `No sitemap called "${name}"`);
+	const urls = entries.map((entry) => `<url>${loc(entry.path)}${lastmod(entry.lastmod)}</url>`);
+	return `${XML}\n<urlset xmlns="${NS}">\n${urls.join('\n')}\n</urlset>\n`;
 }

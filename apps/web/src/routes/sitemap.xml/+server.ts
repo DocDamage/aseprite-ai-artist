@@ -1,6 +1,8 @@
-import { sitemapXml } from '#pages/sitemap/index.server.js';
+import { sitemapIndexXml } from '#pages/sitemap/index.server.js';
 
 export const prerender = true;
 
 export const GET = () =>
-	new Response(sitemapXml(), { headers: { 'Content-Type': 'application/xml; charset=utf-8' } });
+	new Response(sitemapIndexXml(), {
+		headers: { 'Content-Type': 'application/xml; charset=utf-8' }
+	});
