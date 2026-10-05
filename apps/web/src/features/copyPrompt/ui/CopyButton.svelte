@@ -3,7 +3,7 @@
 	// through the toast. Used in three flavours: a single step, the full sequence, or YAML.
 	import CheckIcon from '~icons/pixelarticons/check';
 	import CopyIcon from '~icons/pixelarticons/copy';
-	import { Button, toast, type BitButtonProps } from '$shared/ui/8bit';
+	import { Button, toast, type BitButtonProps } from '#shared/ui/8bit/index.js';
 
 	type Props = BitButtonProps & {
 		text: string;

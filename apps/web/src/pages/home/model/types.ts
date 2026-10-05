@@ -1,5 +1,5 @@
-import type { BenchmarkCardView } from '$entities/benchmark';
-import type { GenerationSummary } from '$entities/generation';
+import type { BenchmarkCardView } from '#entities/benchmark/index.js';
+import type { GenerationSummary } from '#entities/generation/index.js';
 
 export interface HomePageData {
 	counts: { generations: number; models: number; prompts: number };

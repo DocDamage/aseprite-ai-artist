@@ -1,1 +1,1 @@
-export { load } from '$pages/gallery/index.server';
+export { load } from '#pages/gallery/index.server.js';

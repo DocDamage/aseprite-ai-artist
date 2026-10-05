@@ -1,1 +1,1 @@
-export { load } from '$pages/home/index.server';
+export { load } from '#pages/home/index.server.js';

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { resolve } from '$app/paths';
 import { error } from '@sveltejs/kit';
 import { gallery } from './gallery.server';

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import DownloadIcon from '~icons/pixelarticons/download';
-	import { Button, Table } from '$shared/ui/8bit';
-	import { formatBytes } from '$shared/lib/format';
-	import { saveFrom } from '$shared/lib/download';
-	import { roleLabel, type FileView } from '$entities/generation';
+	import { Button, Table } from '#shared/ui/8bit/index.js';
+	import { formatBytes } from '#shared/lib/format.js';
+	import { saveFrom } from '#shared/lib/download.js';
+	import { roleLabel, type FileView } from '#entities/generation/index.js';
 
 	interface Props {
 		files: FileView[];
@@ -22,22 +22,30 @@
 					<Table.Head class="retro text-[0.625rem]">File</Table.Head>
 					<Table.Head class="retro text-[0.625rem]">Role</Table.Head>
 					<Table.Head class="retro text-[0.625rem]">Step</Table.Head>
-					<Table.Head class="retro text-right text-[0.625rem]">Size</Table.Head>
+					<Table.Head class="text-right retro text-[0.625rem]">Size</Table.Head>
 					<Table.Head><span class="sr-only">Download</span></Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
 				{#each files as file (file.name)}
 					<Table.Row class="last:border-b-0">
-						<Table.Head scope="row" class="text-foreground h-auto py-3 font-medium">
+						<Table.Head scope="row" class="h-auto py-3 font-medium text-foreground">
 							{file.name}
-							{#if file.label}<span class="text-muted-foreground block text-xs font-normal">{file.label}</span>{/if}
+							{#if file.label}<span class="block text-xs font-normal text-muted-foreground"
+									>{file.label}</span
+								>{/if}
 						</Table.Head>
 						<Table.Cell>{roleLabel[file.role]}</Table.Cell>
 						<Table.Cell class="text-muted-foreground">{file.step ?? '—'}</Table.Cell>
 						<Table.Cell class="text-right tabular-nums">{formatBytes(file.bytes)}</Table.Cell>
 						<Table.Cell class="py-3 pr-4 text-right">
-							<Button href={file.url} download={file.name} onclick={(event: MouseEvent) => saveFrom(event, file.url, file.name)} variant="outline" size="sm">
+							<Button
+								href={file.url}
+								download={file.name}
+								onclick={(event: MouseEvent) => saveFrom(event, file.url, file.name)}
+								variant="outline"
+								size="sm"
+							>
 								<DownloadIcon aria-hidden="true" />
 								Download<span class="sr-only"> {file.name}</span>
 							</Button>

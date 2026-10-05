@@ -17,8 +17,8 @@
 <script lang="ts">
 	// Ported to Svelte 5 from 8bitcn/ui (MIT, see ../LICENSE): components/ui/8bit/table.tsx
 	import type { HTMLTableAttributes } from 'svelte/elements';
-	import { Table as ShadcnTable } from '$shared/ui/table';
-	import { cn } from '$shared/lib/utils';
+	import { Table as ShadcnTable } from '#shared/ui/table/index.js';
+	import { cn } from '#shared/lib/utils.js';
 
 	let {
 		class: className,
@@ -35,13 +35,15 @@
 	} = $props();
 </script>
 
-<div class={cn('relative flex w-fit justify-center', tableVariants({ font, variant }), containerClass)}>
+<div
+	class={cn('relative flex w-fit justify-center', tableVariants({ font, variant }), containerClass)}
+>
 	<ShadcnTable {...restProps} class={className}>
 		{@render children?.()}
 	</ShadcnTable>
 	{#if variant !== 'borderless'}
 		<div
-			class="border-foreground dark:border-ring pointer-events-none absolute inset-0 -mx-1.5 border-x-6"
+			class="pointer-events-none absolute inset-0 -mx-1.5 border-x-6 border-foreground dark:border-ring"
 			aria-hidden="true"
 		></div>
 	{/if}

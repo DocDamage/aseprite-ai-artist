@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { FullscreenIcon } from '$shared/ui/pixel';
-	import type { FileView } from '$entities/generation';
-	import { containPixels } from '$shared/lib/pixel-fit';
-	import { Lightbox } from '$shared/ui/lightbox';
+	import { FullscreenIcon } from '#shared/ui/pixel/index.js';
+	import type { FileView } from '#entities/generation/index.js';
+	import { containPixels } from '#shared/lib/pixel-fit.js';
+	import { Lightbox } from '#shared/ui/lightbox/index.js';
 	import type { Playback } from '../model/playback.svelte';
 	import ArtLayer from './ArtLayer.svelte';
 
@@ -25,18 +25,28 @@
 	});
 </script>
 
-<div class="group/zoom relative flex w-full min-w-0 justify-center overflow-x-auto" bind:clientWidth={available}>
+<div
+	class="group/zoom relative flex w-full min-w-0 justify-center overflow-x-auto"
+	bind:clientWidth={available}
+>
 	{#if size}
-		<ArtLayer {file} {alt} width={size.width} height={size.height} {playback} class="block shrink-0" />
+		<ArtLayer
+			{file}
+			{alt}
+			width={size.width}
+			height={size.height}
+			{playback}
+			class="block shrink-0"
+		/>
 	{:else if file.extension === 'gif'}
 		<!-- Until the width is measured: a bare <img> would play the GIF on the browser's clock, then be swapped for the canvas. -->
-		<div class="bg-muted/40 aspect-square w-full animate-pulse"></div>
+		<div class="aspect-square w-full animate-pulse bg-muted/40"></div>
 	{:else}
 		<img src={file.url} {alt} class="pixelated block w-full" />
 	{/if}
 	<button
 		type="button"
-		class="bg-background/55 border-foreground/50 dark:border-ring/70 absolute top-0 right-0 grid size-10 place-items-center pixel-notch [--notch:4px] border-4 opacity-0 backdrop-blur-md transition-opacity group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] [@media(hover:none)]:opacity-100"
+		class="pixel-notch absolute top-0 right-0 grid size-10 place-items-center border-4 border-foreground/50 bg-background/55 opacity-0 backdrop-blur-md transition-opacity [--notch:4px] group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] dark:border-ring/70 [@media(hover:none)]:opacity-100"
 		aria-label="Open full screen: {alt}"
 		onclick={() => (zoomed = true)}
 	>
@@ -47,7 +57,10 @@
 <Lightbox bind:open={zoomed} label={alt}>
 	{#snippet children(box)}
 		{#if file.width && file.height}
-			{@const fitted = containPixels({ width: file.width / file.pixel, height: file.height / file.pixel }, box)}
+			{@const fitted = containPixels(
+				{ width: file.width / file.pixel, height: file.height / file.pixel },
+				box
+			)}
 			<!-- The same shared clock as the grid, so the enlarged animation stays in step with it. -->
 			<ArtLayer {file} {alt} width={fitted.width} height={fitted.height} {playback} class="block" />
 		{:else}

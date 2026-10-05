@@ -3,8 +3,8 @@
 	// Deviation: a rounded 4px frame instead of 8bitcn's square notched one, so every card on the
 	// site matches the art cards (shared/ui/pixel/ArtCard).
 	import type { HTMLAttributes } from 'svelte/elements';
-	import { Card as ShadcnCard } from '$shared/ui/card';
-	import { cn } from '$shared/lib/utils';
+	import { Card as ShadcnCard } from '#shared/ui/card/index.js';
+	import { cn } from '#shared/lib/utils.js';
 
 	let {
 		class: className,
@@ -14,11 +14,13 @@
 	}: HTMLAttributes<HTMLDivElement> & { font?: 'normal' | 'retro' } = $props();
 </script>
 
-<div class={cn('pixel-frame bg-card text-card-foreground relative overflow-hidden p-0!', className)}>
+<div
+	class={cn('pixel-frame relative overflow-hidden bg-card p-0! text-card-foreground', className)}
+>
 	<ShadcnCard
 		{...restProps}
 		class={cn(
-			'bg-card text-card-foreground flex h-full w-full! flex-col rounded-none border-0 shadow-none ring-0',
+			'flex h-full w-full! flex-col rounded-none border-0 bg-card text-card-foreground shadow-none ring-0',
 			font !== 'normal' && 'retro',
 			className
 		)}

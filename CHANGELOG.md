@@ -6,8 +6,37 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Site: a page for the plugin** at `/plugin`: what it is, repository and
+  npm numbers, every skill and agent with its description, and the README as
+  GitHub renders it. `/plugin/install` is the install guide — a three-step
+  quick start with copy buttons, then `docs/INSTALL.md` in full. Header,
+  footer and the contribute page link to both. When GitHub cannot be reached
+  at build time, the page links there instead.
+- **Site: SEO.** Every page has its own title, description, Open Graph and
+  Twitter card, plus JSON-LD where it fits (`SoftwareApplication`, `HowTo`,
+  `VisualArtwork`, `WebSite`). New `sitemap.xml`, `robots.txt` pointing at it,
+  a web manifest, and a share card.
+- **Site: a full favicon set** — `.ico`, SVG, 96 px, Apple touch and manifest
+  icons — generated from the 16×16 Pebbly icon by
+  `pnpm --filter @pebbly/web run generate:icons` (RealFaviconGenerator), every
+  size an integer multiple of the pixel grid.
+- **Site: a holographic accent** (`text-holo`) for the few words that must
+  pull the eye — the Plugin link, the GitHub star count now shown in the
+  header, "agents" and "AI" in the page titles, and "by pebbly". The header
+  logo hops and ripples into it on hover.
+
 ### Changed
 
+- **Site: SvelteKit 3,** adapter-vercel 7, and every other dependency at its
+  latest, except TypeScript, held at 6: SvelteKit 3.0 and svelte-check still
+  need TypeScript's JavaScript API, which TypeScript 7 no longer ships. The
+  configuration moved from `svelte.config.js` into `vite.config.ts`, and the
+  FSD layer aliases (`$shared/…`) became package.json subpath imports
+  (`#shared/….js`). Vercel Web Analytics is wired through `$app/state`,
+  because `@vercel/analytics/sveltekit` still imports the removed
+  `$app/stores`.
 - **Site: borders and corners.** Borders step down with nesting — 6px outside,
   4px inside, 2px deeper — and every stepped corner gets the inner corner pixel
   the 8-bit components draw, instead of edges that stop short of each other.

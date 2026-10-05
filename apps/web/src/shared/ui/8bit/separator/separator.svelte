@@ -1,7 +1,7 @@
 <script lang="ts">
 	// Ported to Svelte 5 from 8bitcn/ui (MIT, see ../LICENSE): components/ui/8bit/separator.tsx
 	import { Separator as SeparatorPrimitive } from 'bits-ui';
-	import { cn } from '$shared/lib/utils';
+	import { cn } from '#shared/lib/utils.js';
 
 	let {
 		class: className,

@@ -20,10 +20,10 @@
     },
     "@pebbly/web#build": {
       "dependsOn": ["@pebbly/gallery#check"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/gallery/**", "$TURBO_ROOT$/CHANGELOG.md"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/gallery/**", "$TURBO_ROOT$/CHANGELOG.md", "$TURBO_ROOT$/skills/*/SKILL.md", "$TURBO_ROOT$/agents/*.md"],
       "outputs": [".svelte-kit/**", ".vercel/output/**"],
       "env": ["GALLERY_ROOT", "GALLERY_FILES", "GALLERY_FILES_REF", "VERCEL_GIT_COMMIT_SHA"],
-      "passThroughEnv": ["VERCEL", "VERCEL_*"]
+      "passThroughEnv": ["VERCEL", "VERCEL_*", "GITHUB_TOKEN"]
     },
     "typecheck": {
       "dependsOn": ["^build"]

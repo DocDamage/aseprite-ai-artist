@@ -1,16 +1,16 @@
 <script lang="ts" module>
-	import type { Facets, GenerationSummary } from '$entities/generation';
+	import type { Facets, GenerationSummary } from '#entities/generation/index.js';
 
 	export type FilterKey = 'model' | 'plugin' | 'harness' | 'prompt' | 'tag';
 </script>
 
 <script lang="ts">
-	import { replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import CloseIcon from '~icons/pixelarticons/close';
 	import SearchIcon from '~icons/pixelarticons/search';
 	import { onMount } from 'svelte';
-	import { GenerationCard } from '$entities/generation';
-	import { Masonry, WALL_COLUMNS } from '$shared/ui/masonry';
+	import { GenerationCard } from '#entities/generation/index.js';
+	import { Masonry, WALL_COLUMNS } from '#shared/ui/masonry/index.js';
 	import {
 		Button,
 		Empty,
@@ -21,8 +21,8 @@
 		EmptyTitle,
 		Input,
 		Select
-	} from '$shared/ui/8bit';
-	import { plural } from '$shared/lib/format';
+	} from '#shared/ui/8bit/index.js';
+	import { plural } from '#shared/lib/format.js';
 
 	interface Props {
 		generations: GenerationSummary[];
@@ -33,20 +33,42 @@
 		path: string;
 	}
 
-	let { generations, facets, keys = ['model', 'plugin', 'harness', 'prompt', 'tag'], path }: Props = $props();
+	let {
+		generations,
+		facets,
+		keys = ['model', 'plugin', 'harness', 'prompt', 'tag'],
+		path
+	}: Props = $props();
 
 	const ALL = 'all';
 	const FREE = 'free-form';
 	const PAGE_SIZE = 24;
 
 	let query = $state('');
-	let filters = $state<Record<FilterKey, string>>({ model: ALL, plugin: ALL, harness: ALL, prompt: ALL, tag: ALL });
+	let filters = $state<Record<FilterKey, string>>({
+		model: ALL,
+		plugin: ALL,
+		harness: ALL,
+		prompt: ALL,
+		tag: ALL
+	});
 	let shownCount = $state(PAGE_SIZE);
 
 	const allSelects = $derived<
-		{ key: FilterKey; label: string; all: string; options: { value: string; label: string }[] }[]
+		{
+			key: FilterKey;
+			label: string;
+			all: string;
+			options: { value: string; label: string }[];
+		}[]
 	>([
-		{ key: 'model', label: 'Model', all: 'Any model', options: facets.models.map((m) => ({ value: m, label: m })) },
+		{
+			key: 'model',
+			label: 'Model',
+			all: 'Any model',
+			options: facets.models.map((m) => ({ value: m, label: m }))
+		},
+
 		{
 			key: 'plugin',
 			label: 'Plugin version',
@@ -63,9 +85,17 @@
 			key: 'prompt',
 			label: 'Benchmark',
 			all: 'Everything',
-			options: [...facets.prompts.map((p) => ({ value: p.id, label: p.title })), { value: FREE, label: 'Free-form only' }]
+			options: [
+				...facets.prompts.map((p) => ({ value: p.id, label: p.title })),
+				{ value: FREE, label: 'Free-form only' }
+			]
 		},
-		{ key: 'tag', label: 'Tag', all: 'Any tag', options: facets.tags.map((t) => ({ value: t, label: t })) }
+		{
+			key: 'tag',
+			label: 'Tag',
+			all: 'Any tag',
+			options: facets.tags.map((t) => ({ value: t, label: t }))
+		}
 	]);
 	const selects = $derived(allSelects.filter((select) => keys.includes(select.key)));
 
@@ -76,7 +106,12 @@
 		if (filters.plugin !== ALL && generation.plugin !== filters.plugin) return false;
 		if (filters.harness !== ALL && generation.harness !== filters.harness) return false;
 		if (filters.prompt === FREE && generation.benchmark) return false;
-		if (filters.prompt !== ALL && filters.prompt !== FREE && generation.benchmark?.prompt !== filters.prompt) return false;
+		if (
+			filters.prompt !== ALL &&
+			filters.prompt !== FREE &&
+			generation.benchmark?.prompt !== filters.prompt
+		)
+			return false;
 		if (filters.tag !== ALL && !generation.tags.includes(filters.tag)) return false;
 		return true;
 	};
@@ -90,7 +125,8 @@
 		query = params.get('q') ?? '';
 		for (const select of selects) {
 			const value = params.get(select.key);
-			if (value && select.options.some((option) => option.value === value)) filters[select.key] = value;
+			if (value && select.options.some((option) => option.value === value))
+				filters[select.key] = value;
 		}
 		const show = Number.parseInt(params.get('show') ?? '', 10);
 		if (show > PAGE_SIZE) shownCount = Math.ceil(show / PAGE_SIZE) * PAGE_SIZE;
@@ -102,7 +138,7 @@
 		for (const key of keys) if (filters[key] !== ALL) params.set(key, filters[key]);
 		if (shownCount > PAGE_SIZE) params.set('show', String(shownCount));
 		// svelte/no-navigation-without-resolve: the path is already resolve()d by the page.
-		replaceState(params.size > 0 ? `${path}?${params}` : path, {});
+		goto(params.size > 0 ? `${path}?${params}` : path, { shallow: true, replace: true });
 	}
 
 	function refilter() {
@@ -124,7 +160,7 @@
 
 <form class="space-y-6 px-1.5" role="search" onsubmit={(event) => event.preventDefault()}>
 	<div>
-		<label for="gallery-search" class="retro mb-3 block text-[0.625rem]">Search</label>
+		<label for="gallery-search" class="mb-3 block retro text-[0.625rem]">Search</label>
 		<Input
 			id="gallery-search"
 			type="search"
@@ -135,10 +171,15 @@
 			class="h-11 text-base md:text-base"
 		/>
 	</div>
-	<div class={['grid grid-cols-2 gap-x-6 gap-y-5', selects.length >= 5 ? 'md:grid-cols-5' : 'md:grid-cols-3']}>
+	<div
+		class={[
+			'grid grid-cols-2 gap-x-6 gap-y-5',
+			selects.length >= 5 ? 'md:grid-cols-5' : 'md:grid-cols-3'
+		]}
+	>
 		{#each selects as select (select.key)}
 			<div class="min-w-0">
-				<span id="label-{select.key}" class="retro mb-3 block text-[0.625rem]">{select.label}</span>
+				<span id="label-{select.key}" class="mb-3 block retro text-[0.625rem]">{select.label}</span>
 				<Select.Root
 					type="single"
 					value={filters[select.key]}
@@ -155,12 +196,15 @@
 					>
 						{filters[select.key] === ALL
 							? select.all
-							: (select.options.find((option) => option.value === filters[select.key])?.label ?? select.all)}
+							: (select.options.find((option) => option.value === filters[select.key])?.label ??
+								select.all)}
 					</Select.Trigger>
 					<Select.Content font="normal">
 						<Select.Item value={ALL} label={select.all} class="text-sm">{select.all}</Select.Item>
 						{#each select.options as option (option.value)}
-							<Select.Item value={option.value} label={option.label} class="text-sm">{option.label}</Select.Item>
+							<Select.Item value={option.value} label={option.label} class="text-sm"
+								>{option.label}</Select.Item
+							>
 						{/each}
 					</Select.Content>
 				</Select.Root>
@@ -170,11 +214,9 @@
 </form>
 
 <div class="mt-6 flex min-h-10 flex-wrap items-center justify-between gap-3">
-	<p class="text-muted-foreground text-sm" aria-live="polite">
-		{#if active}Showing {visible.length} of {plural(matching.length, 'match', 'matches')}, {generations.length} in all{:else}{plural(
-				generations.length,
-				'piece'
-			)}{/if}
+	<p class="text-sm text-muted-foreground" aria-live="polite">
+		{#if active}Showing {visible.length} of {plural(matching.length, 'match', 'matches')}, {generations.length}
+			in all{:else}{plural(generations.length, 'piece')}{/if}
 	</p>
 	{#if active}
 		<Button variant="ghost" size="sm" onclick={reset}>
@@ -197,15 +239,19 @@
 	</Masonry>
 	{#if visible.length < matching.length}
 		<div class="mt-12 flex justify-center">
-			<Button variant="outline" onclick={showMore}>Show more ({matching.length - visible.length} left)</Button>
+			<Button variant="outline" onclick={showMore}
+				>Show more ({matching.length - visible.length} left)</Button
+			>
 		</div>
 	{/if}
 {:else}
-	<Empty class="border-pixel mt-6 pixel-notch [--notch:6px] border-6 border-dashed">
+	<Empty class="pixel-notch mt-6 border-6 border-dashed border-pixel [--notch:6px]">
 		<EmptyHeader>
 			<EmptyMedia variant="icon"><SearchIcon aria-hidden="true" /></EmptyMedia>
 			<EmptyTitle class="text-sm leading-relaxed">No piece matches all of these filters</EmptyTitle>
-			<EmptyDescription class="font-sans text-base">Loosen one of them, or clear them all.</EmptyDescription>
+			<EmptyDescription class="font-sans text-base"
+				>Loosen one of them, or clear them all.</EmptyDescription
+			>
 		</EmptyHeader>
 		<EmptyContent>
 			<Button variant="outline" onclick={reset}>Clear filters</Button>

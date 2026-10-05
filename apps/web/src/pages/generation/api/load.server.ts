@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { detail, gallery } from '$entities/generation/index.server';
+import { detail, gallery } from '#entities/generation/index.server.js';
 import type { GenerationPageData } from '../model/types';
 
 export const entries = () => gallery().generations.map((generation) => ({ id: generation.id }));

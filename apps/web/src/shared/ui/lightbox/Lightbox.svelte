@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import CloseIcon from '~icons/pixelarticons/close';
-	import { Button } from '$shared/ui/8bit';
+	import { Button } from '#shared/ui/8bit/index.js';
 
 	interface Props {
 		open: boolean;
@@ -41,7 +41,11 @@
 		onclose={() => (open = false)}
 		onclick={(event) => {
 			// A click on the backdrop, not on the art or a control, closes it.
-			if (event.target === event.currentTarget || (event.target as HTMLElement).dataset.lightboxStage !== undefined) open = false;
+			if (
+				event.target === event.currentTarget ||
+				(event.target as HTMLElement).dataset.lightboxStage !== undefined
+			)
+				open = false;
 		}}
 	>
 		<div class="flex h-full w-full flex-col p-4 sm:p-8" data-lightbox-stage>
@@ -56,7 +60,9 @@
 				{/if}
 			</div>
 			{#if caption}
-				<div class="text-foreground mx-auto mt-4 max-w-3xl text-center text-sm">{@render caption()}</div>
+				<div class="mx-auto mt-4 max-w-3xl text-center text-sm text-foreground">
+					{@render caption()}
+				</div>
 			{/if}
 		</div>
 		<!-- The site's own pixel button, the same one as every other icon control. -->

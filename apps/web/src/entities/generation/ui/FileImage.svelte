@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PixelImage } from '$shared/ui/pixel';
+	import { PixelImage } from '#shared/ui/pixel/index.js';
 	import type { FileView } from '../model/types';
 
 	interface Props {

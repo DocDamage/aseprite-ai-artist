@@ -1,5 +1,5 @@
-import { benchmarkCard } from '$entities/benchmark/index.server';
-import { gallery, summary } from '$entities/generation/index.server';
+import { benchmarkCard } from '#entities/benchmark/index.server.js';
+import { gallery, summary } from '#entities/generation/index.server.js';
 import type { HomePageData } from '../model/types';
 
 export function load(): HomePageData {

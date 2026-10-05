@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { SITE_NAME } from '$shared/lib/site';
+	import { Seo } from '#shared/ui/seo/index.js';
 	import { resolve } from '$app/paths';
-	import { replaceState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
 	import ArrowLeftIcon from '~icons/pixelarticons/arrow-left';
 	import PauseIcon from '~icons/pixelarticons/pause';
 	import PlayIcon from '~icons/pixelarticons/play';
 	import ReloadIcon from '~icons/pixelarticons/reload';
-	import { Button, Checkbox, Select, Slider } from '$shared/ui/8bit';
-	import { formatDate } from '$shared/lib/format';
-	import { Lightbox } from '$shared/ui/lightbox';
+	import { Button, Checkbox, Select, Slider } from '#shared/ui/8bit/index.js';
+	import { formatDate } from '#shared/lib/format.js';
+	import { Lightbox } from '#shared/ui/lightbox/index.js';
 	import { Playback } from '../model/playback.svelte';
 	import type { BenchmarkComparePageData, CompareRun } from '../model/types';
 	import ArtTile from './ArtTile.svelte';
@@ -52,9 +52,12 @@
 	const filmstrip = $derived(view?.key.endsWith('-filmstrip') ?? false);
 	const before = $derived(runs.find((run) => run.id === beforeId) ?? runs[1] ?? runs[0]);
 	const after = $derived(runs.find((run) => run.id === afterId) ?? runs[0]);
-	const gridRuns = $derived(picked.length > 0 ? runs.filter((run) => picked.includes(run.id)) : runs);
+	const gridRuns = $derived(
+		picked.length > 0 ? runs.filter((run) => picked.includes(run.id)) : runs
+	);
 
-	const runLabel = (run: CompareRun) => `${run.modelLabel} · v${run.plugin} · ${formatDate(run.date)}`;
+	const runLabel = (run: CompareRun) =>
+		`${run.modelLabel} · v${run.plugin} · ${formatDate(run.date)}`;
 
 	/** "4.9 s, played at 0.42×" once the run's animation has decoded. */
 	function tempo(run: CompareRun): string | undefined {
@@ -93,12 +96,14 @@
 		}
 		// svelte/no-navigation-without-resolve: `path` is already resolve()d.
 		const query = params.toString();
-		replaceState(query ? `${path}?${query}` : path, {});
+		goto(query ? `${path}?${query}` : path, { shallow: true, replace: true });
 	}
 
 	function toggle(id: string) {
 		const current = picked.length > 0 ? picked : runs.map((run) => run.id);
-		const next = current.includes(id) ? current.filter((candidate) => candidate !== id) : [...current, id];
+		const next = current.includes(id)
+			? current.filter((candidate) => candidate !== id)
+			: [...current, id];
 		// An empty pick would show every run again, which reads as the click doing nothing.
 		if (next.length === 0) return;
 		picked = next.length === runs.length ? [] : next;
@@ -106,21 +111,28 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Compare runs: {prompt.title}: {SITE_NAME}</title>
-	<meta name="description" content="Compare runs of the {prompt.title} benchmark side by side." />
-</svelte:head>
+<Seo
+	title="Compare runs: {prompt.title}"
+	description="Compare runs of the {prompt.title} pixel-art benchmark side by side, model against model."
+/>
 
-{#snippet runSelect(id: string, label: string, value: CompareRun | undefined, set: (id: string) => void)}
+{#snippet runSelect(
+	id: string,
+	label: string,
+	value: CompareRun | undefined,
+	set: (id: string) => void
+)}
 	<div class="min-w-0">
-		<span id="label-{id}" class="retro mb-3 block text-[0.625rem]">{label}</span>
+		<span id="label-{id}" class="mb-3 block retro text-[0.625rem]">{label}</span>
 		<Select.Root type="single" value={value?.id ?? ''} onValueChange={(next) => next && set(next)}>
-			<Select.Trigger id={id} aria-labelledby="label-{id} {id}" font="normal" class="w-full text-sm">
+			<Select.Trigger {id} aria-labelledby="label-{id} {id}" font="normal" class="w-full text-sm">
 				{value ? runLabel(value) : 'Pick a run'}
 			</Select.Trigger>
 			<Select.Content font="normal">
 				{#each runs as run (run.id)}
-					<Select.Item value={run.id} label={runLabel(run)} class="text-sm">{runLabel(run)}</Select.Item>
+					<Select.Item value={run.id} label={runLabel(run)} class="text-sm"
+						>{runLabel(run)}</Select.Item
+					>
 				{/each}
 			</Select.Content>
 		</Select.Root>
@@ -130,7 +142,7 @@
 <div class="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
 	<a
 		href={resolve('/benchmarks/[prompt]', { prompt: prompt.id })}
-		class="text-muted-foreground hover:text-foreground inline-flex h-10 items-center gap-1.5 text-sm"
+		class="inline-flex h-10 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
 	>
 		<ArrowLeftIcon aria-hidden="true" />
 		{prompt.title}
@@ -139,27 +151,49 @@
 	<h1 class="mt-4 text-xl sm:text-3xl">Compare runs</h1>
 
 	{#if runs.length < 2 || !view}
-		<p class="text-muted-foreground mt-4">This benchmark needs at least two runs before there is anything to compare.</p>
+		<p class="mt-4 text-muted-foreground">
+			This benchmark needs at least two runs before there is anything to compare.
+		</p>
 	{:else}
 		<div class="mt-8 flex flex-wrap items-start gap-x-8 gap-y-6 px-1.5">
 			<div>
-				<span id="label-mode" class="retro mb-3 block text-[0.625rem]">Mode</span>
+				<span id="label-mode" class="mb-3 block retro text-[0.625rem]">Mode</span>
+
 				<div role="group" aria-labelledby="label-mode" class="flex gap-4">
-				<Button variant={mode === 'slider' ? 'default' : 'outline'} aria-pressed={mode === 'slider'} onclick={() => ((mode = 'slider'), syncUrl())}>
-					{filmstrip ? 'Two runs' : 'Slider'}
-				</Button>
-				<Button variant={mode === 'grid' ? 'default' : 'outline'} aria-pressed={mode === 'grid'} onclick={() => ((mode = 'grid'), syncUrl())}>
-					{filmstrip ? 'Many runs' : 'Grid'}
-				</Button>
+					<Button
+						variant={mode === 'slider' ? 'default' : 'outline'}
+						aria-pressed={mode === 'slider'}
+						onclick={() => ((mode = 'slider'), syncUrl())}
+						>{filmstrip ? 'Two runs' : 'Slider'}</Button
+					>
+
+					<Button
+						variant={mode === 'grid' ? 'default' : 'outline'}
+						aria-pressed={mode === 'grid'}
+						onclick={() => ((mode = 'grid'), syncUrl())}>{filmstrip ? 'Many runs' : 'Grid'}</Button
+					>
 				</div>
 			</div>
 			<div class="min-w-64 flex-1">
-				<span id="label-view" class="retro mb-3 block text-[0.625rem]">Image</span>
-				<Select.Root type="single" value={view.key} onValueChange={(next) => next && ((viewKey = next), syncUrl())}>
-					<Select.Trigger id="view" aria-labelledby="label-view view" font="normal" class="w-full text-sm">{view.label}</Select.Trigger>
+				<span id="label-view" class="mb-3 block retro text-[0.625rem]">Image</span>
+
+				<Select.Root
+					type="single"
+					value={view.key}
+					onValueChange={(next) => next && ((viewKey = next), syncUrl())}
+				>
+					<Select.Trigger
+						id="view"
+						aria-labelledby="label-view view"
+						font="normal"
+						class="w-full text-sm">{view.label}</Select.Trigger
+					>
+
 					<Select.Content font="normal">
 						{#each views as candidate (candidate.key)}
-							<Select.Item value={candidate.key} label={candidate.label} class="text-sm">{candidate.label}</Select.Item>
+							<Select.Item value={candidate.key} label={candidate.label} class="text-sm"
+								>{candidate.label}</Select.Item
+							>
 						{/each}
 					</Select.Content>
 				</Select.Root>
@@ -174,9 +208,16 @@
 					aria-label={playback.playing ? 'Pause' : 'Play'}
 					onclick={() => (playback.playing ? playback.pause() : playback.play())}
 				>
-					{#if playback.playing}<PauseIcon aria-hidden="true" />{:else}<PlayIcon aria-hidden="true" />{/if}
+					{#if playback.playing}<PauseIcon aria-hidden="true" />{:else}<PlayIcon
+							aria-hidden="true"
+						/>{/if}
 				</Button>
-				<Button variant="outline" size="icon" aria-label="Restart from the first frame" onclick={() => playback.restart()}>
+				<Button
+					variant="outline"
+					size="icon"
+					aria-label="Restart from the first frame"
+					onclick={() => playback.restart()}
+				>
 					<ReloadIcon aria-hidden="true" />
 				</Button>
 				<!-- Grabbing the scrubber pauses the clock; while paused, every value change is the user's.
@@ -188,10 +229,25 @@
 					onpointerdowncapture={() => playback.pause()}
 					onkeydowncapture={(event) => {
 						// Only keys that move the thumb: Tab out of the scrubber must not stop playback.
-						if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) playback.pause();
+						if (
+							[
+								'ArrowLeft',
+								'ArrowRight',
+								'ArrowUp',
+								'ArrowDown',
+								'Home',
+								'End',
+								'PageUp',
+								'PageDown'
+							].includes(event.key)
+						)
+							playback.pause();
 					}}
 				>
-					<span class="text-muted-foreground shrink-0 tabular-nums">{((playback.position * playback.cycle) / 1000).toFixed(1)} s</span>
+					<span class="shrink-0 text-muted-foreground tabular-nums"
+						>{((playback.position * playback.cycle) / 1000).toFixed(1)} s</span
+					>
+
 					<!-- Whole thousandths, not a 0–1 float: bits-ui snaps the value to `step`, and a float
 					snapped and fed back can flip between two neighbouring doubles forever. -->
 					<Slider
@@ -206,29 +262,42 @@
 						}}
 					/>
 				</div>
-				<p class="text-muted-foreground w-full text-sm">
-					Every animation is stretched to the longest loop ({(playback.cycle / 1000).toFixed(1)} s), so all of them start
-					and end together.
+				<p class="w-full text-sm text-muted-foreground">
+					Every animation is stretched to the longest loop ({(playback.cycle / 1000).toFixed(1)} s), so
+					all of them start and end together.
 				</p>
 			</div>
 		{/if}
 
 		{#if mode === 'slider'}
 			<div class="mt-10 grid grid-cols-1 gap-6 px-1.5 md:grid-cols-2">
-				{@render runSelect('before', filmstrip ? 'First' : 'Left', before, (id) => ((beforeId = id), syncUrl()))}
-				{@render runSelect('after', filmstrip ? 'Second' : 'Right', after, (id) => ((afterId = id), syncUrl()))}
+				{@render runSelect(
+					'before',
+					filmstrip ? 'First' : 'Left',
+					before,
+					(id) => ((beforeId = id), syncUrl())
+				)}
+				{@render runSelect(
+					'after',
+					filmstrip ? 'Second' : 'Right',
+					after,
+					(id) => ((afterId = id), syncUrl())
+				)}
 			</div>
 		{:else}
 			<fieldset class="mt-10 px-1.5">
-				<legend class="retro mb-3 block text-[0.625rem]">Runs</legend>
+				<legend class="mb-3 block retro text-[0.625rem]">Runs</legend>
 				<div class="flex flex-wrap gap-x-6 gap-y-3">
 					{#each runs as run (run.id)}
 						<label class="flex cursor-pointer items-center gap-3 text-sm">
 							<Checkbox
 								checked={gridRuns.includes(run)}
 								// At least one run stays picked: an empty pick would show every run again.
-								disabled={gridRuns.length === 1 && gridRuns.includes(run)}
-								onCheckedChange={() => toggle(run.id)} />
+								disabled={// At least one run stays picked: an empty pick would show every run again.
+								gridRuns.length === 1 && gridRuns.includes(run)}
+								onCheckedChange={() => toggle(run.id)}
+							/>
+
 							{runLabel(run)}
 						</label>
 					{/each}
@@ -242,7 +311,11 @@
 	{#if filmstrip}
 		<!-- A filmstrip is too long to overlay: every run gets its own row, at the full screen width. -->
 		<div class="mt-10">
-			<FilmstripRows runs={mode === 'slider' ? [before, after].filter((run) => run !== undefined) : gridRuns} viewKey={view.key} label={runLabel} />
+			<FilmstripRows
+				runs={mode === 'slider' ? [before, after].filter((run) => run !== undefined) : gridRuns}
+				viewKey={view.key}
+				label={runLabel}
+			/>
 		</div>
 	{:else}
 		<div class="mx-auto max-w-6xl px-4 sm:px-6">
@@ -256,7 +329,10 @@
 							bind:position={divider}
 							onexpand={() => (sliderZoomed = true)}
 						/>
-						<Lightbox bind:open={sliderZoomed} label="Compare {runLabel(before)} and {runLabel(after)}">
+						<Lightbox
+							bind:open={sliderZoomed}
+							label="Compare {runLabel(before)} and {runLabel(after)}"
+						>
 							{#snippet children(box)}
 								<CompareSlider
 									before={{ file: before.images[view.key], label: runLabel(before) }}
@@ -273,20 +349,35 @@
 						</div>
 					{:else}
 						<p class="text-muted-foreground">
-							{[before, after].filter((run) => run && !run.images[view.key]).map((run) => runLabel(run!)).join(' and ')}
-							{[before, after].filter((run) => run && !run.images[view.key]).length > 1 ? 'have' : 'has'} no {view.label}. Pick another image or run.
+							{[before, after]
+								.filter((run) => run && !run.images[view.key])
+								.map((run) => runLabel(run!))
+								.join(' and ')}
+							{[before, after].filter((run) => run && !run.images[view.key]).length > 1
+								? 'have'
+								: 'has'} no {view.label}. Pick another image or run.
 						</p>
 					{/if}
 				</div>
 			{:else}
-				<ul class={['mt-10 grid grid-cols-1 gap-x-8 gap-y-10 px-1.5', gridRuns.length > 1 && 'md:grid-cols-2', gridRuns.length > 2 && 'xl:grid-cols-3']}>
+				<ul
+					class={[
+						'mt-10 grid grid-cols-1 gap-x-8 gap-y-10 px-1.5',
+						gridRuns.length > 1 && 'md:grid-cols-2',
+						gridRuns.length > 2 && 'xl:grid-cols-3'
+					]}
+				>
 					{#each gridRuns as run (run.id)}
 						<li class="space-y-4">
-							<div class="pixel-frame canvas-checker grid min-h-40 place-items-center overflow-hidden">
+							<div
+								class="pixel-frame canvas-checker grid min-h-40 place-items-center overflow-hidden"
+							>
 								{#if run.images[view.key]}
 									<ArtTile file={run.images[view.key]} alt={runLabel(run)} {playback} />
 								{:else}
-									<p class="text-muted-foreground bg-background/85 px-2 py-1 text-sm">No {view.label} in this run</p>
+									<p class="bg-background/85 px-2 py-1 text-sm text-muted-foreground">
+										No {view.label} in this run
+									</p>
 								{/if}
 							</div>
 							<RunCaption {run} note={tempo(run)} />

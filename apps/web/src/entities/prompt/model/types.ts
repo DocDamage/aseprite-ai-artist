@@ -1,4 +1,4 @@
-import type { CriterionView, StepView } from '$entities/generation/@x/prompt';
+import type { CriterionView, StepView } from '#entities/generation/@x/prompt.js';
 
 export interface PromptView {
 	id: string;

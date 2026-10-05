@@ -8,3 +8,6 @@ packages:
 # only verifies its platform binary, which the optional dependency already ships.
 allowBuilds:
   esbuild: true
+  # sharp (favicon generator, dev-only) ships prebuilt binaries as @img/sharp-*
+  # optional dependencies; its install script only compiles from source as a fallback.
+  sharp: false

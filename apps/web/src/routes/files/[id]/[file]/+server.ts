@@ -1,4 +1,4 @@
-import { fileEntries, serveFile } from '$entities/generation/index.server';
+import { fileEntries, serveFile } from '#entities/generation/index.server.js';
 import type { RequestHandler } from './$types';
 
 // Local file serving for `vite dev` and fixture builds. A production build links

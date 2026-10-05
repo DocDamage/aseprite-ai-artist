@@ -9,8 +9,8 @@ import {
 	type Prompt,
 	type StoredFile
 } from '@pebbly/gallery';
-import { imageSize } from '$shared/lib/image-size.server';
-import { REPO_URL } from '$shared/lib/site';
+import { imageSize } from '#shared/lib/image-size.server.js';
+import { REPO_URL } from '#shared/lib/site.js';
 import type { Facets, FileView, GenerationDetail, GenerationSummary } from '../model/types';
 
 let cached: Gallery | null = null;
@@ -44,7 +44,10 @@ function sourceSizes(generation: Generation): { width: number; height: number }[
  * The upscale factor baked into an exported image: the smallest whole k for which the image is
  * some source canvas at k×. 1 when nothing divides cleanly, i.e. the file is already native.
  */
-function bakedScale(size: { width: number; height: number }, sources: { width: number; height: number }[]): number {
+function bakedScale(
+	size: { width: number; height: number },
+	sources: { width: number; height: number }[]
+): number {
 	const candidates = sources.flatMap((source) =>
 		[size.width / source.width, size.height / source.height].filter(
 			(k) => Number.isInteger(k) && k >= 1 && size.width % k === 0 && size.height % k === 0
@@ -53,7 +56,11 @@ function bakedScale(size: { width: number; height: number }, sources: { width: n
 	return candidates.length > 0 ? Math.min(...candidates) : 1;
 }
 
-function fileView(id: string, file: StoredFile, sources: { width: number; height: number }[]): FileView {
+function fileView(
+	id: string,
+	file: StoredFile,
+	sources: { width: number; height: number }[]
+): FileView {
 	const size = IMAGE_EXTENSIONS.has(file.extension) ? imageSize(file.absolutePath) : null;
 	return {
 		name: file.path,
@@ -70,7 +77,9 @@ function fileView(id: string, file: StoredFile, sources: { width: number; height
 }
 
 export function summary(generation: Generation, prompts: Prompt[]): GenerationSummary {
-	const prompt = generation.benchmark ? prompts.find((p) => p.id === generation.benchmark!.prompt) : undefined;
+	const prompt = generation.benchmark
+		? prompts.find((p) => p.id === generation.benchmark!.prompt)
+		: undefined;
 	const search = [
 		generation.title,
 		generation.description ?? '',
@@ -112,7 +121,9 @@ export function summary(generation: Generation, prompts: Prompt[]): GenerationSu
 }
 
 export function detail(generation: Generation, prompts: Prompt[]): GenerationDetail {
-	const prompt = generation.benchmark ? prompts.find((p) => p.id === generation.benchmark!.prompt) : undefined;
+	const prompt = generation.benchmark
+		? prompts.find((p) => p.id === generation.benchmark!.prompt)
+		: undefined;
 	const promptSteps = prompt && !generation.outdated ? prompt.steps : [];
 	return {
 		...summary(generation, prompts),
@@ -136,21 +147,29 @@ export function detail(generation: Generation, prompts: Prompt[]): GenerationDet
 		ratings: generation.ratings,
 		craft: generation.craft,
 		metrics: generation.metrics,
-		yaml: readFileSync(join(gallery().root, 'generations', generation.id, 'generation.yaml'), 'utf8'),
+		yaml: readFileSync(
+			join(gallery().root, 'generations', generation.id, 'generation.yaml'),
+			'utf8'
+		),
 		githubUrl: `${REPO_URL}/tree/main/gallery/generations/${generation.id}`
 	};
 }
 
-const sortedSet = (values: Iterable<string>) => [...new Set(values)].sort((a, b) => a.localeCompare(b));
+const sortedSet = (values: Iterable<string>) =>
+	[...new Set(values)].sort((a, b) => a.localeCompare(b));
 
 /** Facet options derived from the generations actually passed in (so a prompt-filtered grid only offers relevant choices). */
 export function facets(generations: Generation[], prompts: Prompt[]): Facets {
 	return {
 		models: sortedSet(generations.flatMap((generation) => generation.models)),
-		plugins: [...new Set(generations.map((generation) => generation.plugin))].sort((a, b) => compareVersions(b, a)),
+		plugins: [...new Set(generations.map((generation) => generation.plugin))].sort((a, b) =>
+			compareVersions(b, a)
+		),
 		harnesses: sortedSet(generations.map((generation) => generation.harness)),
 		prompts: prompts
-			.filter((prompt) => generations.some((generation) => generation.benchmark?.prompt === prompt.id))
+			.filter((prompt) =>
+				generations.some((generation) => generation.benchmark?.prompt === prompt.id)
+			)
 			.map((prompt) => ({ id: prompt.id, title: prompt.title })),
 		tags: sortedSet(generations.flatMap((generation) => generation.tags))
 	};

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { FileView } from '$entities/generation';
+	import type { FileView } from '#entities/generation/index.js';
 	import type { CompareRun } from '../model/types';
 	import RunCaption from './RunCaption.svelte';
 
@@ -45,11 +45,11 @@ they move together. -->
 						height={fitted?.height}
 						loading="lazy"
 						decoding="async"
-						class="canvas-checker pixelated block max-w-none pixel-notch [--notch:4px]"
+						class="canvas-checker pixelated pixel-notch block max-w-none [--notch:4px]"
 						style:height={fitted ? undefined : `${target}px`}
 					/>
 				{:else}
-					<p class="text-muted-foreground text-sm">No filmstrip in this run.</p>
+					<p class="text-sm text-muted-foreground">No filmstrip in this run.</p>
 				{/if}
 			</div>
 		{/each}

@@ -1,4 +1,4 @@
-import type { FileView, Score } from '$entities/generation';
+import type { FileView, Score } from '#entities/generation/index.js';
 
 /** One image a run can be compared on: a step's still, its animation, or its filmstrip. */
 export interface CompareView {

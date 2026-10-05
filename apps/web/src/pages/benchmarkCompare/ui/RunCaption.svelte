@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { ScoreMeter } from '$entities/generation';
-	import { formatDate } from '$shared/lib/format';
+	import { ScoreMeter } from '#entities/generation/index.js';
+	import { formatDate } from '#shared/lib/format.js';
 	import type { CompareRun } from '../model/types';
 
 	interface Props {
@@ -15,11 +15,13 @@
 
 <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
 	<div>
-		<a href={resolve('/g/[id]', { id: run.id })} class="text-foreground font-medium hover:underline">{run.modelLabel}</a>
-		<span class="text-muted-foreground block">
+		<a href={resolve('/g/[id]', { id: run.id })} class="font-medium text-foreground hover:underline"
+			>{run.modelLabel}</a
+		>
+		<span class="block text-muted-foreground">
 			v{run.plugin} in {run.harness}, {formatDate(run.date)}{#if run.outdated}, unranked{/if}
 		</span>
-		{#if note}<span class="text-muted-foreground block">{note}</span>{/if}
+		{#if note}<span class="block text-muted-foreground">{note}</span>{/if}
 	</div>
 	{#if run.points !== null}
 		<ScoreMeter points={run.points} />

@@ -1,1 +1,1 @@
-export { entries, load } from '$pages/generation/index.server';
+export { entries, load } from '#pages/generation/index.server.js';

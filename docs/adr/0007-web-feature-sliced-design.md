@@ -31,9 +31,11 @@ each of those is a place where a change can reach anywhere.
   recommended config with no rule switched off. Run against `.` instead of
   `./src` it reports nothing at all, which is how the first migration passed
   while breaking 94 rules.
-- Layer aliases (`$shared`, `$entities`, `$features`, `$widgets`, `$pages`)
-  replace `$lib`. The app layer's alias is `$app-shell`, because `$app` belongs
-  to SvelteKit.
+- Each layer has an import path (`#shared`, `#entities`, `#features`,
+  `#widgets`, `#pages`), declared as Node subpath imports in
+  `apps/web/package.json`; SvelteKit 3 replaced its `$lib` and `config.alias`
+  with them. The app layer's path is `#app-shell`, because `$app` belongs to
+  SvelteKit.
 
 ## Consequences
 

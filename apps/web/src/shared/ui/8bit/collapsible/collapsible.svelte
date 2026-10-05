@@ -1,8 +1,8 @@
 <script lang="ts">
 	// Ported to Svelte 5 from 8bitcn/ui (MIT, see ../LICENSE): components/ui/8bit/collapsible.tsx
 	import type { ComponentProps } from 'svelte';
-	import { Collapsible as ShadcnCollapsible } from '$shared/ui/collapsible';
-	import { cn } from '$shared/lib/utils';
+	import { Collapsible as ShadcnCollapsible } from '#shared/ui/collapsible/index.js';
+	import { cn } from '#shared/lib/utils.js';
 
 	let {
 		class: className,

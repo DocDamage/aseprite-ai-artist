@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { FileImage, roleLabel, type FileView, type GenerationDetail } from '$entities/generation';
+	import {
+		FileImage,
+		roleLabel,
+		type FileView,
+		type GenerationDetail
+	} from '#entities/generation/index.js';
 	import StripView from './StripView.svelte';
 
 	interface Props {
@@ -11,7 +16,8 @@
 	const views = $derived(g.files.filter((file) => file.role !== 'cover' && file.width !== null));
 
 	/** A filmstrip or a one-row sheet: far wider than tall, so it gets a whole row and scrolls. */
-	const isStrip = (file: FileView) => file.role === 'filmstrip' || (file.width ?? 0) > (file.height ?? 1) * 3;
+	const isStrip = (file: FileView) =>
+		file.role === 'filmstrip' || (file.width ?? 0) > (file.height ?? 1) * 3;
 </script>
 
 {#if views.length > 0}
@@ -25,10 +31,15 @@
 							<StripView {file} alt="{file.label ?? roleLabel[file.role]} of {g.title}" />
 						{:else}
 							<div class="canvas-checker overflow-hidden">
-								<FileImage {file} alt="{file.label ?? roleLabel[file.role]} of {g.title}" minHeight={200} zoomable />
+								<FileImage
+									{file}
+									alt="{file.label ?? roleLabel[file.role]} of {g.title}"
+									minHeight={200}
+									zoomable
+								/>
 							</div>
 						{/if}
-						<p class="bg-card border-foreground/20 border-t px-4 py-3 text-sm">
+						<p class="border-t border-foreground/20 bg-card px-4 py-3 text-sm">
 							<span class="font-medium">{file.label ?? roleLabel[file.role]}</span>
 							{#if file.step}<span class="text-muted-foreground">, step {file.step}</span>{/if}
 						</p>

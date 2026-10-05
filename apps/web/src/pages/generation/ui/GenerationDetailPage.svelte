@@ -1,16 +1,17 @@
 <script lang="ts">
-	import { SITE_NAME } from '$shared/lib/site';
+	import { PLUGIN_NAME, SITE_URL } from '#shared/lib/site.js';
+	import { Seo } from '#shared/ui/seo/index.js';
 	import { resolve } from '$app/paths';
 	import ArrowLeftIcon from '~icons/pixelarticons/arrow-left';
 	import DownloadIcon from '~icons/pixelarticons/download';
 	import ExternalLinkIcon from '~icons/pixelarticons/external-link';
-	import { Badge, Button } from '$shared/ui/8bit';
-	import { FileImage, ScoreMeter } from '$entities/generation';
-	import { sequenceText } from '$entities/prompt';
-	import { CopyButton } from '$features/copyPrompt';
-	import { PromptTimeline } from '$widgets/promptTimeline';
-	import { formatDate } from '$shared/lib/format';
-	import { saveFrom } from '$shared/lib/download';
+	import { Badge, Button } from '#shared/ui/8bit/index.js';
+	import { FileImage, ScoreMeter } from '#entities/generation/index.js';
+	import { sequenceText } from '#entities/prompt/index.js';
+	import { CopyButton } from '#features/copyPrompt/index.js';
+	import { PromptTimeline } from '#widgets/promptTimeline/index.js';
+	import { formatDate } from '#shared/lib/format.js';
+	import { saveFrom } from '#shared/lib/download.js';
 	import type { GenerationPageData } from '../model/types';
 	import GenerationFiles from './GenerationFiles.svelte';
 	import MoreViews from './MoreViews.svelte';
@@ -36,20 +37,47 @@
 			)
 		}))
 	);
+	// Social cards need an absolute URL and at least ~300px across; a smaller cover falls back
+	// to the site card rather than being upscaled by the platform into a blur.
+	const cardImage = $derived(
+		(g.cover.width ?? 0) >= 300
+			? g.cover.url.startsWith('http')
+				? g.cover.url
+				: `${SITE_URL}${g.cover.url}`
+			: undefined
+	);
 </script>
 
-<svelte:head>
-	<title>{g.title}: {SITE_NAME}</title>
-	<meta name="description" content={g.description ?? `${g.title}, drawn by ${g.modelLabel} with Aseprite AI Artist v${g.plugin}.`} />
-</svelte:head>
+<Seo
+	title={g.title}
+	description={g.description ??
+		`${g.title}, drawn by ${g.modelLabel} with ${PLUGIN_NAME} v${g.plugin}.`}
+	type="article"
+	image={cardImage}
+	imageAlt={g.title}
+	jsonLd={{
+		'@context': 'https://schema.org',
+		'@type': 'VisualArtwork',
+		name: g.title,
+		...(g.description ? { description: g.description } : {}),
+		artform: 'Pixel art',
+		dateCreated: g.date,
+		url: `${SITE_URL}/g/${g.id}`,
+		...(cardImage ? { image: cardImage } : {}),
+		creator: { '@type': 'SoftwareApplication', name: PLUGIN_NAME, softwareVersion: g.plugin }
+	}}
+/>
 
 <div class="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
-	<a href={resolve('/gallery')} class="text-muted-foreground hover:text-foreground inline-flex h-10 items-center gap-1.5 text-sm">
-		<ArrowLeftIcon aria-hidden="true" />
-		Gallery
-	</a>
+	<a
+		href={resolve('gallery')}
+		class="inline-flex h-10 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+		><ArrowLeftIcon aria-hidden="true" />Gallery</a
+	>
 
-	<div class="mt-4 grid gap-10 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
+	<div
+		class="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14"
+	>
 		<div class="self-start px-1.5">
 			<div
 				class="pixel-frame canvas-checker overflow-hidden"
@@ -69,7 +97,12 @@
 					size="default"
 				/>
 				{#if source}
-					<Button href={source.url} download={source.name} onclick={(event: MouseEvent) => saveFrom(event, source.url, source.name)} variant="outline">
+					<Button
+						href={source.url}
+						download={source.name}
+						onclick={(event: MouseEvent) => saveFrom(event, source.url, source.name)}
+						variant="outline"
+					>
 						<DownloadIcon aria-hidden="true" />
 						Download .aseprite
 					</Button>
@@ -77,14 +110,18 @@
 			</div>
 			<h1 class="text-xl leading-snug sm:text-3xl sm:leading-snug">{g.title}</h1>
 			{#if g.description}
-				<p class="text-muted-foreground mt-4 max-w-[60ch] text-lg">{g.description}</p>
+				<p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{g.description}</p>
 			{/if}
 
 			<dl class="mt-8 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-[0.95rem]">
 				<dt class="text-muted-foreground">Author</dt>
 				<dd>
 					{#if g.author.github}
-						<a href="https://github.com/{g.author.github}" class="underline underline-offset-4" rel="noopener">
+						<a
+							href="https://github.com/{g.author.github}"
+							class="underline underline-offset-4"
+							rel="noopener"
+						>
 							{g.author.name}
 						</a>
 						<span class="text-muted-foreground">@{g.author.github}</span>
@@ -106,7 +143,9 @@
 								<span class="font-medium">{entry.model}</span>
 								{#if g.steps.length > 1 && entry.steps.length > 0}
 									<span class="text-muted-foreground">
-										ran {entry.steps.length === g.steps.length ? 'every step' : `step ${entry.steps.join(' and ')}`}
+										ran {entry.steps.length === g.steps.length
+											? 'every step'
+											: `step ${entry.steps.join(' and ')}`}
 									</span>
 								{/if}
 							</li>
@@ -125,7 +164,7 @@
 					{/if}
 					{#if g.references.prompt}
 						<details class="mt-1">
-							<summary class="text-muted-foreground cursor-pointer">Image-model prompt</summary>
+							<summary class="cursor-pointer text-muted-foreground">Image-model prompt</summary>
 							<pre class="mt-1 text-xs whitespace-pre-wrap">{g.references.prompt}</pre>
 						</details>
 					{/if}
@@ -133,7 +172,10 @@
 				{#if g.benchmark}
 					<dt class="text-muted-foreground">Benchmark</dt>
 					<dd class="space-y-1.5">
-						<a href={resolve('/benchmarks/[prompt]', { prompt: g.benchmark.prompt })} class="underline underline-offset-4">
+						<a
+							href={resolve('/benchmarks/[prompt]', { prompt: g.benchmark.prompt })}
+							class="underline underline-offset-4"
+						>
 							{g.benchmark.promptTitle}
 						</a>
 						<span class="text-muted-foreground">revision {g.benchmark.revision}</span>
@@ -144,8 +186,10 @@
 							<div><ScoreMeter points={g.points} size="lg" /></div>
 						{/if}
 						{#if g.score}
-							<div class="text-muted-foreground text-xs tabular-nums">
-								{g.score.passed}/{g.score.total} criteria{g.outdated ? ' · older revision, not ranked' : ''}
+							<div class="text-xs text-muted-foreground tabular-nums">
+								{g.score.passed}/{g.score.total} criteria{g.outdated
+									? ' · older revision, not ranked'
+									: ''}
 							</div>
 						{/if}
 					</dd>
@@ -154,7 +198,11 @@
 					<dt class="text-muted-foreground">Tags</dt>
 					<dd class="flex flex-wrap gap-4 px-1.5">
 						{#each g.tags as tag (tag)}
-							<Badge variant="secondary" href="{resolve('/gallery')}?tag={encodeURIComponent(tag)}" class="text-[0.625rem]">{tag}</Badge>
+							<Badge
+								variant="secondary"
+								href="{resolve('gallery')}?tag={encodeURIComponent(tag)}"
+								class="text-[0.625rem]">{tag}</Badge
+							>
 						{/each}
 					</dd>
 				{/if}
@@ -173,56 +221,89 @@
 	<div class="mt-16 max-w-3xl px-1.5">
 		<PromptTimeline
 			prompt={{ id: g.id, steps: g.steps, setup: { rules: [] } }}
-			heading={g.steps.some((step) => step.original) ? 'The prompts, in English' : 'The prompts, verbatim'}
+			heading={g.steps.some((step) => step.original)
+				? 'The prompts, in English'
+				: 'The prompts, verbatim'}
 		/>
 	</div>
 
 	{#if g.results.length > 0 || g.validate.length > 0}
-		<section class="mt-16 grid gap-12 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+		<section
+			class="mt-16 grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
+		>
 			<div>
 				{#if g.results.length > 0}
 					<section aria-labelledby="results">
 						<h2 id="results" class="text-base sm:text-lg">Benchmark results</h2>
-						<p class="text-muted-foreground mt-2 text-sm">{passed} of {g.results.length} criteria passed.</p>
+						<p class="mt-2 text-sm text-muted-foreground">
+							{passed} of {g.results.length} criteria passed.
+						</p>
 						<ul class="mt-5 space-y-4">
 							{#each g.results as result (result.criterion)}
 								<li class="flex gap-3">
 									<span
 										class={[
 											'mt-0.5 grid size-7 shrink-0 place-items-center',
-											result.pass ? 'bg-secondary text-secondary-foreground' : 'bg-pico-red text-black'
+											result.pass
+												? 'bg-secondary text-secondary-foreground'
+												: 'bg-pico-red text-black'
 										]}
 									>
 										{#if result.pass}
-											<svg viewBox="0 0 16 16" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true">
-												<rect x="3" y="8" width="3" height="2" fill="currentColor" />
-												<rect x="5" y="10" width="3" height="2" fill="currentColor" />
-												<rect x="6" y="6" width="3" height="2" fill="currentColor" />
-												<rect x="8" y="4" width="3" height="2" fill="currentColor" />
-												<rect x="10" y="2" width="3" height="2" fill="currentColor" />
+											<svg
+												viewBox="0 0 16 16"
+												width="14"
+												height="14"
+												shape-rendering="crispEdges"
+												aria-hidden="true"
+											>
+												<rect x="3" y="8" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="5" y="10" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="6" y="6" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="8" y="4" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="10" y="2" width="3" height="2" fill="currentColor"></rect>
 											</svg>
 										{:else}
-											<svg viewBox="0 0 16 16" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true">
-												<rect x="3" y="3" width="3" height="2" fill="currentColor" />
-												<rect x="3" y="5" width="3" height="2" fill="currentColor" />
-												<rect x="3" y="7" width="3" height="2" fill="currentColor" />
-												<rect x="3" y="9" width="3" height="2" fill="currentColor" />
-												<rect x="3" y="11" width="3" height="2" fill="currentColor" />
-												<rect x="5" y="3" width="3" height="2" fill="currentColor" />
-												<rect x="7" y="3" width="3" height="2" fill="currentColor" />
-												<rect x="9" y="3" width="3" height="2" fill="currentColor" />
-												<rect x="11" y="3" width="3" height="2" fill="currentColor" />
+											<svg
+												viewBox="0 0 16 16"
+												width="14"
+												height="14"
+												shape-rendering="crispEdges"
+												aria-hidden="true"
+											>
+												<rect x="3" y="3" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="3" y="5" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="3" y="7" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="3" y="9" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="3" y="11" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="5" y="3" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="7" y="3" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="9" y="3" width="3" height="2" fill="currentColor"></rect>
+
+												<rect x="11" y="3" width="3" height="2" fill="currentColor"></rect>
 											</svg>
 										{/if}
 										<span class="sr-only">{result.pass ? 'Passed' : 'Failed'}:</span>
 									</span>
 									<div class="min-w-0 text-sm">
 										<p>{result.text ?? result.criterion}</p>
-										<p class="text-muted-foreground mt-0.5 text-xs">
-											{#if result.step}Step {result.step}, {/if}<code>{result.criterion}</code>
+										<p class="mt-0.5 text-xs text-muted-foreground">
+											{#if result.step}Step {result.step},
+											{/if}<code>{result.criterion}</code>
 										</p>
 										{#if result.note}
-											<p class="border-pixel mt-1.5 border-l-2 pl-2.5">{result.note}</p>
+											<p class="mt-1.5 border-l-2 border-pixel pl-2.5">{result.note}</p>
 										{/if}
 									</div>
 								</li>

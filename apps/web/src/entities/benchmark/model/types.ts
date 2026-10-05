@@ -3,8 +3,8 @@ import type {
 	FileView,
 	Score,
 	ScoreComponentsView
-} from '$entities/generation/@x/benchmark';
-import type { PromptView } from '$entities/prompt/@x/benchmark';
+} from '#entities/generation/@x/benchmark.js';
+import type { PromptView } from '#entities/prompt/@x/benchmark.js';
 
 export interface RunView {
 	id: string;

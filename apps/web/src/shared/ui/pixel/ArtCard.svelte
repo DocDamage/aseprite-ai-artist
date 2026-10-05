@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import FullscreenIcon from './FullscreenIcon.svelte';
-	import { cn } from '$shared/lib/utils';
-	import { containPixels } from '$shared/lib/pixel-fit';
-	import { Lightbox } from '$shared/ui/lightbox';
+	import { cn } from '#shared/lib/utils.js';
+	import { containPixels } from '#shared/lib/pixel-fit.js';
+	import { Lightbox } from '#shared/ui/lightbox/index.js';
 
 	interface Art {
 		src: string;
@@ -32,7 +32,18 @@
 		class?: string;
 	}
 
-	let { href, art, alt, title, badge, caption, empty, eager = false, transitionName, class: className }: Props = $props();
+	let {
+		href,
+		art,
+		alt,
+		title,
+		badge,
+		caption,
+		empty,
+		eager = false,
+		transitionName,
+		class: className
+	}: Props = $props();
 
 	/** The art window never gets shorter than this, so a wide landscape is not a thin strip. */
 	const MIN_HEIGHT = 240;
@@ -42,20 +53,24 @@
 	// art window's corner is placed from its measured height, not a fixed offset.
 	let plateHeight = $state(44);
 
-	const native = $derived(art?.width && art.height ? { width: art.width / art.pixel, height: art.height / art.pixel } : null);
+	const native = $derived(
+		art?.width && art.height
+			? { width: art.width / art.pixel, height: art.height / art.pixel }
+			: null
+	);
 </script>
 
 <!-- The link and the full-screen button are siblings, not nested: a button inside a link is not
 valid HTML and neither would get a reliable click. -->
 <div
 	class={cn(
-		'group relative transition-[translate] duration-150 hover:-translate-y-1 focus-within:-translate-y-1 motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0',
+		'group relative transition-[translate] duration-150 focus-within:-translate-y-1 hover:-translate-y-1 motion-reduce:focus-within:translate-y-0 motion-reduce:hover:translate-y-0',
 		className
 	)}
 >
 	<a {href} class="block h-full outline-offset-8">
 		<article
-			class="pixel-frame bg-card relative isolate flex h-full flex-col gap-2 overflow-hidden p-2 shadow-[inset_0_0_0_2px_rgb(255_255_255/0.1)]"
+			class="pixel-frame relative isolate flex h-full flex-col gap-2 overflow-hidden bg-card p-2 shadow-[inset_0_0_0_2px_rgb(255_255_255/0.1)]"
 			style:view-transition-name={transitionName}
 		>
 			{#if art}
@@ -70,23 +85,38 @@ valid HTML and neither would get a reliable click. -->
 					class="absolute inset-0 -z-10 size-full scale-150 object-cover opacity-55 blur-3xl saturate-150 transition-opacity duration-300 group-hover:opacity-85"
 				/>
 			{/if}
-			<div class="bg-background/40 absolute inset-0 -z-10"></div>
+			<div class="absolute inset-0 -z-10 bg-background/40"></div>
 
 			<!-- Name plate. -->
-			<header bind:clientHeight={plateHeight} class="plate flex min-h-11 items-center gap-2.5 py-1.5 pr-3 pl-1.5">
+			<header
+				bind:clientHeight={plateHeight}
+				class="plate flex min-h-11 items-center gap-2.5 py-1.5 pr-3 pl-1.5"
+			>
 				{#if badge}
-					<span class="gem retro grid h-8 min-w-8 shrink-0 place-items-center px-1.5 text-[0.625rem] tabular-nums">
+					<span
+						class="gem grid h-8 min-w-8 shrink-0 place-items-center px-1.5 retro text-[0.625rem] tabular-nums"
+					>
 						{@render badge()}
 					</span>
 				{/if}
-				<h3 class={['retro min-w-0 text-[0.6875rem] leading-relaxed group-hover:underline', !badge && 'pl-1.5']}>{title}</h3>
+				<h3
+					class={[
+						'min-w-0 retro text-[0.6875rem] leading-relaxed group-hover:underline',
+						!badge && 'pl-1.5'
+					]}
+				>
+					{title}
+				</h3>
 			</header>
 
 			<!-- Art window: the art fills its width edge to edge and sets the height. Only art too wide
 			to reach MIN_HEIGHT gets space above and below (the canvas checkerboard), and art taller
 			than 1.5× the width is capped and centred, so one piece cannot take a whole column. The
 			scale is whatever fills the width, not a whole multiple: filling the card was the point. -->
-			<div class="pixel-frame canvas-checker @container [--frame:4px] relative grid place-items-center" style:min-height="{MIN_HEIGHT}px">
+			<div
+				class="pixel-frame canvas-checker @container relative grid place-items-center [--frame:4px]"
+				style:min-height="{MIN_HEIGHT}px"
+			>
 				{#if art}
 					<img
 						src={art.src}

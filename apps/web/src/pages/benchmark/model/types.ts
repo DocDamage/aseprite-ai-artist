@@ -1,5 +1,5 @@
-import type { BenchmarkView } from '$entities/benchmark';
-import type { CraftView, Facets, GenerationSummary, Score } from '$entities/generation';
+import type { BenchmarkView } from '#entities/benchmark/index.js';
+import type { CraftView, Facets, GenerationSummary, Score } from '#entities/generation/index.js';
 
 /** One model's strongest showing on this benchmark: its best run on any plugin version. */
 export interface ContenderView {

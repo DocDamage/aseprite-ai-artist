@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { ButtonProps } from '$shared/ui/button';
+	import type { ButtonProps } from '#shared/ui/button/index.js';
 
 	export type BitButtonProps = ButtonProps & {
 		/** `retro` (the default) sets Press Start 2P, as 8bitcn does. */
@@ -9,8 +9,8 @@
 
 <script lang="ts">
 	// Ported to Svelte 5 from 8bitcn/ui (MIT, see ../LICENSE): components/ui/8bit/button.tsx
-	import { Button as ShadcnButton } from '$shared/ui/button';
-	import { cn } from '$shared/lib/utils';
+	import { Button as ShadcnButton } from '#shared/ui/button/index.js';
+	import { cn } from '#shared/lib/utils.js';
 
 	let {
 		class: className,
@@ -38,30 +38,35 @@
 	{@render children?.()}
 	<span aria-hidden="true" class="pointer-events-none contents" data-slot="button-decorations">
 		{#if variant !== 'ghost' && variant !== 'link' && size !== 'icon'}
-			<span class="bg-foreground dark:bg-ring absolute -top-1.5 left-1.5 h-1.5 w-1/2"></span>
-			<span class="bg-foreground dark:bg-ring absolute -top-1.5 right-1.5 h-1.5 w-1/2"></span>
-			<span class="bg-foreground dark:bg-ring absolute -bottom-1.5 left-1.5 h-1.5 w-1/2"></span>
-			<span class="bg-foreground dark:bg-ring absolute right-1.5 -bottom-1.5 h-1.5 w-1/2"></span>
-			<span class="bg-foreground dark:bg-ring absolute top-0 left-0 size-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute top-0 right-0 size-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute bottom-0 left-0 size-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute right-0 bottom-0 size-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute top-1.5 -left-1.5 h-[calc(100%-12px)] w-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute top-1.5 -right-1.5 h-[calc(100%-12px)] w-1.5"></span>
+			<span class="absolute -top-1.5 left-1.5 h-1.5 w-1/2 bg-foreground dark:bg-ring"></span>
+			<span class="absolute -top-1.5 right-1.5 h-1.5 w-1/2 bg-foreground dark:bg-ring"></span>
+			<span class="absolute -bottom-1.5 left-1.5 h-1.5 w-1/2 bg-foreground dark:bg-ring"></span>
+			<span class="absolute right-1.5 -bottom-1.5 h-1.5 w-1/2 bg-foreground dark:bg-ring"></span>
+			<span class="absolute top-0 left-0 size-1.5 bg-foreground dark:bg-ring"></span>
+			<span class="absolute top-0 right-0 size-1.5 bg-foreground dark:bg-ring"></span>
+			<span class="absolute bottom-0 left-0 size-1.5 bg-foreground dark:bg-ring"></span>
+			<span class="absolute right-0 bottom-0 size-1.5 bg-foreground dark:bg-ring"></span>
+			<span class="absolute top-1.5 -left-1.5 h-[calc(100%-12px)] w-1.5 bg-foreground dark:bg-ring"
+			></span>
+			<span class="absolute top-1.5 -right-1.5 h-[calc(100%-12px)] w-1.5 bg-foreground dark:bg-ring"
+			></span>
 			{#if variant !== 'outline'}
-				<span class="bg-foreground/20 absolute top-0 left-0 h-1.5 w-full"></span>
-				<span class="bg-foreground/20 absolute top-1.5 left-0 h-1.5 w-3"></span>
-				<span class="bg-foreground/20 absolute bottom-0 left-0 h-1.5 w-full"></span>
-				<span class="bg-foreground/20 absolute right-0 bottom-1.5 h-1.5 w-3"></span>
+				<span class="absolute top-0 left-0 h-1.5 w-full bg-foreground/20"></span>
+				<span class="absolute top-1.5 left-0 h-1.5 w-3 bg-foreground/20"></span>
+				<span class="absolute bottom-0 left-0 h-1.5 w-full bg-foreground/20"></span>
+				<span class="absolute right-0 bottom-1.5 h-1.5 w-3 bg-foreground/20"></span>
 			{/if}
 		{/if}
 		{#if size === 'icon'}
-			<span class="bg-foreground dark:bg-ring absolute top-0 left-0 h-[5px] w-full md:h-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute bottom-0 h-[5px] w-full md:h-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute top-1 -left-1 h-1/2 w-[5px] md:w-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute bottom-1 -left-1 h-1/2 w-[5px] md:w-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute top-1 -right-1 h-1/2 w-[5px] md:w-1.5"></span>
-			<span class="bg-foreground dark:bg-ring absolute -right-1 bottom-1 h-1/2 w-[5px] md:w-1.5"></span>
+			<span class="absolute top-0 left-0 h-[5px] w-full bg-foreground md:h-1.5 dark:bg-ring"></span>
+			<span class="absolute bottom-0 h-[5px] w-full bg-foreground md:h-1.5 dark:bg-ring"></span>
+			<span class="absolute top-1 -left-1 h-1/2 w-[5px] bg-foreground md:w-1.5 dark:bg-ring"></span>
+			<span class="absolute bottom-1 -left-1 h-1/2 w-[5px] bg-foreground md:w-1.5 dark:bg-ring"
+			></span>
+			<span class="absolute top-1 -right-1 h-1/2 w-[5px] bg-foreground md:w-1.5 dark:bg-ring"
+			></span>
+			<span class="absolute -right-1 bottom-1 h-1/2 w-[5px] bg-foreground md:w-1.5 dark:bg-ring"
+			></span>
 		{/if}
 	</span>
 </ShadcnButton>

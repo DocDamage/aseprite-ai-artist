@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Table } from '$shared/ui/8bit';
-	import type { StepMetricsView } from '$entities/generation';
+	import { Table } from '#shared/ui/8bit/index.js';
+	import type { StepMetricsView } from '#entities/generation/index.js';
 
 	interface Props {
 		metrics: StepMetricsView[];
@@ -30,7 +30,9 @@
 {#if metrics.length > 0}
 	<section aria-labelledby="metrics">
 		<h2 id="metrics" class="text-sm sm:text-base">Run metrics</h2>
-		<p class="text-muted-foreground mt-2 text-sm">What each step cost, as the harness reported it.</p>
+		<p class="mt-2 text-sm text-muted-foreground">
+			What each step cost, as the harness reported it.
+		</p>
 		<div class="mt-5 overflow-x-auto px-2 pb-2">
 			<Table.Root font="normal" containerClass="w-full min-w-max" class="text-sm">
 				<caption class="sr-only">Time, tool calls, output tokens and cost per step</caption>
@@ -38,25 +40,29 @@
 					<Table.Row>
 						<Table.Head class="retro text-[0.625rem]">Step</Table.Head>
 						{#each columns as column (column.id)}
-							<Table.Head class="retro text-right text-[0.625rem]">{column.label}</Table.Head>
+							<Table.Head class="text-right retro text-[0.625rem]">{column.label}</Table.Head>
 						{/each}
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
 					{#each metrics as step (step.step)}
 						<Table.Row>
-							<Table.Head scope="row" class="text-foreground font-medium">{step.step}</Table.Head>
+							<Table.Head scope="row" class="font-medium text-foreground">{step.step}</Table.Head>
 							{#each columns as column (column.id)}
 								{@const value = step[column.id]}
-								<Table.Cell class="text-right tabular-nums">{value === undefined ? '—' : column.format(value)}</Table.Cell>
+								<Table.Cell class="text-right tabular-nums"
+									>{value === undefined ? '—' : column.format(value)}</Table.Cell
+								>
 							{/each}
 						</Table.Row>
 					{/each}
 					<Table.Row class="last:border-b-0">
-						<Table.Head scope="row" class="retro text-foreground text-[0.625rem]">Total</Table.Head>
+						<Table.Head scope="row" class="retro text-[0.625rem] text-foreground">Total</Table.Head>
 						{#each columns as column (column.id)}
 							{@const total = totals[column.id]}
-							<Table.Cell class="text-right font-medium tabular-nums">{total === null ? '—' : column.format(total)}</Table.Cell>
+							<Table.Cell class="text-right font-medium tabular-nums"
+								>{total === null ? '—' : column.format(total)}</Table.Cell
+							>
 						{/each}
 					</Table.Row>
 				</Table.Body>

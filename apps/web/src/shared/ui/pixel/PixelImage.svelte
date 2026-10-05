@@ -1,8 +1,8 @@
 <script lang="ts">
 	import FullscreenIcon from './FullscreenIcon.svelte';
-	import { cn } from '$shared/lib/utils';
-	import { containPixels } from '$shared/lib/pixel-fit';
-	import { Lightbox } from '$shared/ui/lightbox';
+	import { cn } from '#shared/lib/utils.js';
+	import { containPixels } from '#shared/lib/pixel-fit.js';
+	import { Lightbox } from '#shared/ui/lightbox/index.js';
 
 	interface Props {
 		src: string;
@@ -20,11 +20,23 @@
 		class?: string;
 	}
 
-	let { src, width, height, pixel = 1, alt, minHeight = 0, eager = false, zoomable = false, class: className }: Props = $props();
+	let {
+		src,
+		width,
+		height,
+		pixel = 1,
+		alt,
+		minHeight = 0,
+		eager = false,
+		zoomable = false,
+		class: className
+	}: Props = $props();
 
 	let zoomed = $state(false);
 
-	const native = $derived(width && height ? { width: width / pixel, height: height / pixel } : null);
+	const native = $derived(
+		width && height ? { width: width / pixel, height: height / pixel } : null
+	);
 </script>
 
 <!-- The art fills the width it is given, edge to edge, and its height follows. The scale is
@@ -42,7 +54,10 @@ taller than 1.5× its width is capped and centred. -->
 	/>
 {/snippet}
 
-<div class={cn('@container grid w-full min-w-0 place-items-center', className)} style:min-height={minHeight ? `${minHeight}px` : undefined}>
+<div
+	class={cn('@container grid w-full min-w-0 place-items-center', className)}
+	style:min-height={minHeight ? `${minHeight}px` : undefined}
+>
 	{#if zoomable}
 		<button
 			type="button"

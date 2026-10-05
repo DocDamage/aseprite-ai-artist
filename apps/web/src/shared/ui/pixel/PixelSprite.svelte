@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PICO8 } from '$shared/config';
+	import { PICO8 } from '#shared/config/index.js';
 
 	interface Props {
 		rows: string[];

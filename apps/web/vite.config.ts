@@ -1,3 +1,5 @@
+import adapter from '@sveltejs/adapter-vercel';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
@@ -11,10 +13,13 @@ import { defineConfig } from 'vite';
 const galleryRoot = process.env.GALLERY_ROOT
 	? resolve(process.env.GALLERY_ROOT)
 	: fileURLToPath(new URL('../../gallery', import.meta.url));
+// The plugin's own skills/ and agents/ folders, listed on /plugin. Same reason as above.
+const pluginRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export default defineConfig(({ command }) => ({
 	define: {
-		__GALLERY_ROOT__: JSON.stringify(galleryRoot)
+		__GALLERY_ROOT__: JSON.stringify(galleryRoot),
+		__PLUGIN_ROOT__: JSON.stringify(pluginRoot)
 	},
 	ssr: {
 		// The built server imports externals from .svelte-kit/output, where `zod` resolves to the
@@ -25,7 +30,17 @@ export default defineConfig(({ command }) => ({
 	},
 	plugins: [
 		tailwindcss(),
-		sveltekit(),
+		sveltekit({
+			preprocess: vitePreprocess(),
+			compilerOptions: {
+				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
+				runes: ({ filename }) =>
+					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
+			},
+			adapter: adapter(),
+			prerender: { handleUnseenRoutes: 'ignore' }
+		}),
+
 		// Icons are compiled into the bundle from @iconify-json/pixelarticons at build time, so the
 		// prerendered pages never call the Iconify API. A data attribute rather than a class marks
 		// them for the 24px rule in app/styles/index.css, because a caller's `class` replaces the

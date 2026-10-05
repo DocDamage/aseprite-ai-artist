@@ -1,3 +1,5 @@
-# allow crawling everything by default
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /files/
+
+Sitemap: https://pixeli.pebbly.space/sitemap.xml

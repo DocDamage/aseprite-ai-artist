@@ -1,4 +1,4 @@
-import { facets, gallery, summary } from '$entities/generation/index.server';
+import { facets, gallery, summary } from '#entities/generation/index.server.js';
 import type { GalleryPageData } from '../model/types';
 
 export function load(): GalleryPageData {

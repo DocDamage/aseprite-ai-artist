@@ -1,8 +1,8 @@
 <script lang="ts">
 	// Ported to Svelte 5 from 8bitcn/ui (MIT, see ../LICENSE): components/ui/8bit/card.tsx
 	import type { HTMLAttributes } from 'svelte/elements';
-	import { CardTitle as ShadcnCardTitle } from '$shared/ui/card';
-	import { cn } from '$shared/lib/utils';
+	import { CardTitle as ShadcnCardTitle } from '#shared/ui/card/index.js';
+	import { cn } from '#shared/lib/utils.js';
 
 	let {
 		class: className,

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Progress } from '$shared/ui/8bit';
-	import { cn } from '$shared/lib/utils';
+	import { Progress } from '#shared/ui/8bit/index.js';
+	import { cn } from '#shared/lib/utils.js';
 
 	interface Props {
 		/** Composite score, integer 0–100. */
@@ -13,7 +13,10 @@
 </script>
 
 <span class={cn('inline-flex items-center gap-3', className)}>
-	<span class={cn('retro text-right tabular-nums', size === 'lg' ? 'w-12 text-base' : 'w-8 text-xs')} aria-hidden="true">
+	<span
+		class={cn('text-right retro tabular-nums', size === 'lg' ? 'w-12 text-base' : 'w-8 text-xs')}
+		aria-hidden="true"
+	>
 		{points}
 	</span>
 	<Progress

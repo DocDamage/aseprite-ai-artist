@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { FullscreenIcon } from '$shared/ui/pixel';
+	import { FullscreenIcon } from '#shared/ui/pixel/index.js';
 	import { innerWidth } from 'svelte/reactivity/window';
-	import type { FileView } from '$entities/generation';
-	import { containPixels } from '$shared/lib/pixel-fit';
-	import { Lightbox } from '$shared/ui/lightbox';
+	import type { FileView } from '#entities/generation/index.js';
+	import { containPixels } from '#shared/lib/pixel-fit.js';
+	import { Lightbox } from '#shared/ui/lightbox/index.js';
 
 	interface Props {
 		file: FileView;
@@ -14,13 +14,19 @@
 
 	let zoomed = $state(false);
 
-	const native = $derived(file.width && file.height ? { width: file.width / file.pixel, height: file.height / file.pixel } : null);
+	const native = $derived(
+		file.width && file.height
+			? { width: file.width / file.pixel, height: file.height / file.pixel }
+			: null
+	);
 	/** Target height: 260px on a desktop, 180px on a phone. */
 	const target = $derived((innerWidth.current ?? 1024) < 640 ? 180 : 260);
 
 	// A strip of frames is sized by HEIGHT and scrolls sideways: fitted to the column's width it
 	// would be a sliver.
-	const size = $derived(native ? { width: (native.width * target) / native.height, height: target } : null);
+	const size = $derived(
+		native ? { width: (native.width * target) / native.height, height: target } : null
+	);
 </script>
 
 <div class="group/zoom relative">
@@ -37,7 +43,7 @@
 	</div>
 	<button
 		type="button"
-		class="bg-background/55 border-foreground/50 dark:border-ring/70 absolute top-3 right-3 grid size-10 place-items-center pixel-notch [--notch:4px] border-4 opacity-0 backdrop-blur-md transition-opacity group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] [@media(hover:none)]:opacity-100"
+		class="pixel-notch absolute top-3 right-3 grid size-10 place-items-center border-4 border-foreground/50 bg-background/55 opacity-0 backdrop-blur-md transition-opacity [--notch:4px] group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] dark:border-ring/70 [@media(hover:none)]:opacity-100"
 		aria-label="Open full screen: {alt}"
 		onclick={() => (zoomed = true)}
 	>

@@ -1,6 +1,6 @@
 <script lang="ts" generics="T">
 	import type { Snippet } from 'svelte';
-	import { cn } from '$shared/lib/utils';
+	import { cn } from '#shared/lib/utils.js';
 
 	interface Props {
 		items: T[];
@@ -12,12 +12,23 @@
 		class?: string;
 	}
 
-	let { items, key, item, breakpoints = [[960, 3], [520, 2]], class: className }: Props = $props();
+	let {
+		items,
+		key,
+		item,
+		breakpoints = [
+			[960, 3],
+			[520, 2]
+		],
+		class: className
+	}: Props = $props();
 
 	let width = $state<number | null>(null);
 
 	// Before the first measurement (and without JS) one column: never a wrong guess at width.
-	const columns = $derived(width === null ? 1 : (breakpoints.find(([min]) => width! >= min)?.[1] ?? 1));
+	const columns = $derived(
+		width === null ? 1 : (breakpoints.find(([min]) => width! >= min)?.[1] ?? 1)
+	);
 
 	// Round-robin, not CSS columns: CSS columns fill top-to-bottom, which would read a
 	// newest-first list down the first column instead of across the first row.

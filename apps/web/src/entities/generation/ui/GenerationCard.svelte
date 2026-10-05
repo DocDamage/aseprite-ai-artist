@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { formatDate } from '$shared/lib/format';
-	import { ArtCard } from '$shared/ui/pixel';
+	import { formatDate } from '#shared/lib/format.js';
+	import { ArtCard } from '#shared/ui/pixel/index.js';
 	import type { GenerationSummary } from '../model/types';
 
 	interface Props {
@@ -20,7 +20,12 @@
 
 <ArtCard
 	href={resolve('/g/[id]', { id: generation.id })}
-	art={{ src: generation.cover.url, width: generation.cover.width, height: generation.cover.height, pixel: generation.cover.pixel }}
+	art={{
+		src: generation.cover.url,
+		width: generation.cover.width,
+		height: generation.cover.height,
+		pixel: generation.cover.pixel
+	}}
 	alt={generation.title}
 	title={generation.title}
 	badge={generation.points !== null ? scoreGem : undefined}
@@ -29,12 +34,12 @@
 >
 	{#snippet caption()}
 		<p class="text-sm">
-			<span class="text-foreground font-medium">{generation.modelLabel}</span>
+			<span class="font-medium text-foreground">{generation.modelLabel}</span>
 			<span class="text-muted-foreground">· v{generation.plugin} in {generation.harness}</span>
 		</p>
-		<p class="text-muted-foreground text-xs">{formatDate(generation.date)}</p>
+		<p class="text-xs text-muted-foreground">{formatDate(generation.date)}</p>
 		{#if generation.benchmark}
-			<p class="text-muted-foreground text-xs">
+			<p class="text-xs text-muted-foreground">
 				{generation.benchmark.promptTitle}{#if generation.outdated}, unranked{/if}
 			</p>
 		{/if}

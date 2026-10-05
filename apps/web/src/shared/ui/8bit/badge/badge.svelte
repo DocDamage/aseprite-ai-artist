@@ -19,8 +19,8 @@
 <script lang="ts">
 	// Ported to Svelte 5 from 8bitcn/ui (MIT, see ../LICENSE): components/ui/8bit/badge.tsx
 	import type { HTMLAnchorAttributes } from 'svelte/elements';
-	import { Badge as ShadcnBadge } from '$shared/ui/badge';
-	import { cn } from '$shared/lib/utils';
+	import { Badge as ShadcnBadge } from '#shared/ui/badge/index.js';
+	import { cn } from '#shared/lib/utils.js';
 
 	let {
 		class: className = '',
@@ -43,9 +43,15 @@
 </script>
 
 <span class={cn('relative inline-flex items-stretch', container)}>
-	<ShadcnBadge {...restProps} {variant} class={cn('h-full w-full rounded-none', font !== 'normal' && 'retro', visual)}>
+	<ShadcnBadge
+		{...restProps}
+		{variant}
+		class={cn('h-full w-full rounded-none', font !== 'normal' && 'retro', visual)}
+	>
 		{@render children?.()}
 	</ShadcnBadge>
-	<span aria-hidden="true" class={cn('absolute inset-y-[4px] -left-1.5 w-1.5', color, visual)}></span>
-	<span aria-hidden="true" class={cn('absolute inset-y-[4px] -right-1.5 w-1.5', color, visual)}></span>
+	<span aria-hidden="true" class={cn('absolute inset-y-[4px] -left-1.5 w-1.5', color, visual)}
+	></span>
+	<span aria-hidden="true" class={cn('absolute inset-y-[4px] -right-1.5 w-1.5', color, visual)}
+	></span>
 </span>

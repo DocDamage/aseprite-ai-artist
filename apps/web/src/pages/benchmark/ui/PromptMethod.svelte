@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { Badge, Card, Separator } from '$shared/ui/8bit';
-	import { PICO8 } from '$shared/config';
-	import { CopyButton } from '$features/copyPrompt';
-	import { sequenceText, type PromptView } from '$entities/prompt';
+	import { Badge, Card, Separator } from '#shared/ui/8bit/index.js';
+	import { PICO8 } from '#shared/config/index.js';
+	import { CopyButton } from '#features/copyPrompt/index.js';
+	import { sequenceText, type PromptView } from '#entities/prompt/index.js';
 
 	interface Props {
 		prompt: PromptView;
@@ -38,7 +38,10 @@ lives in the page hero, so this card opens with the full summary instead. -->
 		</ul>
 		<dl class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 px-1.5 text-sm">
 			<dt class="text-muted-foreground">Canvas</dt>
-			<dd class="tabular-nums">{prompt.setup.canvas.width}×{prompt.setup.canvas.height} {prompt.setup.canvas.colorMode.toUpperCase()}</dd>
+			<dd class="tabular-nums">
+				{prompt.setup.canvas.width}×{prompt.setup.canvas.height}
+				{prompt.setup.canvas.colorMode.toUpperCase()}
+			</dd>
 			{#if prompt.setup.palette}
 				<dt class="text-muted-foreground">Palette</dt>
 				<dd class="flex items-center gap-2">
@@ -59,7 +62,9 @@ lives in the page hero, so this card opens with the full summary instead. -->
 		</dl>
 	</header>
 	<Separator />
-	<div class="grid grid-cols-[minmax(0,1fr)] gap-10 px-5 py-7 sm:px-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-12">
+	<div
+		class="grid grid-cols-[minmax(0,1fr)] gap-10 px-5 py-7 sm:px-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-12"
+	>
 		{@render timeline?.()}
 		{@render criteria?.()}
 	</div>

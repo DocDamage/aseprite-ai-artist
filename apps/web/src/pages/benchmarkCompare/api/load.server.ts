@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { detail, gallery } from '$entities/generation/index.server';
-import type { FileView } from '$entities/generation';
+import { detail, gallery } from '#entities/generation/index.server.js';
+import type { FileView } from '#entities/generation/index.js';
 import type { BenchmarkComparePageData, CompareRun, CompareView } from '../model/types';
 
 export const entries = () => gallery().prompts.map((prompt) => ({ prompt: prompt.id }));
@@ -15,7 +15,8 @@ const KIND_ORDER: Kind[] = ['still', 'animation', 'filmstrip'];
 function kindOf(file: FileView): Kind | null {
 	if (file.width === null) return null;
 	if (file.role === 'filmstrip') return 'filmstrip';
-	if (file.role === 'animation' || (file.role === 'cover' && file.extension === 'gif')) return 'animation';
+	if (file.role === 'animation' || (file.role === 'cover' && file.extension === 'gif'))
+		return 'animation';
 	if (file.role === 'cover' || file.role === 'frame') return 'still';
 	return null;
 }
@@ -55,11 +56,16 @@ export function load({ params }: { params: { prompt: string } }): BenchmarkCompa
 		});
 
 	const ordered: CompareView[] = [...views.entries()]
-		.sort(([, a], [, b]) => a.step - b.step || KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind))
+		.sort(
+			([, a], [, b]) => a.step - b.step || KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind)
+		)
 		.map(([key, { step, kind }]) => {
 			const title = prompt.steps[step - 1]?.title;
 			const stepLabel = step === 0 ? '' : title ? `Step ${step} (${title}): ` : `Step ${step}: `;
-			return { key, label: stepLabel + (step === 0 ? kind[0]!.toUpperCase() + kind.slice(1) : kind) };
+			return {
+				key,
+				label: stepLabel + (step === 0 ? kind[0]!.toUpperCase() + kind.slice(1) : kind)
+			};
 		});
 
 	return { prompt: { id: prompt.id, title: prompt.title }, views: ordered, runs };

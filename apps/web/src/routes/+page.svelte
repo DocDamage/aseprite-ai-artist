@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { HomePage } from '$pages/home';
+	import { HomePage } from '#pages/home/index.js';
 
 	let { data } = $props();
 </script>

@@ -6,7 +6,7 @@
 	import MoonIcon from '~icons/pixelarticons/moon';
 	import SunIcon from '~icons/pixelarticons/sun';
 	import { Button } from '../button';
-	import { cn } from '$shared/lib/utils';
+	import { cn } from '#shared/lib/utils.js';
 
 	let { class: className }: { class?: string } = $props();
 </script>

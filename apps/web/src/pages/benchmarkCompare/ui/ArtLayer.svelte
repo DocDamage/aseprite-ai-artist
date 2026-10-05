@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { FileView } from '$entities/generation';
-	import { frameAt, type Gif } from '$shared/lib/gif';
+	import type { FileView } from '#entities/generation/index.js';
+	import { frameAt, type Gif } from '#shared/lib/gif.js';
 	import { loadGif, type Playback } from '../model/playback.svelte';
 
 	interface Props {
@@ -33,7 +33,9 @@
 		loadGif(url)
 			.then(async (decoded) => {
 				const bitmaps = await Promise.all(
-					decoded.frames.map((frame) => createImageBitmap(new ImageData(frame.pixels, decoded.width, decoded.height)))
+					decoded.frames.map((frame) =>
+						createImageBitmap(new ImageData(frame.pixels, decoded.width, decoded.height))
+					)
 				);
 				if (cancelled) {
 					bitmaps.forEach((bitmap) => bitmap.close());
@@ -56,7 +58,9 @@
 		};
 	});
 
-	const index = $derived(gif && playback.cycle > 0 ? frameAt(gif, playback.position * gif.duration) : 0);
+	const index = $derived(
+		gif && playback.cycle > 0 ? frameAt(gif, playback.position * gif.duration) : 0
+	);
 
 	function draw(canvas: HTMLCanvasElement) {
 		const bitmap = frames[index];
@@ -86,9 +90,22 @@
 		></canvas>
 		<span class="sr-only">{alt}</span>
 	{:else}
-		<div class={['bg-muted/40 animate-pulse', className]} style:width="{width}px" style:height="{height}px" {style}></div>
+		<div
+			class={['animate-pulse bg-muted/40', className]}
+			style:width="{width}px"
+			style:height="{height}px"
+			{style}
+		></div>
 	{/if}
 {:else}
 	<!-- A still, or a GIF that would not decode: the browser plays it on its own clock. -->
-	<img src={file.url} {alt} {width} {height} draggable="false" class={['pixelated max-w-none', className]} {style} />
+	<img
+		src={file.url}
+		{alt}
+		{width}
+		{height}
+		draggable="false"
+		class={['pixelated max-w-none', className]}
+		{style}
+	/>
 {/if}

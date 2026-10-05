@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { SITE_NAME } from '$shared/lib/site';
+	import { Seo } from '#shared/ui/seo/index.js';
 	import { resolve } from '$app/paths';
 	import ArrowDownIcon from '~icons/pixelarticons/arrow-down';
 	import ArrowLeftIcon from '~icons/pixelarticons/arrow-left';
 	import SlidersIcon from '~icons/pixelarticons/sliders';
-	import { Button } from '$shared/ui/8bit';
-	import { PromptTimeline } from '$widgets/promptTimeline';
-	import { GalleryGrid, type FilterKey } from '$features/filterGenerations';
-	import { plural } from '$shared/lib/format';
+	import { Button } from '#shared/ui/8bit/index.js';
+	import { PromptTimeline } from '#widgets/promptTimeline/index.js';
+	import { GalleryGrid, type FilterKey } from '#features/filterGenerations/index.js';
+	import { plural } from '#shared/lib/format.js';
 	import type { BenchmarkPageData } from '../model/types';
 	import BenchmarkMatrix from './BenchmarkMatrix.svelte';
 	import ContenderCard from './ContenderCard.svelte';
@@ -34,14 +34,14 @@
 	const gridKeys: FilterKey[] = ['model', 'plugin', 'harness'];
 </script>
 
-<svelte:head>
-	<title>{prompt.title}: {SITE_NAME} benchmark</title>
-	<meta name="description" content={prompt.summary} />
-</svelte:head>
+<Seo title="{prompt.title}: AI benchmark" description={prompt.summary} />
 
 <!-- Results first: the hero is what the models actually drew, side by side, best first. How the
 test works comes last, for whoever wants to check it. -->
-<section class="border-pixel relative isolate overflow-hidden border-b-6" aria-labelledby="benchmark-title">
+<section
+	class="relative isolate overflow-hidden border-b-6 border-pixel"
+	aria-labelledby="benchmark-title"
+>
 	{#if winner}
 		<!-- The winning piece, blurred, tints the whole stage in its own colours. Decorative. -->
 		<img
@@ -52,16 +52,24 @@ test works comes last, for whoever wants to check it. -->
 			class="absolute inset-0 -z-20 size-full scale-125 object-cover opacity-35 blur-3xl saturate-150"
 		/>
 	{/if}
-	<div class="grid-dots bg-background/60 absolute inset-0 -z-10"></div>
+
+	<div class="grid-dots absolute inset-0 -z-10 bg-background/60"></div>
 
 	<div class="mx-auto max-w-6xl px-4 pt-6 pb-14 sm:px-6 sm:pb-20">
-		<a href={resolve('/benchmarks')} class="text-muted-foreground hover:text-foreground inline-flex h-10 items-center gap-1.5 text-sm">
-			<ArrowLeftIcon aria-hidden="true" />
-			All benchmarks
-		</a>
+		<a
+			href={resolve('benchmarks')}
+			class="inline-flex h-10 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+			><ArrowLeftIcon aria-hidden="true" />All benchmarks</a
+		>
 
-		<h1 id="benchmark-title" class="mt-6 max-w-[28ch] text-2xl leading-snug sm:text-4xl sm:leading-snug">{prompt.title}</h1>
-		<p class="text-muted-foreground mt-5 max-w-[60ch] text-lg">
+		<h1
+			id="benchmark-title"
+			class="mt-6 max-w-[28ch] text-2xl leading-snug sm:text-4xl sm:leading-snug"
+		>
+			{prompt.title}
+		</h1>
+
+		<p class="mt-5 max-w-[60ch] text-lg text-muted-foreground">
 			{lede}
 			{#if contenders.length > 1}
 				{plural(contenders.length, 'model')} got the same prompt. This is what each one drew.
@@ -79,7 +87,10 @@ test works comes last, for whoever wants to check it. -->
 			>
 				<ContenderCard contender={winner} place={1} lead />
 				{#if runnersUp.length > 0}
-					<ol class="grid content-start gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-1" aria-label="Runners-up">
+					<ol
+						class="grid content-start gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-1"
+						aria-label="Runners-up"
+					>
 						{#each runnersUp as contender, index (contender.modelLabel)}
 							<li><ContenderCard {contender} place={index + 2} /></li>
 						{/each}
@@ -87,13 +98,16 @@ test works comes last, for whoever wants to check it. -->
 				{/if}
 			</div>
 			{#if offStage > 0}
-				<p class="text-muted-foreground mt-6 text-sm">
+				<p class="mt-6 text-sm text-muted-foreground">
 					{plural(offStage, 'more model')} in the full ranking below.
 				</p>
 			{/if}
 		{:else}
-			<p class="text-muted-foreground canvas-checker border-pixel pixel-notch mt-10 border-6 border-dashed p-8 text-center [--notch:6px]">
-				Nobody has drawn this one yet. The maintainers run the benchmarks; new models are added as they are tested.
+			<p
+				class="canvas-checker pixel-notch mt-10 border-6 border-dashed border-pixel p-8 text-center text-muted-foreground [--notch:6px]"
+			>
+				Nobody has drawn this one yet. The maintainers run the benchmarks; new models are added as
+				they are tested.
 			</p>
 		{/if}
 
@@ -122,14 +136,18 @@ test works comes last, for whoever wants to check it. -->
 			<div class="flex flex-wrap items-center justify-between gap-4">
 				<h2 id="runs" class="text-lg sm:text-2xl">Every run</h2>
 				{#if runs.length > 1}
-					<Button variant="outline" href={resolve('/benchmarks/[prompt]/compare', { prompt: prompt.id })}>
+					<Button
+						variant="outline"
+						href={resolve('/benchmarks/[prompt]/compare', { prompt: prompt.id })}
+					>
 						<SlidersIcon aria-hidden="true" />
 						Compare runs
 					</Button>
 				{/if}
 			</div>
-			<p class="text-muted-foreground mt-2 text-sm">
-				{plural(runs.length, 'run')} of this prompt, newest first. Runs on an older revision are marked unranked.
+			<p class="mt-2 text-sm text-muted-foreground">
+				{plural(runs.length, 'run')} of this prompt, newest first. Runs on an older revision are marked
+				unranked.
 			</p>
 			<div class="mt-8">
 				<GalleryGrid
@@ -142,11 +160,15 @@ test works comes last, for whoever wants to check it. -->
 		</section>
 	{/if}
 
-	<section id="method" class={['scroll-mt-24', runs.length > 0 && 'mt-20']} aria-labelledby="method-title">
+	<section
+		id="method"
+		class={['scroll-mt-24', runs.length > 0 && 'mt-20']}
+		aria-labelledby="method-title"
+	>
 		<h2 id="method-title" class="text-lg sm:text-2xl">How it was tested</h2>
-		<p class="text-muted-foreground mt-2 max-w-[62ch] text-sm">
-			Every model gets this prompt word for word, on the same canvas and palette, and draws it in a live Aseprite
-			window. Each criterion is a yes-or-no check on the files it hands back.
+		<p class="mt-2 max-w-[62ch] text-sm text-muted-foreground">
+			Every model gets this prompt word for word, on the same canvas and palette, and draws it in a
+			live Aseprite window. Each criterion is a yes-or-no check on the files it hands back.
 		</p>
 		<div class="mt-8 px-1.5">
 			<PromptMethod {prompt} {chips}>

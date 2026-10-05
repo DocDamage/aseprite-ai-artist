@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { FullscreenIcon } from '$shared/ui/pixel';
-	import type { FileView } from '$entities/generation';
-	import { containPixels } from '$shared/lib/pixel-fit';
-	import { Slider } from '$shared/ui/8bit';
+	import { FullscreenIcon } from '#shared/ui/pixel/index.js';
+	import type { FileView } from '#entities/generation/index.js';
+	import { containPixels } from '#shared/lib/pixel-fit.js';
+	import { Slider } from '#shared/ui/8bit/index.js';
 	import type { Playback } from '../model/playback.svelte';
 	import ArtLayer from './ArtLayer.svelte';
 
@@ -33,7 +33,9 @@
 	const CONTROLS = 64;
 
 	const native = (file: FileView) =>
-		file.width && file.height ? { width: file.width / file.pixel, height: file.height / file.pixel } : null;
+		file.width && file.height
+			? { width: file.width / file.pixel, height: file.height / file.pixel }
+			: null;
 
 	// Both sides share one scale, so the same art pixel lands on the same screen pixel on either
 	// side of the divider: that alignment is the point of a slider. The scale fills the width
@@ -115,28 +117,33 @@
 						class="absolute top-0 left-0"
 					/>
 				</div>
-				<div class="pointer-events-none absolute top-0 h-full -translate-x-1/2" style:left="{position}%">
-					<div class="bg-foreground dark:bg-ring mx-auto h-full w-1 shadow-[0_0_0_2px_rgb(0_0_0/0.35)]"></div>
+				<div
+					class="pointer-events-none absolute top-0 h-full -translate-x-1/2"
+					style:left="{position}%"
+				>
 					<div
-						class="bg-background/70 border-foreground dark:border-ring absolute top-1/2 left-1/2 grid h-10 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center border-4 backdrop-blur-md"
+						class="mx-auto h-full w-1 bg-foreground shadow-[0_0_0_2px_rgb(0_0_0/0.35)] dark:bg-ring"
+					></div>
+					<div
+						class="absolute top-1/2 left-1/2 grid h-10 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center border-4 border-foreground bg-background/70 backdrop-blur-md dark:border-ring"
 					>
-						<span class="bg-foreground dark:bg-ring block h-4 w-1"></span>
+						<span class="block h-4 w-1 bg-foreground dark:bg-ring"></span>
 					</div>
 				</div>
 				<span
-					class="bg-background/55 pointer-events-none absolute top-3 left-3 pixel-notch [--notch:4px] border-4 border-white/15 px-2.5 py-1 text-xs backdrop-blur-md"
+					class="pixel-notch pointer-events-none absolute top-3 left-3 border-4 border-white/15 bg-background/55 px-2.5 py-1 text-xs backdrop-blur-md [--notch:4px]"
 				>
 					{before.label}
 				</span>
 				<span
-					class="bg-background/55 pointer-events-none absolute top-3 right-3 pixel-notch [--notch:4px] border-4 border-white/15 px-2.5 py-1 text-xs backdrop-blur-md"
+					class="pixel-notch pointer-events-none absolute top-3 right-3 border-4 border-white/15 bg-background/55 px-2.5 py-1 text-xs backdrop-blur-md [--notch:4px]"
 				>
 					{after.label}
 				</span>
 				{#if onexpand}
 					<button
 						type="button"
-						class="bg-background/55 border-foreground/50 dark:border-ring/70 absolute right-3 bottom-3 grid size-10 place-items-center pixel-notch [--notch:4px] border-4 opacity-0 backdrop-blur-md transition-opacity group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] [@media(hover:none)]:opacity-100"
+						class="pixel-notch absolute right-3 bottom-3 grid size-10 place-items-center border-4 border-foreground/50 bg-background/55 opacity-0 backdrop-blur-md transition-opacity [--notch:4px] group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] dark:border-ring/70 [@media(hover:none)]:opacity-100"
 						aria-label="Open the comparison full screen"
 						onpointerdown={(event) => event.stopPropagation()}
 						onclick={onexpand}
@@ -156,6 +163,8 @@
 			class="mx-auto mt-8 max-w-md"
 		/>
 	{:else}
-		<p class="text-muted-foreground text-sm">One of these images has no readable size, so they cannot be aligned.</p>
+		<p class="text-sm text-muted-foreground">
+			One of these images has no readable size, so they cannot be aligned.
+		</p>
 	{/if}
 </div>

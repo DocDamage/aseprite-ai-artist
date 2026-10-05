@@ -1,5 +1,5 @@
-import { benchmarkCard, leaderboardView } from '$entities/benchmark/index.server';
-import { gallery, summary } from '$entities/generation/index.server';
+import { benchmarkCard, leaderboardView } from '#entities/benchmark/index.server.js';
+import { gallery, summary } from '#entities/generation/index.server.js';
 import type { BenchmarksPageData } from '../model/types';
 
 export function load(): BenchmarksPageData {

@@ -2,9 +2,9 @@
 
 Pixeli, live at [pixeli.pebbly.space](https://pixeli.pebbly.space/).
 
-A SvelteKit site for [`@pebbly/aseprite-ai-artist`](https://github.com/with-pebbly/aseprite-ai-artist): a gallery of pieces made with the plugin, a benchmark that scores models on the same fixed prompts, and the contribution flow.
+A SvelteKit site for [`@pebbly/aseprite-ai-artist`](https://github.com/with-pebbly/aseprite-ai-artist): a gallery of pieces made with the plugin, a benchmark that scores models on the same fixed prompts, the plugin's own page with its install guide, and the contribution flow.
 
-The whole site is prerendered to static HTML against `gallery/` at build time, and ships with `@sveltejs/adapter-vercel`.
+The whole site is prerendered to static HTML against `gallery/` at build time, and ships with `@sveltejs/adapter-vercel`. SvelteKit 3 has no `svelte.config.js`: the kit options, aliases included, are passed to `sveltekit()` in `vite.config.ts`.
 
 ## Develop
 
@@ -27,29 +27,31 @@ pnpm --filter @pebbly/web run build               # prerenders every page + file
 
 ```
 app       layout shell (`layout/`), global CSS and theme tokens (`styles/`), ambient types
-pages     home, gallery, benchmarks, benchmark, benchmarkCompare, generation, contribute, notFound: one slice per route
+pages     home, plugin, pluginInstall, gallery, benchmarks, benchmark, benchmarkCompare, generation, contribute, notFound: one slice per route; sitemap builds sitemap.xml
 widgets   siteHeader, siteFooter, promptTimeline (used by two pages)
 features  copyPrompt, filterGenerations
 entities  generation (cards, score meter, gallery data), prompt, benchmark (ranking data)
-shared    ui (shadcn + 8bitcn ports, pixel art and ArtCard, masonry, lightbox), lib (gif decoder, pixel-fit), config (PICO-8, Pebbly sprites), brand (icons)
+shared    api (GitHub and npm, at build time), ui (shadcn + 8bitcn ports, pixel art and ArtCard, masonry, lightbox, seo, markdown), lib (gif decoder, pixel-fit), config (PICO-8, Pebbly sprites)
 ```
 
 A component used by one page is not a widget: it lives in that page's `ui/`. A slice gets promoted when a second slice needs it.
 
 `src/routes/` is SvelteKit's router and holds no logic: a `+page.svelte` mounts a page slice with its `data`, and a `+page.server.ts` re-exports the slice's `load`.
 
-## Aliases
+## Import paths
 
-| Alias | Path |
+Layers are Node [subpath imports](https://nodejs.org/api/packages.html#subpath-imports) in `package.json` — SvelteKit 3's replacement for `$lib` and `config.alias`. Vite, TypeScript and steiger all resolve them.
+
+| Import | Path |
 | --- | --- |
-| `$app-shell` | `src/app` |
-| `$pages` | `src/pages` |
-| `$widgets` | `src/widgets` |
-| `$features` | `src/features` |
-| `$entities` | `src/entities` |
-| `$shared` | `src/shared` |
+| `#app-shell/*` | `src/app/*` |
+| `#pages/*` | `src/pages/*` |
+| `#widgets/*` | `src/widgets/*` |
+| `#features/*` | `src/features/*` |
+| `#entities/*` | `src/entities/*` |
+| `#shared/*` | `src/shared/*` |
 
-`$app` is SvelteKit's own (`$app/paths`, `$app/state`), so the app layer is `$app-shell`.
+A subpath import names the file, with the extension the compiled module will have: a slice is `#pages/home/index.js`, its server barrel `#pages/home/index.server.js`, a module `#shared/lib/site.js`, a component `#shared/ui/pixel/PixelImage.svelte`. TypeScript maps `.js` to the `.ts` source. `$app` stays SvelteKit's own (`$app/paths`, `$app/state`), so the app layer is `#app-shell`.
 
 ## Documented exceptions
 
@@ -64,6 +66,14 @@ A component used by one page is not a widget: it lives in that page's `ui/`. A s
 ## `GALLERY_ROOT`
 
 The repo's `gallery/` is the default. Override with `GALLERY_ROOT=<path>` to point at a fixture (its parent must hold a `CHANGELOG.md` for plugin versions to validate). The path is resolved in `vite.config.ts` and baked into the server bundle through `define.__GALLERY_ROOT__` — it cannot be changed after the build starts.
+
+## GitHub data on `/plugin`
+
+`/plugin` and `/plugin/install` are prerendered like everything else: the README, `docs/INSTALL.md` and the repository numbers are fetched from the GitHub and npm APIs while the site builds, so they are as fresh as the last deploy. Without a token GitHub allows 60 calls an hour per IP, shared on build machines; set `GITHUB_TOKEN` (no scopes needed, the repo is public) in the Vercel project to lift that. Turbo passes it through without hashing it. A failed call never fails the build: the page links to GitHub instead. The skills and agents are read from `skills/` and `agents/` in the same checkout (`define.__PLUGIN_ROOT__`).
+
+## Icons and share card
+
+`static/` holds the favicon set, the web-app icons and `og-image.png`, all made by `pnpm --filter @pebbly/web run generate:icons` from `gallery/generations/2026-09-29-pebbly-mascot/pebbly-icon.png`. Run it by hand when the icon changes and commit the output; the build never regenerates it. `static/site.webmanifest` is hand-written.
 
 ## Where gallery files come from
 
@@ -83,7 +93,7 @@ Components are ports of [8bitcn/ui](https://www.8bitcn.com) (MIT) into Svelte 5.
 
 Icons are pixelarticons via `unplugin-icons` + `@iconify-json/pixelarticons`, compiled into each Svelte component at build time. No runtime icon API call. Every icon is locked to the 24px grid in `src/app/styles/index.css` under the `[data-pixel-icon]` selector.
 
-`components.json` still records `iconLibrary: "lucide"` (shadcn-svelte only supports the five bundled libraries). A future `pnpm dlx shadcn-svelte add` will therefore reintroduce `@lucide/svelte` imports; swap each to `~icons/pixelarticons/<name>` by hand.
+`components.json` still records `iconLibrary: "lucide"` (shadcn-svelte only supports the five bundled libraries). A future `pnpm dlx shadcn-svelte add` will therefore reintroduce `@lucide/svelte` imports; swap each to `~icons/pixelarticons/<name>` by hand. It also writes slice imports without a file name (`#shared/ui/button`); add `/index.js`, as everywhere else — `pnpm run check` reports each one it missed.
 
 ## Deploy
 

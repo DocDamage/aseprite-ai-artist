@@ -1,7 +1,7 @@
 <script lang="ts">
 	// Ported to Svelte 5 from 8bitcn/ui (MIT, see ../LICENSE): components/ui/8bit/progress.tsx
 	import { Progress as ProgressPrimitive } from 'bits-ui';
-	import { cn } from '$shared/lib/utils';
+	import { cn } from '#shared/lib/utils.js';
 
 	let {
 		class: className,
@@ -27,13 +27,19 @@
 
 	const heightClass = $derived(className?.match(/h-(\d+|\[.*?\])/)?.[0] ?? 'h-2');
 	const filled = $derived(Math.round((value / 100) * segments));
-	const isClass = $derived(progressBg !== undefined && !progressBg.startsWith('#') && !progressBg.startsWith('var('));
+	const isClass = $derived(
+		progressBg !== undefined && !progressBg.startsWith('#') && !progressBg.startsWith('var(')
+	);
 </script>
 
 <div class={cn('relative w-full', className)}>
 	<ProgressPrimitive.Root
 		data-slot="progress"
-		class={cn('bg-primary/20 relative w-full overflow-hidden', heightClass, font !== 'normal' && 'retro')}
+		class={cn(
+			'relative w-full overflow-hidden bg-primary/20',
+			heightClass,
+			font !== 'normal' && 'retro'
+		)}
 		{value}
 		max={100}
 		{...restProps}
@@ -42,7 +48,10 @@
 			<div data-slot="progress-indicator" class="flex h-full w-full">
 				{#each { length: segments }, i (i)}
 					<div
-						class={cn('mx-px h-full flex-1', i < filled ? (isClass ? progressBg : !progressBg && 'bg-primary') : 'bg-transparent')}
+						class={cn(
+							'mx-px h-full flex-1',
+							i < filled ? (isClass ? progressBg : !progressBg && 'bg-primary') : 'bg-transparent'
+						)}
 						style:background-color={i < filled && progressBg && !isClass ? progressBg : undefined}
 					></div>
 				{/each}
@@ -50,12 +59,21 @@
 		{:else}
 			<div
 				data-slot="progress-indicator"
-				class={cn('h-full w-full flex-1 transition-all', isClass ? progressBg : !progressBg && 'bg-primary')}
+				class={cn(
+					'h-full w-full flex-1 transition-all',
+					isClass ? progressBg : !progressBg && 'bg-primary'
+				)}
 				style:background-color={progressBg && !isClass ? progressBg : undefined}
 				style:transform="translateX(-{100 - value}%)"
 			></div>
 		{/if}
 	</ProgressPrimitive.Root>
-	<div class="border-foreground dark:border-ring pointer-events-none absolute inset-0 -my-1 border-y-4" aria-hidden="true"></div>
-	<div class="border-foreground dark:border-ring pointer-events-none absolute inset-0 -mx-1 border-x-4" aria-hidden="true"></div>
+	<div
+		class="pointer-events-none absolute inset-0 -my-1 border-y-4 border-foreground dark:border-ring"
+		aria-hidden="true"
+	></div>
+	<div
+		class="pointer-events-none absolute inset-0 -mx-1 border-x-4 border-foreground dark:border-ring"
+		aria-hidden="true"
+	></div>
 </div>

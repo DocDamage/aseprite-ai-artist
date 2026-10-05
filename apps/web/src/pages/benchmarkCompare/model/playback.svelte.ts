@@ -1,4 +1,4 @@
-import { decodeGif, type Gif } from '$shared/lib/gif';
+import { decodeGif, type Gif } from '#shared/lib/gif.js';
 
 /**
  * One clock for every animation on the page. Each GIF is stretched or squeezed to the same

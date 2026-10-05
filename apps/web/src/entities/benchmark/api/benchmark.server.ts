@@ -1,5 +1,5 @@
 import type { Benchmark, Gallery, Prompt } from '@pebbly/gallery';
-import type { PromptView } from '$entities/prompt/@x/benchmark';
+import type { PromptView } from '#entities/prompt/@x/benchmark.js';
 import type {
 	BenchmarkCardView,
 	BenchmarkView,
