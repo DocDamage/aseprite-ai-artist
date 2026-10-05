@@ -3,7 +3,7 @@
 	import CheckIcon from '~icons/pixelarticons/check';
 	import ChevronDownIcon from '~icons/pixelarticons/chevron-down';
 	import CloseIcon from '~icons/pixelarticons/close';
-	import { Badge, Button, Collapsible, Separator, Table } from '$shared/ui/8bit';
+	import { Badge, Button, Collapsible, Table } from '$shared/ui/8bit';
 	import { plural } from '$shared/lib/format';
 	import { ScoreMeter } from '$entities/generation';
 	import type { BenchmarkView, CellView } from '$entities/benchmark';
@@ -27,10 +27,9 @@
 	let open = $state(false);
 </script>
 
-<section aria-labelledby={`results-${benchmark.prompt.id}`}>
-	<Separator class="mb-7" />
+<section id="ranking" class="scroll-mt-24" aria-labelledby={`results-${benchmark.prompt.id}`}>
 	<div class="flex flex-wrap items-center justify-between gap-3">
-		<h2 id={`results-${benchmark.prompt.id}`} class="text-sm sm:text-base">Ranking</h2>
+		<h2 id={`results-${benchmark.prompt.id}`} class="text-lg sm:text-2xl">Full ranking</h2>
 		{#if benchmark.outdatedRuns.length > 0}
 			<Badge variant="outline" class="text-[0.625rem]">
 				{plural(benchmark.outdatedRuns.length, 'unranked run')} on older revisions

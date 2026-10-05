@@ -8,24 +8,19 @@
 	interface Props {
 		prompt: PromptView;
 		chips: string[];
-		/** On its own page the title is h1; embedded it is h2. */
-		standalone?: boolean;
 		timeline?: Snippet;
 		criteria?: Snippet;
 	}
 
-	let { prompt, chips, standalone = false, timeline, criteria }: Props = $props();
+	let { prompt, chips, timeline, criteria }: Props = $props();
 </script>
 
+<!-- The benchmark's method: what it tests, the setup, and the prompt word for word. The title
+lives in the page hero, so this card opens with the full summary instead. -->
 <Card font="normal" class="gap-0 py-0">
 	<header class="grid-dots px-5 pt-7 pb-6 sm:px-8">
 		<div class="flex flex-wrap items-start justify-between gap-6">
-			<div class="min-w-0">
-				<svelte:element this={standalone ? 'h1' : 'h2'} class="text-xl leading-snug sm:text-3xl sm:leading-snug">
-					{prompt.title}
-				</svelte:element>
-				<p class="text-muted-foreground mt-3 max-w-[64ch] text-lg">{prompt.summary}</p>
-			</div>
+			<p class="max-w-[64ch] min-w-0 text-lg">{prompt.summary}</p>
 			<div class="px-1.5">
 				<CopyButton
 					text={sequenceText(prompt.steps)}

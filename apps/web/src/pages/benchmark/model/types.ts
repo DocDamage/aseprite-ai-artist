@@ -1,10 +1,23 @@
 import type { BenchmarkView } from '$entities/benchmark';
-import type { Facets, GenerationSummary } from '$entities/generation';
+import type { CraftView, Facets, GenerationSummary, Score } from '$entities/generation';
+
+/** One model's strongest showing on this benchmark: its best run on any plugin version. */
+export interface ContenderView {
+	modelLabel: string;
+	plugin: string;
+	/** Composite 0–100 of the best run. */
+	points: number;
+	score: Score;
+	craft: CraftView | null;
+	run: GenerationSummary;
+}
 
 export interface BenchmarkPageData {
 	benchmark: BenchmarkView;
 	/** Short labels for what the benchmark tests. */
 	chips: string[];
+	/** Every ranked model's best run, strongest model first. */
+	contenders: ContenderView[];
 	/** Every run of this prompt, newest first, including runs on older revisions. */
 	runs: GenerationSummary[];
 	facets: Facets;
