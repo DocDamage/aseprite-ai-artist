@@ -298,7 +298,7 @@ test('the leaderboard takes each model at its best cell and ranks by it', () => 
     const { leaderboard } = inspectGallery(root).gallery;
     assert.deepEqual(
       leaderboard.map((entry) => [entry.modelLabel, entry.score, entry.benchmarks, entry.runs]),
-      [['model-x', 50, 1, 2], ['model-y', 0, 1, 1]],
+      [['model-x', 59, 1, 2], ['model-y', 0, 1, 1]],
     );
     assert.equal(leaderboard[0]!.best.knight!.plugin, '0.3.1', 'the older version held the better run');
   } finally {
@@ -322,7 +322,7 @@ test('a benchmark a model never ran counts against it in the leaderboard', () =>
     assert.deepEqual(result.problems.filter((p) => p.level === 'error'), []);
     assert.deepEqual(
       result.gallery.leaderboard.map((e) => [e.modelLabel, e.score, e.benchmarks]),
-      [['all-rounder', 37.5, 2], ['one-trick', 25, 1]],
+      [['all-rounder', 44, 2], ['one-trick', 29.5, 1]],
     );
   } finally {
     cleanup();
@@ -332,14 +332,23 @@ test('a benchmark a model never ran counts against it in the leaderboard', () =>
 test('points weigh criteria 50%, craft 35% and speed 15%, rounded to an integer 0–100', () => {
   const full = { compliance: 1, craft: 1, speed: 1, minutes: 10 };
   assert.equal(pointsOf(full), 100);
-  assert.equal(pointsOf({ compliance: 0, craft: 0, speed: 0, minutes: null }), 0);
-  assert.equal(pointsOf({ compliance: 1, craft: 0, speed: 0, minutes: null }), 50);
-  assert.equal(pointsOf({ compliance: 0, craft: 1, speed: 0, minutes: null }), 35);
+  assert.equal(pointsOf({ compliance: 0, craft: 0, speed: 0, minutes: 10 }), 0);
+  assert.equal(pointsOf({ compliance: 1, craft: 0, speed: 0, minutes: 10 }), 50);
+  assert.equal(pointsOf({ compliance: 0, craft: 1, speed: 0, minutes: 10 }), 35);
   assert.equal(pointsOf({ compliance: 0, craft: 0, speed: 1, minutes: 5 }), 15);
   assert.equal(pointsOf({ compliance: 0.5, craft: 0, speed: 0.5, minutes: 20 }), 33, '32.5 rounds up');
   assert.equal(scoreComponents({ score: { passed: 1, total: 2 }, craft: null }, 20, 10).speed, 0.5, 'fastest ÷ own minutes');
   assert.equal(scoreComponents({ score: { passed: 1, total: 2 }, craft: null }, 10, 10).speed, 1, 'the fastest run gets 1');
-  assert.equal(scoreComponents({ score: { passed: 1, total: 2 }, craft: null }, null, 10).speed, 0, 'unmeasured counts as slowest');
+});
+
+test('a run with no recorded time is scored on criteria and craft alone, rescaled to 0–100', () => {
+  assert.equal(pointsOf({ compliance: 1, craft: 1, speed: 0, minutes: null }), 100);
+  assert.equal(pointsOf({ compliance: 1, craft: 0, speed: 0, minutes: null }), 59, '50 / 85');
+  assert.equal(pointsOf({ compliance: 0, craft: 1, speed: 0, minutes: null }), 41, '35 / 85');
+  // Unmeasured beats a slow measured run with the same criteria and craft, and loses to a fast one.
+  const unmeasured = pointsOf({ compliance: 0.8, craft: 0.5, speed: 0, minutes: null });
+  assert.ok(pointsOf({ compliance: 0.8, craft: 0.5, speed: 0.2, minutes: 50 }) < unmeasured);
+  assert.ok(pointsOf({ compliance: 0.8, craft: 0.5, speed: 1, minutes: 10 }) > unmeasured);
 });
 
 test('speed is relative to the fastest fully measured current run', () => {
@@ -360,7 +369,8 @@ test('speed is relative to the fastest fully measured current run', () => {
     assert.equal(byModel.partial!.components!.minutes, null);
     assert.deepEqual(
       [byModel.fast!.points, byModel.slow!.points, byModel.partial!.points, byModel.none!.points],
-      [40, 33, 25, 25],
+      [40, 33, 29, 29],
+      'untimed runs are scored on criteria and craft alone',
     );
   } finally {
     cleanup();
@@ -386,7 +396,7 @@ test('a benchmark run from someone outside MAINTAINERS is refused; a free genera
 
 const STILL = { read: 3, form: 2, cohesion: 4, appeal: 3 };
 
-test('craft separates equal compliance and averages judges over their axes', () => {
+test('craft averages human judges over their axes and ignores model judges', () => {
   const { root, cleanup } = makeRepo({
     // Same compliance (1/2) for every model; only craft separates them.
     '2026-09-29-a': generation({ models: ['model-x'], ratings: [{ judge: 'human:tester', scores: { read: 1, form: 1, cohesion: 1, appeal: 1 } }] }),
@@ -394,19 +404,23 @@ test('craft separates equal compliance and averages judges over their axes', () 
       models: ['model-y'],
       ratings: [
         { judge: 'human:tester', scores: STILL },
+        { judge: 'human:second', scores: { read: 4, form: 4, cohesion: 4, appeal: 4 } },
+        // Model judges are paused: a perfect model rating must not lift the score.
         { judge: 'model:model-z', scores: { read: 4, form: 4, cohesion: 4, appeal: 4 } },
       ],
     }),
-    '2026-09-29-c': generation({ models: ['model-w'] }),
+    '2026-09-29-c': generation({ models: ['model-w'], ratings: [{ judge: 'model:model-z', scores: STILL }] }),
   });
   try {
     const result = inspectGallery(root);
     assert.deepEqual(errorsOf(result), []);
-    const y = result.gallery.generations.find((g) => g.id === '2026-09-29-b')!.craft!;
-    assert.equal(y.judges, 2);
-    assert.equal(y.score, (12 / 16 + 1) / 2);
-    assert.equal(y.axes.read, 3.5);
-    assert.equal(y.axes.motion, undefined, 'no judge scored motion on a still');
+    const y = result.gallery.generations.find((g) => g.id === '2026-09-29-b')!;
+    assert.equal(y.craft!.judges, 2);
+    assert.equal(y.craft!.score, (12 / 16 + 1) / 2);
+    assert.equal(y.craft!.axes.read, 3.5);
+    assert.equal(y.craft!.axes.motion, undefined, 'no judge scored motion on a still');
+    assert.deepEqual(y.ratings.map((rating) => rating.judge), ['human:tester', 'human:second']);
+    assert.equal(result.gallery.generations.find((g) => g.id === '2026-09-29-c')!.craft, null, 'only a model rated it');
     assert.deepEqual(
       result.gallery.leaderboard.map((entry) => [entry.modelLabel, entry.craft]),
       [['model-y', (12 / 16 + 1) / 2], ['model-x', 0.25], ['model-w', 0]],

@@ -269,7 +269,10 @@ export function inspectGallery(root: string = DEFAULT_GALLERY_ROOT): LoadResult 
           ? ' · supplied reference'
           : '';
     const modelLabel = [...new Set(data.models)].sort().join(' + ') + pipeline;
-    generations.push({ ...data, id, files, cover, modelLabel, score, outdated, craft: craftOf(data.ratings), points: null, components: null });
+    // TODO(model judges paused): model-judge ratings stay valid in generation.yaml but are ignored
+    // until they are re-evaluated; only human ratings reach the site and the score.
+    const ratings = data.ratings.filter((rating) => rating.judge.startsWith('human:'));
+    generations.push({ ...data, ratings, id, files, cover, modelLabel, score, outdated, craft: craftOf(ratings), points: null, components: null });
   }
 
   generations.sort((a, b) => (a.date === b.date ? b.id.localeCompare(a.id) : b.date.localeCompare(a.date)));
@@ -588,7 +591,7 @@ function runMinutes(run: Generation): number | null {
   return total;
 }
 
-/** Speed is the fastest measured run's minutes over this run's; unmeasured counts as slowest (0). */
+/** Speed is the fastest measured run's minutes over this run's; unmeasured is 0 here and left out of `pointsOf`. */
 export function scoreComponents(run: Pick<Generation, 'score' | 'craft'>, minutes: number | null, fastest: number | null): ScoreComponents {
   return {
     compliance: run.score ? ratio(run.score) : 0,
@@ -599,8 +602,12 @@ export function scoreComponents(run: Pick<Generation, 'score' | 'craft'>, minute
 }
 
 export function pointsOf(components: ScoreComponents): number {
+  // A run with no recorded time is not penalised for speed: speed drops out and the other
+  // parts are rescaled to 0–100, so a missing measurement neither helps nor hurts.
+  const speed = components.minutes === null ? 0 : scoreWeights.speed;
   const weighted =
-    100 * (scoreWeights.compliance * components.compliance + scoreWeights.craft * components.craft + scoreWeights.speed * components.speed);
+    (100 * (scoreWeights.compliance * components.compliance + scoreWeights.craft * components.craft + speed * components.speed)) /
+    (scoreWeights.compliance + scoreWeights.craft + speed);
   // toFixed drops binary float noise so an exact .5 (32.499999… or 32.500000…1) rounds the same way every time.
   return Math.round(Number(weighted.toFixed(6)));
 }

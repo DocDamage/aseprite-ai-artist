@@ -45,8 +45,9 @@
 			<TrophyIcon class="text-accent-ink" aria-hidden="true" />Leaderboard
 		</h2>
 		<p class="text-muted-foreground mt-2 text-sm">
-			Score is 0–100: 50% criteria passed, 35% craft, 15% speed relative to the fastest run of each benchmark. Each model's best run per benchmark counts, averaged over
-			every benchmark; unrated craft, unmeasured speed and benchmarks it has not run count as 0.
+			Score is 0–100: 50% criteria passed, 35% craft from human judges, 15% speed relative to the fastest run of each benchmark. A run
+			with no recorded time is scored on criteria and craft alone. Each model's best run per benchmark counts, averaged over every
+			benchmark; unrated craft and benchmarks it has not run count as 0.
 			<a href={RUBRIC_URL} class="underline underline-offset-4" rel="noopener">Read the rubric</a>.
 		</p>
 		{#if leaderboard.length > 0}

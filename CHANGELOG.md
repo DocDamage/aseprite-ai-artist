@@ -16,6 +16,14 @@ All notable changes to this project are documented here. Format follows
   highest-scoring one; score and date break ties.
 - **Site: "Add your art".** A button in the header on every page and one
   beside the gallery's title, both leading to the contribute page.
+- **Benchmark: only human craft ratings count.** Ratings from model judges
+  stay valid in `generation.yaml` but are ignored — not shown, not scored —
+  until they are re-evaluated.
+- **Benchmark: a run with no recorded time is not penalised for speed.** Its
+  score is criteria and craft alone, rescaled to 0–100, instead of counting
+  speed as 0.
+- **Site: the benchmark page leads with the results.** Each ranked model's
+  best piece, winner first; the prompt and criteria close the page.
 
 ## [0.5.0] — 2026-10-02
 
