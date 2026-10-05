@@ -105,12 +105,12 @@ metrics:
 ratings:
   - judge: human:fedorovvvv
     scores:
-      read: 2
-      form: 2
-      motion: 2
-      cohesion: 2
-      appeal: 2
-    note: Overall 4/10, given as one number; each axis set to round(4/10 × 4) = 2.
+      read: 1
+      form: 1
+      motion: 1
+      cohesion: 1
+      appeal: 1
+    note: Overall 3/10, given as one number; each axis set to round(3/10 × 4) = 1.
 benchmark:
   prompt: tree-growth
   revision: 1
