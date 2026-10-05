@@ -19,7 +19,8 @@ All notable changes to this project are documented here. Format follows
   Twitter card, plus JSON-LD where it fits (`SoftwareApplication`, `HowTo`,
   `VisualArtwork`, `WebSite`). New `sitemap.xml` — an index over per-section
   sitemaps for pages, benchmarks and the gallery — `robots.txt` pointing at
-  it, a web manifest, and a share card.
+  it, a web manifest, and a share card. `/llms.txt` and `/llms-full.txt` give
+  language models the site and the plugin in markdown.
 - **Site: a full favicon set** — `.ico`, SVG, 96 px, Apple touch and manifest
   icons — generated from the 16×16 Pebbly icon by
   `pnpm --filter @pebbly/web run generate:icons` (RealFaviconGenerator), every

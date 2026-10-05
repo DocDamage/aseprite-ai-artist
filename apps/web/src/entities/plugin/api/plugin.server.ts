@@ -1,10 +1,12 @@
 import { parse } from 'yaml';
 import { REPO_URL } from '#shared/lib/site.js';
 import type { Agent, Skill } from '../model/types';
+import readme from '../../../../../../README.md?raw';
+import installGuide from '../../../../../../docs/INSTALL.md?raw';
 
-// Bundled from the checkout the site is built from, not fetched from GitHub: skills and
-// agents are part of the same commit, so the page can never list a skill the deployed plugin
-// does not have. A glob rather than node:fs because /plugin is rendered by an ISR function,
+// Bundled from the checkout the site is built from, not fetched from GitHub: skills, agents
+// and docs are part of the same commit, so the site can never describe a plugin the deployed
+// one is not. Vite imports rather than node:fs because /plugin is rendered by an ISR function,
 // where the repository is not on disk.
 const skillFiles = import.meta.glob<string>('../../../../../../skills/*/SKILL.md', {
 	query: '?raw',
@@ -16,6 +18,9 @@ const agentFiles = import.meta.glob<string>('../../../../../../agents/*.md', {
 	import: 'default',
 	eager: true
 });
+
+/** README.md and docs/INSTALL.md as markdown source, for /llms-full.txt. */
+export const docs = { readme, installGuide };
 
 /** `studio` is the front door; the rest follow in the order a drawing goes through them. */
 const SKILL_ORDER = [

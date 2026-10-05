@@ -75,6 +75,10 @@ These are the only pages that are not prerendered. They are Vercel ISR routes (`
 
 `/sitemap.xml` is a sitemap index over `/sitemaps/{pages,benchmarks,gallery}.xml` (`pages/sitemap`). A new top-level page goes into the `pages` list by hand.
 
+## llms.txt
+
+`/llms.txt` ([llmstxt.org](https://llmstxt.org)) is a markdown map of the site and the plugin for language models; `/llms-full.txt` inlines the README, `docs/INSTALL.md` and every skill and agent, so one fetch answers most questions. Both are prerendered from the same checkout (`pages/llms`, `entities/plugin`).
+
 ## Icons and share card
 
 `static/` holds the favicon set, the web-app icons and `og-image.png`, all made by `pnpm --filter @pebbly/web run generate:icons` from `gallery/generations/2026-09-29-pebbly-mascot/pebbly-icon.png`. Run it by hand when the icon changes and commit the output; the build never regenerates it. `static/site.webmanifest` is hand-written.

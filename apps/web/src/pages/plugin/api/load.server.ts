@@ -1,6 +1,6 @@
+import { agents, skills } from '#entities/plugin/index.server.js';
 import { renderedMarkdown, repoStats } from '#shared/api/index.server.js';
 import type { PluginPageData } from '../model/types';
-import { agents, skills } from './plugin.server';
 
 export async function load(): Promise<PluginPageData> {
 	const [readme, stats] = await Promise.all([
