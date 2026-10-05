@@ -2,6 +2,8 @@
 	import '../styles/index.css';
 	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
+	import { dev } from '$app/environment';
+	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	import { SITE_NAME, SITE_URL } from '$shared/lib/site';
 	import { ModeWatcher } from 'mode-watcher';
 	import { appleTouchIcon, favicon16, favicon32 } from '$shared/brand';
@@ -10,6 +12,8 @@
 	import { SiteFooter } from '$widgets/siteFooter';
 
 	let { children } = $props();
+
+	injectAnalytics({ mode: dev ? 'development' : 'production' });
 
 	// Page changes cross-fade through the View Transitions API where the browser has it; the
 	// header and footer carry their own transition names, so only the page between them moves.
