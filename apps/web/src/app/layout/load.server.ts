@@ -10,7 +10,14 @@ export async function load(): Promise<{ stars: number | null }> {
 	return { stars: (await repoStats())?.stars ?? null };
 }
 
-/** GET /api/stars → `{ stars: number | null }`. */
+/**
+ * GET /api/stars → `{ stars: number }`. A failed GitHub call answers 503 with no-store, so the
+ * ISR cache never keeps "no count" for two hours; the header then keeps the count it has.
+ */
 export async function starsResponse(): Promise<Response> {
-	return json(await load());
+	const { stars } = await load();
+	if (stars === null) {
+		return json({ stars }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+	}
+	return json({ stars });
 }
