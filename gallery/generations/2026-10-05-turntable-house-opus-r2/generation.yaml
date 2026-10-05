@@ -118,6 +118,15 @@ metrics:
     toolCalls: 66
     outputTokens: 100654
     costUsd: 6.54
+ratings:
+  - judge: human:fedorovvvv
+    scores:
+      read: 3
+      form: 3
+      motion: 3
+      cohesion: 3
+      appeal: 3
+    note: Overall 7/10, given as one number; each axis set to round(7/10 × 4) = 3.
 benchmark:
   prompt: turntable-house
   revision: 2
