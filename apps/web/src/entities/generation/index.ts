@@ -6,6 +6,7 @@ export { default as ScoreMeter } from './ui/ScoreMeter.svelte';
 export { roleLabel } from './lib/roleLabel';
 export type {
 	Score,
+	ScoreComponentsView,
 	FileView,
 	StepView,
 	CriterionView,

@@ -105,6 +105,7 @@ export function summary(generation: Generation, prompts: Prompt[]): GenerationSu
 				}
 			: null,
 		score: generation.score,
+		points: generation.points,
 		outdated: generation.outdated,
 		search
 	};

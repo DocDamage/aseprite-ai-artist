@@ -48,6 +48,7 @@ export function load({ params }: { params: { prompt: string } }): BenchmarkCompa
 				harness: run.harness,
 				date: run.date,
 				score: run.score,
+				points: run.points,
 				outdated: run.outdated,
 				images
 			};

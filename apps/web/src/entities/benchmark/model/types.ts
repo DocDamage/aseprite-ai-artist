@@ -1,4 +1,9 @@
-import type { CraftView, FileView, Score } from '$entities/generation/@x/benchmark';
+import type {
+	CraftView,
+	FileView,
+	Score,
+	ScoreComponentsView
+} from '$entities/generation/@x/benchmark';
 import type { PromptView } from '$entities/prompt/@x/benchmark';
 
 export interface RunView {
@@ -6,12 +11,16 @@ export interface RunView {
 	title: string;
 	date: string;
 	score: Score;
+	points: number;
 }
 
 export interface CellView {
 	modelLabel: string;
 	plugin: string;
 	best: Score;
+	/** Points (0–100) and parts of the best run. */
+	points: number;
+	components: ScoreComponentsView;
 	/** Craft of the best run; null when no judge has rated it. */
 	craft: CraftView | null;
 	runs: RunView[];
@@ -38,9 +47,12 @@ export interface BenchmarkView {
 
 export interface LeaderboardEntryView {
 	modelLabel: string;
+	/** Mean points, 0–100, over every benchmark of the suite. */
 	score: number;
-	/** Mean craft, 0–1, over rated benchmarks; null when none is rated. */
-	craft: number | null;
+	/** Mean compliance, craft and speed, 0–1, over the same set. */
+	compliance: number;
+	craft: number;
+	speed: number;
 	benchmarks: number;
 	runs: number;
 }
@@ -54,10 +66,10 @@ export interface BenchmarkCardView {
 	chips: string[];
 	steps: number;
 	runs: number;
-	/** Id of the best-crafted run (score, then date, break ties), whose cover represents the benchmark. */
+	/** Id of the highest-scoring run (compliance, craft, then date break ties), whose cover represents the benchmark. */
 	coverRun: string | null;
 	/** The three strongest models, each with its best run. */
-	top: { modelLabel: string; plugin: string; best: Score; run: string }[];
+	top: { modelLabel: string; plugin: string; points: number; run: string }[];
 }
 
 /** A benchmark card together with the cover image of its best run. */

@@ -4,7 +4,7 @@
 	import NoteIcon from '~icons/pixelarticons/note';
 	import PlayIcon from '~icons/pixelarticons/play';
 	import TrophyIcon from '~icons/pixelarticons/trophy';
-	import { Badge, Progress, Table } from '$shared/ui/8bit';
+	import { Badge, Table } from '$shared/ui/8bit';
 	import { ArtCard } from '$shared/ui/pixel';
 	import { plural } from '$shared/lib/format';
 	import { RUBRIC_URL, SITE_NAME } from '$shared/lib/site';
@@ -45,22 +45,22 @@
 			<TrophyIcon class="text-accent-ink" aria-hidden="true" />Leaderboard
 		</h2>
 		<p class="text-muted-foreground mt-2 text-sm">
-			Each model's best score per benchmark, averaged over the benchmarks it has been run on.
-		</p>
-		<p class="text-muted-foreground mt-1 text-sm">
-			Compliance ranks first; craft, judged 0–4 on five axes, breaks ties.
+			Score is 0–100: 50% criteria passed, 35% craft, 15% speed relative to the fastest run of each benchmark. Each model's best run per benchmark counts, averaged over
+			every benchmark; unrated craft, unmeasured speed and benchmarks it has not run count as 0.
 			<a href={RUBRIC_URL} class="underline underline-offset-4" rel="noopener">Read the rubric</a>.
 		</p>
 		{#if leaderboard.length > 0}
 			<div class="mt-6 overflow-x-auto px-2 pb-2">
 				<Table.Root font="normal" containerClass="w-full min-w-max" class="text-sm">
-					<caption class="sr-only">Models ranked by their mean best score</caption>
+					<caption class="sr-only">Models ranked by their mean score out of 100</caption>
 					<Table.Header>
 						<Table.Row>
 							<Table.Head class="retro w-12 text-[0.625rem]">#</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Model</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Score</Table.Head>
+							<Table.Head class="retro text-[0.625rem]">Compliance</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Craft</Table.Head>
+							<Table.Head class="retro text-[0.625rem]">Speed</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Coverage</Table.Head>
 							<Table.Head class="retro text-right text-[0.625rem]">Runs</Table.Head>
 						</Table.Row>
@@ -71,21 +71,11 @@
 								<Table.Cell class={['retro text-xs tabular-nums', rank === 0 && 'text-accent-ink']}>{rank + 1}</Table.Cell>
 								<Table.Head scope="row" class="text-foreground font-medium">{entry.modelLabel}</Table.Head>
 								<Table.Cell>
-									<span class="flex items-center gap-3">
-										<span class="retro w-10 text-xs tabular-nums">{Math.round(entry.score * 100)}%</span>
-										<Progress
-											variant="retro"
-											value={entry.score * 100}
-											segments={10}
-											progressBg="bg-accent"
-											class="h-2.5 w-28"
-											aria-label="Mean best score {Math.round(entry.score * 100)} percent"
-										/>
-									</span>
+									<ScoreMeter points={Math.round(entry.score)} />
 								</Table.Cell>
-								<Table.Cell class="retro text-xs tabular-nums">
-									{#if entry.craft === null}<span class="text-muted-foreground" aria-label="Unrated">—</span>{:else}{Math.round(entry.craft * 100)}%{/if}
-								</Table.Cell>
+								<Table.Cell class="retro text-xs tabular-nums">{Math.round(entry.compliance * 100)}%</Table.Cell>
+								<Table.Cell class="retro text-xs tabular-nums">{Math.round(entry.craft * 100)}%</Table.Cell>
+								<Table.Cell class="retro text-xs tabular-nums">{Math.round(entry.speed * 100)}%</Table.Cell>
 								<Table.Cell class="tabular-nums">{entry.benchmarks}/{total} benchmarks</Table.Cell>
 								<Table.Cell class="text-right tabular-nums">{entry.runs}</Table.Cell>
 							</Table.Row>
@@ -128,7 +118,7 @@
 										<li class="flex items-center gap-2">
 											<span class="retro text-muted-foreground w-5 text-[0.625rem]">{rank + 1}</span>
 											<span class="min-w-0 flex-1 truncate">{entry.modelLabel}</span>
-											<ScoreMeter score={entry.best} />
+											<ScoreMeter points={entry.points} />
 										</li>
 									{/each}
 								</ol>

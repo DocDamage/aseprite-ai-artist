@@ -14,6 +14,7 @@ export interface CompareRun {
 	harness: string;
 	date: string;
 	score: Score | null;
+	points: number | null;
 	outdated: boolean;
 	/** Image per view key; a run lacking a view (older revision, missing export) has no entry. */
 	images: Record<string, FileView>;

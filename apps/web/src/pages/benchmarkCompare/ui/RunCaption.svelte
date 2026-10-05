@@ -21,7 +21,7 @@
 		</span>
 		{#if note}<span class="text-muted-foreground block">{note}</span>{/if}
 	</div>
-	{#if run.score}
-		<ScoreMeter score={run.score} />
+	{#if run.points !== null}
+		<ScoreMeter points={run.points} />
 	{/if}
 </div>

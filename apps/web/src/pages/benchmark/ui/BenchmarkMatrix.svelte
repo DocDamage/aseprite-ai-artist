@@ -66,15 +66,11 @@
 								<Table.Cell class="py-3">
 									{#if cell}
 										<a href={resolve('/g/[id]', { id: cell.runs[0]!.id })} class="flex w-fit flex-col gap-1 hover:underline">
-											<ScoreMeter score={cell.best} />
-											{#if cell.craft}
-												<span class="text-xs tabular-nums">
-													<span class="retro text-[0.625rem]">{Math.round(cell.craft.score * 100)}%</span> craft
-													<span class="text-muted-foreground">({plural(cell.craft.judges, 'judge')})</span>
-												</span>
-											{:else}
-												<span class="text-muted-foreground text-xs">unrated</span>
-											{/if}
+											<ScoreMeter points={cell.points} />
+											<span class="text-muted-foreground text-xs tabular-nums">
+												{cell.best.passed}/{cell.best.total} criteria{#if cell.craft}, {Math.round(cell.craft.score * 100)}% craft
+													({plural(cell.craft.judges, 'judge')}){:else}, unrated{/if}
+											</span>
 											<span class="text-muted-foreground text-xs">{plural(cell.runs.length, 'run')}</span>
 										</a>
 									{:else}

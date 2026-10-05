@@ -94,8 +94,14 @@ validate:
 metrics:
   - step: 1
     minutes: 11.1
+    toolCalls: 59
+    outputTokens: 10795
+    costUsd: 0.66
   - step: 2
     minutes: 16.8
+    toolCalls: 77
+    outputTokens: 16751
+    costUsd: 1.06
 ratings:
   - judge: human:fedorovvvv
     scores:

@@ -8,8 +8,9 @@ judges scoring the same run land in the same place.
 
 Ratings live in `generation.yaml` under `ratings`, one entry per judge. The
 site averages them: per run, the mean over judges of each judge's mean axis
-score, shown as a percentage beside the compliance score. Compliance still
-ranks first; craft breaks ties and is shown on its own column.
+score, shown as a percentage beside the compliance score. Craft is 35% of the
+composite 0–100 score (50% criteria passed, 15% speed); a run nobody has rated
+counts 0 for craft.
 
 ## How to judge
 

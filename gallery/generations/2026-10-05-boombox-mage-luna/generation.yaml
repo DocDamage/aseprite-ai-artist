@@ -88,6 +88,17 @@ files:
     role: filmstrip
     label: All 13 frames, 2×
     step: 2
+metrics:
+  - step: 1
+    minutes: 18.3
+    toolCalls: 60
+    outputTokens: 21598
+    costUsd: 0.08
+  - step: 2
+    minutes: 18.1
+    toolCalls: 93
+    outputTokens: 20681
+    costUsd: 0.09
 ratings:
   - judge: human:fedorovvvv
     scores:

@@ -1,5 +1,5 @@
 title: Turntable cottage
-description: The turntable-house benchmark, revision 1 (16 frames at 80 ms; revision 2 slowed it to 125 ms after this run, so this run is shown but not ranked). A detailed timber-framed cottage on a round plinth in PICO-8, then a 16-frame 360° turntable with a fixed light and a recomputed shadow. Each step ran in its own fresh omp session (claude-opus-5-5), launched through Herdr, with the step text sent verbatim after the `/skill:studio ` command prefix. The operator created the document and loaded the PICO-8 palette before step 1, and handed step 2 a copy of the step-1 file. Both sessions ended with unsaved edits, which the operator saved unchanged. No image model, no reference, no messages beyond the step text. The cover GIF was re-exported by the operator at 125 ms per frame (one turn in 2 s) to match revision 2's pace; its pixels are the model's frames unchanged, and spin.aseprite keeps the model's own 80 ms timing.
+description: The turntable-house benchmark, revision 2 (16 frames at 125 ms). Step 1 is the same session and file as the revision-1 run (2026-10-05-turntable-house-opus); step 2 was run again in a fresh omp session (claude-opus-5-5) on a copy of that step-1 file with the revision-2 text, sent verbatim after the `/skill:studio ` command prefix through Herdr. Both sessions ended with unsaved edits, which the operator saved unchanged. No image model, no reference, no messages beyond the step text.
 date: 2026-10-05
 author:
   name: Nik Fedorov
@@ -48,7 +48,7 @@ steps:
   - text: |-
       The open document holds a cottage on a round grass plinth (canvas 128×128, PICO-8 palette, layers `ground`, `shadow`, `house`) in a three-quarter view at angle 0°, with a fixed light from behind-left. Keep the palette — use only its 16 colours — and keep the cottage on model at every angle: same size, proportions, colours and details. This brief is complete: do not ask me to confirm it. Decide anything it leaves open yourself and list those decisions in your final report. Coordinates are 0-based pixels, x to the right, y down.
 
-      Animate a turntable: the cottage turns one full revolution around the vertical axis through the pivot (64, 90), and the animation loops forever with no hitch. Exactly 16 frames, every frame 80 ms, one tag named `spin` covering every frame, direction forward. The existing frame is frame 1.
+      Animate a turntable: the cottage turns one full revolution around the vertical axis through the pivot (64, 90), and the animation loops forever with no hitch. Exactly 16 frames, every frame 125 ms (one full turn every 2 seconds), one tag named `spin` covering every frame, direction forward. The existing frame is frame 1.
 
       The rotation
       - Frame k shows the cottage turned (k − 1) × 22.5° from frame 1 — an even step every frame. Frame 16 is at 337.5°, so playing frame 16 into frame 1 is exactly one more step.
@@ -80,7 +80,7 @@ tags:
 files:
   - path: spin.gif
     role: cover
-    label: The turntable, 4×, re-timed to 125 ms
+    label: The turntable, 4×
     step: 2
   - path: cottage.aseprite
     role: source
@@ -114,22 +114,13 @@ metrics:
     outputTokens: 60860
     costUsd: 3.2
   - step: 2
-    minutes: 21.1
-    toolCalls: 63
-    outputTokens: 93954
-    costUsd: 5.28
-ratings:
-  - judge: human:fedorovvvv
-    scores:
-      read: 3
-      form: 3
-      motion: 3
-      cohesion: 3
-      appeal: 3
-    note: Overall 7/10, given as one number; each axis set to round(7/10 × 4) = 3.
+    minutes: 28.5
+    toolCalls: 66
+    outputTokens: 100654
+    costUsd: 6.54
 benchmark:
   prompt: turntable-house
-  revision: 1
+  revision: 2
   results:
     - criterion: house-validate
       pass: true
@@ -151,19 +142,19 @@ benchmark:
       note: "Front wall lighter than the right gable; #1d2b53 shadow falls right and toward the viewer, on the plinth."
     - criterion: spin-tagged
       pass: true
-      note: 16 frames × 80 ms (the revision-1 timing), forward tag spin 1–16.
+      note: 16 frames × 125 ms, forward tag spin 1–16 (sheet JSON).
     - criterion: spin-ground
       pass: true
-      note: Plinth unchanged across the filmstrip by eye.
+      note: Plinth unchanged across the frames by eye.
     - criterion: spin-pivot
       pass: true
-      note: The cottage stays centred on the plinth across the filmstrip by eye.
+      note: Centred on the plinth by eye.
     - criterion: spin-even
       pass: true
       note: Face-on views at frames 3, 7, 11 and 15; three-quarter views at 1, 5, 9 and 13.
     - criterion: spin-volume
       pass: false
-      note: The end-on views (frames 7 and 15) are visibly narrower and taller than the other angles.
+      note: The end-on views (frames 7 and 15) are narrower and taller than the other angles.
     - criterion: spin-solid
       pass: true
       note: Frame 9 shows the back wall's windows and the rain barrel; every side has its own details.
@@ -178,7 +169,7 @@ benchmark:
       note: The shadow keeps falling right and toward the viewer and changes shape with the footprint.
     - criterion: spin-seamless
       pass: false
-      note: Frame 1 differs from the step-1 export in 1517 pixels — the cottage was redrawn for the turn.
+      note: Frame 1 differs from the step-1 export in 1649 pixels — the cottage was redrawn for the turn.
     - criterion: spin-validate
       pass: true
       note: validate clean; palette still 16 entries.

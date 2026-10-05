@@ -1,4 +1,11 @@
-import type { Craft, FileRole, GenerationFile, Rating, StepMetrics } from '@pebbly/gallery';
+import type {
+	Craft,
+	FileRole,
+	GenerationFile,
+	Rating,
+	ScoreComponents,
+	StepMetrics
+} from '@pebbly/gallery';
 
 /** Judges' craft scores averaged: `score` 0–1, `axes` means 0–4. */
 export type CraftView = Craft;
@@ -10,6 +17,9 @@ export interface Score {
 	passed: number;
 	total: number;
 }
+
+/** The parts a run's points are made of: compliance, craft and speed, each 0–1. */
+export type ScoreComponentsView = ScoreComponents;
 
 export interface FileView {
 	name: string;
@@ -68,6 +78,8 @@ export interface GenerationSummary {
 	cover: FileView;
 	benchmark: { prompt: string; promptTitle: string; revision: number } | null;
 	score: Score | null;
+	/** Composite 0–100; null for outdated runs and runs outside a benchmark. */
+	points: number | null;
 	outdated: boolean;
 	/** Lower-cased text the gallery's search box matches against. */
 	search: string;

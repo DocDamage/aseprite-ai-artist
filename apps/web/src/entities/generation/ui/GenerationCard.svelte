@@ -13,8 +13,8 @@
 </script>
 
 {#snippet scoreGem()}
-	{#if generation.score}
-		<span aria-label="{generation.score.passed} of {generation.score.total} criteria passed">{generation.score.passed}/{generation.score.total}</span>
+	{#if generation.points !== null}
+		<span aria-label="Score {generation.points} out of 100">{generation.points}</span>
 	{/if}
 {/snippet}
 
@@ -23,7 +23,7 @@
 	art={{ src: generation.cover.url, width: generation.cover.width, height: generation.cover.height, pixel: generation.cover.pixel }}
 	alt={generation.title}
 	title={generation.title}
-	badge={generation.score ? scoreGem : undefined}
+	badge={generation.points !== null ? scoreGem : undefined}
 	transitionName="art-{generation.id}"
 	{eager}
 >

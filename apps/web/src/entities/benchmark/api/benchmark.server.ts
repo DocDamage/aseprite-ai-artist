@@ -7,8 +7,6 @@ import type {
 	LeaderboardEntryView
 } from '../model/types';
 
-const ratio = (score: { passed: number; total: number }) => score.passed / score.total;
-
 /** The ranking of one benchmark. `prompt` is the same benchmark's prompt, already mapped. */
 export function benchmarkView(benchmark: Benchmark, prompt: PromptView): BenchmarkView {
 	const order = benchmark.prompt.criteria.map((criterion) => criterion.id);
@@ -22,11 +20,14 @@ export function benchmarkView(benchmark: Benchmark, prompt: PromptView): Benchma
 			plugin: cell.plugin,
 			best: cell.best,
 			craft: cell.craft,
+			points: cell.points,
+			components: cell.components,
 			runs: cell.runs.map((run) => ({
 				id: run.id,
 				title: run.title,
 				date: run.date,
-				score: run.score!
+				score: run.score!,
+				points: run.points!
 			})),
 			bestResults: order.flatMap((id) => {
 				const result = results.get(id);
@@ -62,20 +63,20 @@ export function criterionChips(prompt: Prompt): string[] {
 
 export function benchmarkCard(benchmark: Benchmark): BenchmarkCardView {
 	const runs = benchmark.cells.flatMap((cell) => cell.runs);
-	// The preview is the best-looking run, not the highest-scoring one: compliance says a run
-	// followed the brief, craft says it is worth looking at. Unrated runs come last; score and
-	// then recency break ties.
+	// The preview is the run that scored highest (the cells are already sorted best-first);
+	// compliance, craft, then recency break ties, exactly as in the ranking itself.
 	const cover = [...runs].sort(
 		(a, b) =>
-			(b.craft?.score ?? -1) - (a.craft?.score ?? -1) ||
-			ratio(b.score!) - ratio(a.score!) ||
+			b.points! - a.points! ||
+			b.components!.compliance - a.components!.compliance ||
+			b.components!.craft - a.components!.craft ||
 			b.date.localeCompare(a.date)
 	)[0];
 	const top = benchmark.models.slice(0, 3).map((modelLabel) => {
 		const cell = benchmark.cells
 			.filter((candidate) => candidate.modelLabel === modelLabel)
-			.sort((a, b) => ratio(b.best) - ratio(a.best))[0]!;
-		return { modelLabel, plugin: cell.plugin, best: cell.best, run: cell.runs[0]!.id };
+			.sort((a, b) => b.points - a.points)[0]!;
+		return { modelLabel, plugin: cell.plugin, points: cell.points, run: cell.runs[0]!.id };
 	});
 	return {
 		id: benchmark.prompt.id,
@@ -96,7 +97,9 @@ export function leaderboardView(leaderboard: Gallery['leaderboard']): Leaderboar
 	return leaderboard.map((entry) => ({
 		modelLabel: entry.modelLabel,
 		score: entry.score,
+		compliance: entry.compliance,
 		craft: entry.craft,
+		speed: entry.speed,
 		benchmarks: entry.benchmarks,
 		runs: entry.runs
 	}));

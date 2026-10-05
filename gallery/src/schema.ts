@@ -187,7 +187,7 @@ export const ratingSchema = z.strictObject({
   note: line.optional(),
 });
 
-/** What a step cost to run, read from the harness's session log. Shown, never ranked. */
+/** What a step cost to run, read from the harness's session log. `minutes` feeds the speed part of the score. */
 export const stepMetricsSchema = z.strictObject({
   step: z.int().positive(),
   /** Wall time from the prompt to the model's final message. */

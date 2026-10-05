@@ -135,8 +135,10 @@ benchmark:                               # only for benchmark runs
 - **Ratings**: one per judge; scores are integers 0–4; `motion` is required
   when a file has role `animation` and forbidden otherwise; a `model:` judge
   cannot be one of the run's `models`. How to score: [RUBRIC.md](RUBRIC.md).
-- **Metrics**: at most one entry per step, and the step must exist. They are
-  shown, never ranked.
+- **Metrics**: at most one entry per step, and the step must exist. Step
+  `minutes` feed the speed part of the score (15%): a run's time is the sum over
+  all steps, and a run missing `minutes` on any step counts 0 for speed. A run's
+  speed is the fastest run's time on that benchmark divided by its own.
 - **No duplicates**: a model, a file path (compared case-insensitively) or a
   `validate` step listed twice is an error; `step` numbers must exist.
 - **File names**: no `__` prefix (the site reserves it) and no Windows-reserved

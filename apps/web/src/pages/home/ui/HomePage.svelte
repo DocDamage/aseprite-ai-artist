@@ -168,7 +168,7 @@
 											{leader.modelLabel}
 										</a>
 										<span class="text-muted-foreground hidden text-sm sm:inline">v{leader.plugin}</span>
-										<ScoreMeter score={leader.best} />
+										<ScoreMeter points={leader.points} />
 									</li>
 								{/each}
 							</ol>

@@ -140,8 +140,13 @@
 						{#if g.outdated}
 							<Badge variant="outline" class="ml-2 text-[0.625rem]">Older revision, unranked</Badge>
 						{/if}
+						{#if g.points !== null}
+							<div><ScoreMeter points={g.points} size="lg" /></div>
+						{/if}
 						{#if g.score}
-							<div><ScoreMeter score={g.score} size="lg" /></div>
+							<div class="text-muted-foreground text-xs tabular-nums">
+								{g.score.passed}/{g.score.total} criteria{g.outdated ? ' · older revision, not ranked' : ''}
+							</div>
 						{/if}
 					</dd>
 				{/if}
