@@ -22,6 +22,8 @@
 		eager?: boolean;
 		/** The text plate under the art: what is inside. Without it the pack ends at the art. */
 		caption?: Snippet;
+		/** Shared by the wall tile and the pack page, so the pack flies from one to the other. */
+		transitionName?: string;
 		class?: string;
 	}
 
@@ -32,6 +34,7 @@
 		heading = 'h3',
 		eager = false,
 		caption,
+		transitionName,
 		class: className
 	}: Props = $props();
 
@@ -42,7 +45,11 @@
 	);
 </script>
 
-<div class={cn('booster flex flex-col', className)} {@attach pointerShine}>
+<div
+	class={cn('booster flex flex-col', className)}
+	style:view-transition-name={transitionName}
+	{@attach pointerShine}
+>
 	<div class="crimp crimp-top" data-part="top"></div>
 
 	<!-- Insets add up to a card's: 10px seal + 4px here on top, 4px rail + 10px at the sides,
@@ -102,6 +109,8 @@
 		--seal: 10px;
 		--teeth: 4px;
 		container-type: inline-size;
+		/* Picks the pack's own flight timing out of the page transition (app/styles). */
+		view-transition-class: pack;
 	}
 	/* A card's art window never gets shorter than 240px; a narrow pack (the pack page on a
 	   phone) scales that down so it keeps a pack's proportions. */

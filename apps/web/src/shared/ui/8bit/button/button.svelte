@@ -46,10 +46,8 @@
 			<span class="absolute top-0 right-0 size-1.5 bg-pixel"></span>
 			<span class="absolute bottom-0 left-0 size-1.5 bg-pixel"></span>
 			<span class="absolute right-0 bottom-0 size-1.5 bg-pixel"></span>
-			<span class="absolute top-1.5 -left-1.5 h-[calc(100%-12px)] w-1.5 bg-pixel"
-			></span>
-			<span class="absolute top-1.5 -right-1.5 h-[calc(100%-12px)] w-1.5 bg-pixel"
-			></span>
+			<span class="absolute top-1.5 -left-1.5 h-[calc(100%-12px)] w-1.5 bg-pixel"></span>
+			<span class="absolute top-1.5 -right-1.5 h-[calc(100%-12px)] w-1.5 bg-pixel"></span>
 			{#if variant !== 'outline'}
 				<span class="absolute top-0 left-0 h-1.5 w-full bg-foreground/20"></span>
 				<span class="absolute top-1.5 left-0 h-1.5 w-3 bg-foreground/20"></span>
@@ -61,12 +59,9 @@
 			<span class="absolute top-0 left-0 h-[5px] w-full bg-pixel md:h-1.5"></span>
 			<span class="absolute bottom-0 h-[5px] w-full bg-pixel md:h-1.5"></span>
 			<span class="absolute top-1 -left-1 h-1/2 w-[5px] bg-pixel md:w-1.5"></span>
-			<span class="absolute bottom-1 -left-1 h-1/2 w-[5px] bg-pixel md:w-1.5"
-			></span>
-			<span class="absolute top-1 -right-1 h-1/2 w-[5px] bg-pixel md:w-1.5"
-			></span>
-			<span class="absolute -right-1 bottom-1 h-1/2 w-[5px] bg-pixel md:w-1.5"
-			></span>
+			<span class="absolute bottom-1 -left-1 h-1/2 w-[5px] bg-pixel md:w-1.5"></span>
+			<span class="absolute top-1 -right-1 h-1/2 w-[5px] bg-pixel md:w-1.5"></span>
+			<span class="absolute -right-1 bottom-1 h-1/2 w-[5px] bg-pixel md:w-1.5"></span>
 		{/if}
 	</span>
 </ShadcnButton>

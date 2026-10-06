@@ -12,13 +12,7 @@
 	}: ComponentProps<typeof ShadcnSelectTrigger> & { font?: 'normal' | 'retro' } = $props();
 </script>
 
-<div
-	class={cn(
-		'relative border-y-6 border-pixel',
-		className,
-		font !== 'normal' && 'retro'
-	)}
->
+<div class={cn('relative border-y-6 border-pixel', className, font !== 'normal' && 'retro')}>
 	<ShadcnSelectTrigger {...restProps} class={cn('w-full rounded-none border-0 ring-0', className)}>
 		{@render children?.()}
 	</ShadcnSelectTrigger>

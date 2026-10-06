@@ -16,3 +16,4 @@ export * from './separator';
 export * from './slider';
 export * as Table from './table';
 export * from './toast';
+export * as ToggleGroup from './toggle-group';

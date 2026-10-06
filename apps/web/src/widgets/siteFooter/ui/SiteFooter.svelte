@@ -1,12 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { PEBBLY_LOGO, PICO8 } from '#shared/config/index.js';
-	import {
-		REPO_URL,
-		RUBRIC_URL,
-		STUDIO_URL,
-		SUBMIT_SKILL_URL
-	} from '#shared/lib/site.js';
+	import { REPO_URL, RUBRIC_URL, STUDIO_URL, SUBMIT_SKILL_URL } from '#shared/lib/site.js';
 	import { PixelSprite } from '#shared/ui/pixel/index.js';
 	import { BrandLink } from '#shared/ui/brand/index.js';
 
@@ -50,6 +45,14 @@
 
 				<li>
 					<a href={resolve('benchmarks')} class="hover:underline">Benchmarks</a>
+				</li>
+
+				<li>
+					<a href={resolve('knowledge')} class="hover:underline">Knowledge base</a>
+				</li>
+
+				<li>
+					<a href={resolve('knowledge/palettes')} class="hover:underline">Palettes</a>
 				</li>
 
 				<li>

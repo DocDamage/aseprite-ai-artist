@@ -9,9 +9,19 @@
 		text: string;
 		label: string;
 		done?: string;
+		/** Show only the icon; `label` stays the button's accessible name. */
+		iconOnly?: boolean;
 	};
 
-	let { text, label, done, variant = 'outline', size = 'sm', class: className }: Props = $props();
+	let {
+		text,
+		label,
+		done,
+		iconOnly = false,
+		variant = 'outline',
+		size = 'sm',
+		class: className
+	}: Props = $props();
 
 	let copied = $state(false);
 	let timer: ReturnType<typeof setTimeout> | undefined;
@@ -36,5 +46,5 @@
 	{:else}
 		<CopyIcon aria-hidden="true" />
 	{/if}
-	{label}
+	<span class={iconOnly ? 'sr-only' : undefined}>{label}</span>
 </Button>

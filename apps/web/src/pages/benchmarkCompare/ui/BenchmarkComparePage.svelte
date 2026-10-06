@@ -8,7 +8,7 @@
 	import PauseIcon from '~icons/pixelarticons/pause';
 	import PlayIcon from '~icons/pixelarticons/play';
 	import ReloadIcon from '~icons/pixelarticons/reload';
-	import { Button, Checkbox, Select, Slider } from '#shared/ui/8bit/index.js';
+	import { Button, Checkbox, Select, Slider, ToggleGroup } from '#shared/ui/8bit/index.js';
 	import { formatDate } from '#shared/lib/format.js';
 	import { Lightbox } from '#shared/ui/lightbox/index.js';
 	import { Playback } from '../model/playback.svelte';
@@ -159,20 +159,23 @@
 			<div>
 				<span id="label-mode" class="mb-3 block retro text-[0.625rem]">Mode</span>
 
-				<div role="group" aria-labelledby="label-mode" class="flex gap-4">
-					<Button
-						variant={mode === 'slider' ? 'default' : 'outline'}
-						aria-pressed={mode === 'slider'}
-						onclick={() => ((mode = 'slider'), syncUrl())}
-						>{filmstrip ? 'Two runs' : 'Slider'}</Button
-					>
-
-					<Button
-						variant={mode === 'grid' ? 'default' : 'outline'}
-						aria-pressed={mode === 'grid'}
-						onclick={() => ((mode = 'grid'), syncUrl())}>{filmstrip ? 'Many runs' : 'Grid'}</Button
-					>
-				</div>
+				<!-- One mode is always on: an empty value (the pressed item clicked again) is ignored. -->
+				<ToggleGroup.Root
+					aria-labelledby="label-mode"
+					class="px-0"
+					bind:value={
+						() => mode,
+						(next) => {
+							if (next === 'slider' || next === 'grid') {
+								mode = next;
+								syncUrl();
+							}
+						}
+					}
+				>
+					<ToggleGroup.Item value="slider">{filmstrip ? 'Two runs' : 'Slider'}</ToggleGroup.Item>
+					<ToggleGroup.Item value="grid">{filmstrip ? 'Many runs' : 'Grid'}</ToggleGroup.Item>
+				</ToggleGroup.Root>
 			</div>
 			<div class="min-w-64 flex-1">
 				<span id="label-view" class="mb-3 block retro text-[0.625rem]">Image</span>

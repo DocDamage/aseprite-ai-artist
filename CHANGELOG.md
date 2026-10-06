@@ -8,6 +8,27 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Site: a knowledge base.** `/knowledge` shows the pixel-art rulebook the
+  agents follow — every rule, grouped by band, with its ` ```grid ` templates
+  drawn as pixel pictures beside their legend and source — plus every skill,
+  agent and bundled palette, with search across all of them. Each document has
+  its own page with a sidebar of the whole base, an outline, and previous/next;
+  `rules://` references in the text link to the rule they name. The pages are
+  in the sitemap and `/llms.txt`, and the plugin page's skill and agent cards
+  link to them.
+- **About 2000 bundled palettes.** `knowledge/palettes.json` grows from six
+  presets to 2006: the hand-written classics plus Lospec's 2000 most-downloaded
+  palettes, each with its author and source URL
+  ([docs/PALETTES.md](docs/PALETTES.md);
+  `scripts/fetch-lospec-palettes.ts` refreshes them). `palette` op `preset`
+  still loads by key; a key that does not exist is now a search, answering
+  with up to 20 matching keys instead of the whole list. The site lists them
+  all at `/knowledge/palettes`, searchable by name, author, tag and size, with
+  infinite scroll; the catalogue loads as a separate JSON file.
+- **Site: 8-bit toggle group.** A port of 8bitcn's `ToggleGroup` on bits-ui
+  (keyboard and pressed state included), now used by the palette size filter
+  and the compare page's Slider/Grid switch; the knowledge base's section links
+  share its look.
 - **Gallery: packs.** `gallery/packs/<slug>/pack.yaml` groups related
   generations under one title ([ADR-0012](docs/adr/0012-gallery-packs.md)). On
   the gallery and home walls a pack is one sealed booster tile in place of its
@@ -18,6 +39,13 @@ All notable changes to this project are documented here. Format follows
   an unknown or invalid member or a piece in two packs, and packs are
   maintainer-only like benchmark prompts. The benchmark runs now come in four
   packs, one per prompt.
+
+### Changed
+
+- **Site: the header fits every width.** Below 1024 px the section links, the
+  GitHub count and the theme switch move into a burger menu — a sheet from the
+  right edge that traps focus, closes on Escape, a backdrop click or
+  navigation, and hands focus back to the button. Knowledge joins the links.
 
 ## [0.7.0] — 2026-10-06
 

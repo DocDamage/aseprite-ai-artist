@@ -1,4 +1,6 @@
 import { gallery } from '#entities/generation/index.server.js';
+import { knowledgePath } from '#entities/knowledge/index.js';
+import { palettes, rules } from '#entities/knowledge/index.server.js';
 import { agents, docs, skills } from '#entities/plugin/index.server.js';
 import {
 	INSTALL_DOC_URL,
@@ -39,6 +41,15 @@ export function llmsTxt(): string {
 		'## Agents',
 		'',
 		...agents().map((agent) => `- [${agent.name}](${agent.url}): ${agent.description}`),
+		'',
+		'## Knowledge base',
+		'',
+		`- [Pixel-art knowledge base](${SITE_URL}/knowledge): the rulebook the agents follow, with pixel templates, plus every skill, agent and bundled palette`,
+		`- [${palettes().length} palettes](${SITE_URL}/knowledge/palettes): every palette \`palette\` op \`preset\` loads by key, with author and source`,
+		...rules().map(
+			(rule) =>
+				`- [${rule.title}](${SITE_URL}${knowledgePath('rules', rule.slug)}): ${rule.summary}`
+		),
 		'',
 		'## Gallery and benchmark',
 		'',

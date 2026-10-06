@@ -165,6 +165,17 @@ ladders, eye sets, walk and run key poses, quadrupeds, circles and isometric
 cubes, seamless tiles, flame frames. `studio` sends each stage to the files
 for its subject, and every client reads them as `rules://` resources.
 
+**About 2000 palettes** come bundled: the console classics (`pico8`,
+`gameboy`, `cga`, `1bit`…) and the most-downloaded palettes on
+[Lospec](https://lospec.com/palette-list), each credited to its author. Ask
+for one by key — `palette` op `preset`, `"endesga-32"` — or by a word of its
+name, and the agent gets the matching keys back. Nothing to download.
+
+**Read it on the web:** [pixeli.pebbly.space/knowledge](https://pixeli.pebbly.space/knowledge)
+shows the same files from the same commit — every rule with its templates
+drawn as pixel pictures, every skill and agent, and a searchable
+[palette catalogue](https://pixeli.pebbly.space/knowledge/palettes).
+
 ## 🧰 Skills
 
 `studio` picks these for you. Call one directly when you know the step you want
@@ -206,7 +217,9 @@ Scored, repeatable runs live on the [benchmark](https://pixeli.pebbly.space/benc
 Everything drawn with the plugin — with its prompts, models and `.aseprite`
 source — is at **[pixeli.pebbly.space](https://pixeli.pebbly.space/)**. The
 benchmark puts every model and plugin version through the same three fixed
-prompts and scores them against written criteria.
+prompts and scores them against written criteria, and the
+[knowledge base](https://pixeli.pebbly.space/knowledge) shows the rulebook
+the agents draw by.
 
 Made something? Ask your agent for `/aseprite:submit` — it packages the files
 and opens the pull request.

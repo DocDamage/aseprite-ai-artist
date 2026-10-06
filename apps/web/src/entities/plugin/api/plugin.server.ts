@@ -60,14 +60,15 @@ export function skills(): Skill[] {
 	};
 	return Object.entries(skillFiles)
 		.map(([file, source]) => {
-			const folder = file.split('/').at(-2)!;
+			const path = `skills/${file.split('/').at(-2)!}/SKILL.md`;
 			const data = frontmatter(source, file);
 			const name = text(data, 'name', file);
 			return {
 				name,
 				title: typeof data.title === 'string' ? data.title : name,
 				description: text(data, 'description', file),
-				url: `${REPO_URL}/blob/main/skills/${folder}/SKILL.md`
+				path,
+				url: `${REPO_URL}/blob/main/${path}`
 			};
 		})
 		.sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name));
@@ -76,12 +77,25 @@ export function skills(): Skill[] {
 export function agents(): Agent[] {
 	return Object.entries(agentFiles)
 		.map(([file, source]) => {
+			const path = `agents/${file.split('/').at(-1)!}`;
 			const data = frontmatter(source, file);
 			return {
 				name: text(data, 'name', file),
 				description: text(data, 'description', file),
-				url: `${REPO_URL}/blob/main/agents/${file.split('/').at(-1)}`
+				path,
+				url: `${REPO_URL}/blob/main/${path}`
 			};
 		})
 		.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * A skill's or agent's markdown with the frontmatter cut off, by repository path (the `path`
+ * of a `Skill` or `Agent`): the body the agent reads, for the knowledge base.
+ */
+export function pluginMarkdown(path: string): string | undefined {
+	const source = (path.startsWith('skills/') ? skillFiles : agentFiles)[
+		`../../../../../../${path}`
+	];
+	return source?.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
 }

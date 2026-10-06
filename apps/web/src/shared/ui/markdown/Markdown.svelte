@@ -1,6 +1,7 @@
 <script lang="ts">
-	// Shows HTML that GitHub rendered from a markdown file (see shared/api/github). That output
-	// is already sanitised by GitHub, which is why it is trusted here; never pass it anything else.
+	// Shows trusted HTML only: what GitHub rendered from a markdown file (shared/api/github),
+	// already sanitised by GitHub, or what entities/knowledge rendered at build time from this
+	// repository's own markdown. Never pass it anything a visitor or a third party wrote.
 	interface Props {
 		html: string;
 		class?: string;

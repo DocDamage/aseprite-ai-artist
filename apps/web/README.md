@@ -25,14 +25,14 @@ pnpm --filter @pebbly/web run build               # prerenders every page + file
 
 [ADR-0007](../../docs/adr/0007-web-feature-sliced-design.md) is the why. Imports go down only, never between slices of one layer, and always through a slice's `index.ts`.
 
-```
+````
 app       layout shell (`layout/`), global CSS and theme tokens (`styles/`), ambient types
-pages     home, plugin, pluginInstall, gallery, benchmarks, benchmark, benchmarkCompare, generation, contribute, notFound: one slice per route; sitemap builds sitemap.xml
-widgets   siteHeader, siteFooter, promptTimeline (used by two pages)
+pages     home, plugin, pluginInstall, gallery, benchmarks, benchmark, benchmarkCompare, generation, contribute, knowledge, knowledgeArticle, notFound: one slice per route; sitemap builds sitemap.xml
+widgets   siteHeader (with the burger menu below lg), siteFooter, promptTimeline (used by two pages)
 features  copyPrompt, filterGenerations
-entities  generation (cards, score meter, gallery data), prompt, benchmark (ranking data)
+entities  generation (cards, score meter, gallery data), prompt, benchmark (ranking data), plugin (skills, agents, docs), knowledge (rulebook, palettes, markdown and ```grid renderer)
 shared    api (GitHub and npm, at build time), ui (shadcn + 8bitcn ports, pixel art and ArtCard, masonry, lightbox, seo, markdown), lib (gif decoder, pixel-fit), config (PICO-8, Pebbly sprites)
-```
+````
 
 A component used by one page is not a widget: it lives in that page's `ui/`. A slice gets promoted when a second slice needs it.
 
@@ -42,14 +42,14 @@ A component used by one page is not a widget: it lives in that page's `ui/`. A s
 
 Layers are Node [subpath imports](https://nodejs.org/api/packages.html#subpath-imports) in `package.json` — SvelteKit 3's replacement for `$lib` and `config.alias`. Vite, TypeScript and steiger all resolve them.
 
-| Import | Path |
-| --- | --- |
-| `#app-shell/*` | `src/app/*` |
-| `#pages/*` | `src/pages/*` |
-| `#widgets/*` | `src/widgets/*` |
-| `#features/*` | `src/features/*` |
-| `#entities/*` | `src/entities/*` |
-| `#shared/*` | `src/shared/*` |
+| Import         | Path             |
+| -------------- | ---------------- |
+| `#app-shell/*` | `src/app/*`      |
+| `#pages/*`     | `src/pages/*`    |
+| `#widgets/*`   | `src/widgets/*`  |
+| `#features/*`  | `src/features/*` |
+| `#entities/*`  | `src/entities/*` |
+| `#shared/*`    | `src/shared/*`   |
 
 A subpath import names the file, with the extension the compiled module will have: a slice is `#pages/home/index.js`, its server barrel `#pages/home/index.server.js`, a module `#shared/lib/site.js`, a component `#shared/ui/pixel/PixelImage.svelte`. TypeScript maps `.js` to the `.ts` source. `$app` stays SvelteKit's own (`$app/paths`, `$app/state`), so the app layer is `#app-shell`.
 
@@ -73,11 +73,15 @@ These are the only pages that are not prerendered. They are Vercel ISR routes (`
 
 ## Sitemap
 
-`/sitemap.xml` is a sitemap index over `/sitemaps/{pages,benchmarks,gallery}.xml` (`pages/sitemap`). A new top-level page goes into the `pages` list by hand.
+`/sitemap.xml` is a sitemap index over `/sitemaps/{pages,benchmarks,knowledge,gallery}.xml` (`pages/sitemap`). A new top-level page goes into the `pages` list by hand.
 
 ## Packs
 
 A pack (`gallery/packs/<slug>/pack.yaml`, [ADR-0012](../../docs/adr/0012-gallery-packs.md)) stands in for its pieces on the gallery and home walls: `entities/pack/lib/wall.ts` merges loose pieces and packs into one newest-first wall, and `WallTileCard` draws either kind. `/packs/<slug>` (`pages/pack`) plays the opening as CSS animation whose resting style is the open fan, so reduced motion, a click to skip, and a page without JavaScript all show the same thing; the fan is `aria-hidden` and the card list under it is the way in for the keyboard and screen readers.
+
+## Knowledge base
+
+`/knowledge` is the plugin's rulebook (`rules/*.md`, grouped by ADR-0011's bands), its skills, agents and bundled palettes; `/knowledge/{rules,skills,agents}/<name>` is one document. Like `/plugin`, the markdown is bundled from the checkout with `import.meta.glob`, never fetched, and rendered at build time with `marked` (`entities/knowledge/lib/markdown.ts`): ` ```grid ` blocks become pixel pictures with their legend, `rules://` and `skill://` references link to the page they name, and relative links resolve to a site page or the file on GitHub. The source is the repository's own, which is why the HTML is printed unsanitised.
 
 ## llms.txt
 

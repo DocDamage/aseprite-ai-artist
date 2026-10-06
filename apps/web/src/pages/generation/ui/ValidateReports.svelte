@@ -12,17 +12,31 @@
 {#if reports.length > 0}
 	<section aria-labelledby="validate">
 		<h2 id="validate" class="text-sm sm:text-base">Validate reports</h2>
-		<p class="text-muted-foreground mt-2 text-sm">What the plugin's own lint said at the end of each step.</p>
+		<p class="mt-2 text-sm text-muted-foreground">
+			What the plugin's own lint said at the end of each step.
+		</p>
 		<ul class="mt-5 space-y-3">
 			{#each reports as report, i (i)}
-				<li class="border-pixel flex flex-wrap items-center gap-x-4 gap-y-1 border-l-4 py-1 pl-4 text-sm">
+				<li
+					class="flex flex-wrap items-center gap-x-4 gap-y-1 border-l-4 border-pixel py-1 pl-4 text-sm"
+				>
 					<span class="font-medium">Step {report.step}</span>
-					<span class={['inline-flex items-center gap-1 font-medium', report.passed ? '' : 'text-destructive']}>
-						{#if report.passed}<CheckIcon class="size-4" aria-hidden="true" />Passed{:else}<CloseIcon class="size-4" aria-hidden="true" />Failed{/if}
+					<span
+						class={[
+							'inline-flex items-center gap-1 font-medium',
+							report.passed ? '' : 'text-destructive'
+						]}
+					>
+						{#if report.passed}<CheckIcon
+								class="size-4"
+								aria-hidden="true"
+							/>Passed{:else}<CloseIcon class="size-4" aria-hidden="true" />Failed{/if}
 					</span>
-					{#if report.score !== undefined}<span class="tabular-nums">Score {report.score}</span>{/if}
+					{#if report.score !== undefined}<span class="tabular-nums">Score {report.score}</span
+						>{/if}
 					<span class="text-muted-foreground tabular-nums">
-						{report.errors} {report.errors === 1 ? 'error' : 'errors'}, {report.warnings}
+						{report.errors}
+						{report.errors === 1 ? 'error' : 'errors'}, {report.warnings}
 						{report.warnings === 1 ? 'warning' : 'warnings'}
 					</span>
 				</li>

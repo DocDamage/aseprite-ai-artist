@@ -248,12 +248,11 @@
 					<h3 class="mt-3 font-sans text-lg leading-snug font-semibold">{skill.title}</h3>
 					<p class="mt-2 text-sm text-muted-foreground">{skill.description}</p>
 					<a
-						href={skill.url}
-						rel="noopener"
+						href={resolve('/knowledge/[section]/[slug]', { section: 'skills', slug: skill.name })}
 						class="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm text-foreground underline underline-offset-4"
 					>
 						<ScriptIcon aria-hidden="true" />
-						Read SKILL.md<span class="sr-only">: {skill.title}</span>
+						Read the skill<span class="sr-only">: {skill.title}</span>
 					</a>
 				</li>
 			{/each}
@@ -275,14 +274,20 @@
 					</h3>
 					<p class="mt-3 text-sm text-muted-foreground">{agent.description}</p>
 					<a
-						href={agent.url}
-						rel="noopener"
+						href={resolve('/knowledge/[section]/[slug]', { section: 'agents', slug: agent.name })}
 						class="mt-3 inline-block text-sm underline underline-offset-4"
 						>Agent definition<span class="sr-only">: {agent.name}</span></a
 					>
 				</li>
 			{/each}
 		</ul>
+		<p class="mt-8 max-w-[62ch] text-muted-foreground">
+			Skills and agents both work from the
+			<a href={resolve('/knowledge')} class="text-foreground underline underline-offset-4"
+				>pixel-art knowledge base</a
+			>: rules for lines, colour, characters, animation and effects, with the pixel templates they
+			copy from.
+		</p>
 	</section>
 
 	<section class="pt-16" aria-labelledby="readme-heading">

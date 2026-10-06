@@ -1,5 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { gallery } from '#entities/generation/index.server.js';
+import { knowledgePath } from '#entities/knowledge/index.js';
+import { rules } from '#entities/knowledge/index.server.js';
+import { agents, skills } from '#entities/plugin/index.server.js';
 import { SITE_URL } from '#shared/lib/site.js';
 
 interface Entry {
@@ -29,12 +32,19 @@ function sections(): Record<string, Entry[]> {
 			{ path: '/plugin/install' },
 			{ path: '/gallery', lastmod: newest },
 			{ path: '/benchmarks' },
-			{ path: '/contribute' }
+			{ path: '/contribute' },
+			{ path: '/knowledge' },
+			{ path: '/knowledge/palettes' }
 		],
 		benchmarks: prompts.flatMap((prompt) => [
 			{ path: `/benchmarks/${prompt.id}` },
 			{ path: `/benchmarks/${prompt.id}/compare` }
 		]),
+		knowledge: [
+			...rules().map((rule) => ({ path: knowledgePath('rules', rule.slug) })),
+			...skills().map((skill) => ({ path: knowledgePath('skills', skill.name) })),
+			...agents().map((agent) => ({ path: knowledgePath('agents', agent.name) }))
+		],
 		gallery: [
 			...packs.map((pack) => ({ path: `/packs/${pack.id}`, lastmod: pack.date })),
 			...generations.map((generation) => ({

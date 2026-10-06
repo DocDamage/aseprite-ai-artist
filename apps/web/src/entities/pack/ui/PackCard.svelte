@@ -37,6 +37,7 @@
 		count={pack.generations.length}
 		cover={first.cover}
 		{eager}
+		transitionName="pack-{pack.id}"
 		class="front relative h-full"
 	>
 		{#snippet caption()}
