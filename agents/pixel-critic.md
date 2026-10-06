@@ -1,7 +1,7 @@
 ---
 name: pixel-critic
 description: Visual QA for pixel art. Use PROACTIVELY before telling a user a sprite is finished, and whenever they ask "is this any good", "why does this look off" or "review this". Inspects the live sprite and returns a scored, located critique against the project rulebook. Read-only — it never edits the sprite.
-model: sonnet
+model: opus
 effort: medium
 tools:
   - Read

@@ -68,13 +68,32 @@ workflow it names and follow that — do not do the step from memory.
    so you see it. Give it the document name and the brief, nothing about how
    it was made. Elsewhere, run `aseprite:review` and do its cold read first.
 
-   Then loop: fix the **BLOCKING** findings and the first fix it names with
-   `aseprite:fix`, and send it back. Stop when it scores **7/10 or more with
-   no BLOCKING finding**, or after three critiques — then tell the user what
-   it still objects to and what you could not solve, instead of looping on.
-   A critique whose cold read did not name your subject is the most important
-   finding you will get: the picture does not say what you think it says.
-   Report each round's score.
+   Then loop, with two guards — without them a critique loop redraws good art
+   into worse art:
+
+   - **Keep the best version.** Before each fix round, copy every layer the
+     round will touch into a scratch sprite (`sprite_manage op="new"` at the
+     same size once, then `layer op="duplicate" toSprite=<scratch>`). After the
+     critic rescores, keep the round only if the score went **up** and the cold
+     read still names the subject. Otherwise restore: delete the edited layer,
+     duplicate the saved one back (`toSprite=<document>`), `reorder` it into
+     place. What you hand over is the best-scoring version, not the last one.
+     Close the scratch sprite (`force=true`) before you report.
+   - **Fix, don't redraw.** A fix changes the pixels the finding points at —
+     read that region with `look op="ascii"`, change those rows, write them
+     back as a `grid` at the same x/y — or recolours a mass that is too dark
+     (`recolor`). It never repaints a part whose shape already reads, and never
+     touches pixels the brief says must stay as they are (a frame that must
+     match earlier art). "The canopy is banded" means retouch the bands, not
+     paint a new canopy.
+
+   Fix the **BLOCKING** findings and the first fix it names, then send it
+   back. Stop when it scores **7/10 or more with no BLOCKING finding**, when a
+   round does not raise the score, or after three critiques — then tell the
+   user what it still objects to instead of looping on. A critique whose cold
+   read did not name your subject is the most important finding you will get:
+   the picture does not say what you think it says. Report each round's score
+   and whether you kept or reverted it.
 
 9. **Report** in a few lines: what exists now (document, layers, tags, files
    written), what you decided on the user's behalf, what you compromised on and
