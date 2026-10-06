@@ -90,7 +90,7 @@ export function registerCraftTools(server: McpServer, live: AsepriteLink): void 
     {
       title: "Validate",
       description:
-        "Lint a sprite against pixel-art rules and report concrete, located problems. Checks: off-palette colours, orphan/stray pixels, broken or doubled outlines, banding, unintentional anti-aliasing on a hard-edged sprite, odd-pixel asymmetry, empty layers, untagged frames, inconsistent frame timing, and cross-frame volume drift in an animation. " +
+        "Lint a sprite against pixel-art rules and report concrete, located problems. Checks: off-palette colours, orphan/stray pixels, broken or doubled outlines, banding, semi-transparent (soft or resized) pixels, empty layers, untagged frames and uniform frame timing; `expect` adds per-layer frame ranges and layers that must not overlap. Symmetry and cross-frame volume drift are not checked — judge those with `look` op 'ascii' and 'filmstrip'. " +
         "Run this before telling the user a sprite is finished. It answers 'is this actually done' with evidence rather than optimism.",
       inputSchema: {
         sprite: targetShape.sprite,

@@ -1554,6 +1554,100 @@ check("validate skips hidden layers and says that it did", function()
   end)
 end)
 
+check("validate with no checks named runs the antialiasing check too", function()
+  withMockSprite(8, 8, ColorMode.RGB, function(mock)
+    -- A half-transparent pixel: what a soft brush or a resize leaves behind.
+    local cel = mock.cels[1]
+    local img = cel.image:clone()
+    img:drawPixel(3, 3, app.pixelColor.rgba(255, 0, 77, 128))
+    cel.image = img
+
+    local report = call("validate.run", {})
+    local found = false
+    for _, f in ipairs(report.findings) do
+      if f.check == "antialiasing" then found = true end
+    end
+    assert(found, "the default validate run skipped the antialiasing check")
+  end)
+end)
+
+check("draw ellipse reaches every edge of its box and stays symmetric, odd and even sizes", function()
+  -- An even box used to come out two pixels short on each axis (4×4 → 2×2).
+  for size = 3, 16 do
+    withMockSprite(20, 20, ColorMode.RGB, function(mock)
+      call("draw.batch", { ops = { { kind = "ellipse", rect = { x = 1, y = 2, width = size, height = size },
+        color = "#000000", fill = "#000000" } } })
+      local img = mock.cels[1].image
+      local pos = mock.cels[1].position
+      local minX, minY, maxX, maxY = math.huge, math.huge, -1, -1
+      local ink = {}
+      for y = 0, img.height - 1 do
+        for x = 0, img.width - 1 do
+          if app.pixelColor.rgbaA(img:getPixel(x, y)) > 0 then
+            local gx, gy = x + pos.x, y + pos.y
+            ink[gx .. "," .. gy] = true
+            minX, minY = math.min(minX, gx), math.min(minY, gy)
+            maxX, maxY = math.max(maxX, gx), math.max(maxY, gy)
+          end
+        end
+      end
+      assertEq(minX .. "," .. minY .. "," .. maxX .. "," .. maxY,
+        1 .. "," .. 2 .. "," .. (size) .. "," .. (size + 1), "ellipse " .. size .. " bounds")
+      for key in pairs(ink) do
+        local x, y = key:match("(%-?%d+),(%-?%d+)")
+        local mx = 1 + (size - 1) - (tonumber(x) - 1)
+        assert(ink[mx .. "," .. y], "ellipse " .. size .. " is not mirror-symmetric at " .. key)
+      end
+    end)
+  end
+end)
+
+check("shade_color pulls shadows toward blue and lights toward yellow on both sides of the wheel", function()
+  -- The old fixed-direction rotation sent red shadows toward orange.
+  local function arc(a, b) return math.abs(((b - a) % 360 + 540) % 360 - 180) end
+  local function hue(c)
+    local r, g, b = c.red / 255, c.green / 255, c.blue / 255
+    local mx, mn = math.max(r, g, b), math.min(r, g, b)
+    local d = mx - mn
+    if mx == r then return ((g - b) / d % 6) * 60 elseif mx == g then return ((b - r) / d + 2) * 60 end
+    return ((r - g) / d + 4) * 60
+  end
+  for _, hex in ipairs({ "#c04030", "#40a040", "#8040c0", "#3050c0", "#c0a030" }) do
+    local base = A.hexToColor(hex)
+    local h = hue(base)
+    assert(arc(hue(A.shadeColor(base, -0.4)), 240) < arc(h, 240), hex .. " shadow did not move toward blue")
+    if arc(h, 60) > 1 then
+      assert(arc(hue(A.shadeColor(base, 0.4)), 60) < arc(h, 60), hex .. " light did not move toward yellow")
+    end
+  end
+end)
+
+check("draw ellipse row widths match the rulebook circle table", function()
+  local cases = {
+    { 3, 3, "3,3,3" }, { 6, 6, "4,6,6,6,6,4" }, { 10, 10, "4,8,8,10,10,10,10,8,8,4" },
+    { 16, 16, "6,10,12,14,14,16,16,16,16,16,16,14,14,12,10,6" },
+    { 16, 8, "8,12,14,16,16,14,12,8" }, { 32, 16, "12,18,24,26,28,30,32,32,32,32,30,28,26,24,18,12" },
+  }
+  for _, c in ipairs(cases) do
+    withMockSprite(40, 20, ColorMode.RGB, function(mock)
+      call("draw.batch", { ops = { { kind = "ellipse", rect = { x = 0, y = 0, width = c[1], height = c[2] },
+        color = "#000000", fill = "#000000" } } })
+      local img, pos = mock.cels[1].image, mock.cels[1].position
+      local rows = {}
+      for y = 0, c[2] - 1 do
+        local w = 0
+        for x = 0, c[1] - 1 do
+          local ix, iy = x - pos.x, y - pos.y
+          if ix >= 0 and iy >= 0 and ix < img.width and iy < img.height
+             and app.pixelColor.rgbaA(img:getPixel(ix, iy)) > 0 then w = w + 1 end
+        end
+        rows[#rows + 1] = w
+      end
+      assertEq(table.concat(rows, ","), c[3], c[1] .. "x" .. c[2] .. " row widths")
+    end)
+  end
+end)
+
 -- New behaviour added alongside the op contract: find_layer's group/child
 -- path resolution, look.onion, cel tween/oscillate, sprite_manage slices,
 -- palette.extract, transform outline side/diagonals, validate 'expect', and

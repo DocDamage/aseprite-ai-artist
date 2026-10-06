@@ -6,6 +6,7 @@ import {
   deltaE,
   hueShiftShade,
   parseHex,
+  rgbToHsl,
   rgbToLab,
   snapToPalette,
   toHex,
@@ -61,6 +62,21 @@ test("shading a colour darker also cools its hue", () => {
   const redDrop = base.r - shadow.r;
   const blueDrop = base.b - shadow.b;
   assert.ok(redDrop > blueDrop, `expected red to fall faster than blue (${redDrop} vs ${blueDrop})`);
+});
+
+test("shading pulls hues toward blue in shadow and yellow in light, whichever side of the wheel they start on", () => {
+  // A fixed rotation direction passes for some hues and inverts others: red
+  // shadows went orange. Check hues on both sides of the shadow and light targets.
+  const arcTo = (from: number, to: number) => Math.abs(((((to - from) % 360) + 540) % 360) - 180);
+
+  for (const hex of ["#c04030", "#40a040", "#8040c0", "#3050c0", "#c0a030"]) {
+    const base = parseHex(hex);
+    const h = rgbToHsl(base).h;
+    const shadow = rgbToHsl(hueShiftShade(base, { amount: -0.4 })).h;
+    const light = rgbToHsl(hueShiftShade(base, { amount: 0.4 })).h;
+    assert.ok(arcTo(shadow, 240) < arcTo(h, 240), `${hex} shadow should move toward blue`);
+    if (arcTo(h, 60) > 1) assert.ok(arcTo(light, 60) < arcTo(h, 60), `${hex} highlight should move toward yellow`);
+  }
 });
 
 test("buildRamp centres on the base colour and returns the requested length", () => {

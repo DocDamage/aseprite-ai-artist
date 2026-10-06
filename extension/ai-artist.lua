@@ -548,20 +548,23 @@ function Draw.rect(img, ox, oy, r, outline, fill)
 end
 
 function Draw.ellipse(img, ox, oy, r, outline, fill)
-  -- Midpoint ellipse over the bounding box, scan-filled row by row so an
+  -- Inscribed ellipse sampled at pixel centres, scan-filled row by row so an
   -- odd-width ellipse stays symmetric — asymmetry is very visible at 16px.
+  -- The radius is half the box and the test point is the pixel's centre: a
+  -- radius of (width-1)/2 measured to pixel corners left an even-sized box
+  -- two pixels short (a 4×4 box drew a 2×2 square).
   local count = 0
-  local cx = r.x + (r.width - 1) / 2
-  local cy = r.y + (r.height - 1) / 2
-  local rx = (r.width - 1) / 2
-  local ry = (r.height - 1) / 2
-  if rx < 0.5 or ry < 0.5 then
+  if r.width < 2 or r.height < 2 then
     return Draw.rect(img, ox, oy, r, outline, fill)
   end
+  local cx = r.x + r.width / 2
+  local cy = r.y + r.height / 2
+  local rx = r.width / 2
+  local ry = r.height / 2
 
   local function inside(x, y)
-    local nx = (x - cx) / rx
-    local ny = (y - cy) / ry
+    local nx = (x + 0.5 - cx) / rx
+    local ny = (y + 0.5 - cy) / ry
     return nx * nx + ny * ny <= 1.0
   end
 
@@ -2578,11 +2581,19 @@ local function clamp01(v) return math.max(0, math.min(1, v)) end
 -- Shadows rotate toward blue and desaturate slightly; highlights rotate toward
 -- yellow-orange and saturate. A pure luminance change is the tell of art that
 -- was made by moving a brightness slider.
+-- Rotation goes toward a target hue (shadows 240°, highlights 60°) along the
+-- shorter arc: a fixed "+N° for shadows" sends a red ramp's shadows toward
+-- orange, the opposite of hue shifting. Mirrors hueShiftShade in color.ts.
+local function rotate_hue_toward(h, target, degrees)
+  local delta = ((target - h) % 360 + 540) % 360 - 180
+  local step = math.min(math.abs(delta), degrees)
+  if delta < 0 then step = -step end
+  return ((h + step) % 360 + 360) % 360
+end
+
 local function shade_color(color, amount)
   local h, s, l = rgb_to_hsl(color)
-  local sign = amount > 0 and 1 or -1
-  local shift = -sign * 25 * math.abs(amount)
-  local new_h = ((h + shift) % 360 + 360) % 360
+  local new_h = rotate_hue_toward(h, amount < 0 and 240 or 60, 25 * math.abs(amount))
   local new_l = clamp01(l + amount * 0.5)
   local new_s = clamp01(s + (amount > 0 and 0.06 or -0.04) * math.abs(amount) * 2)
   return hsl_to_rgb(new_h, new_s, new_l, color.alpha)
@@ -3669,8 +3680,10 @@ end
 H["validate.run"] = function(args)
   local s = find_sprite(args.sprite)
   local wanted = {}
+  -- The default is every check the schema offers: "omit to run everything"
+  -- that quietly skips one is a check the agent believes it ran.
   for _, c in ipairs(args.checks or
-    { "palette", "strays", "outline", "banding", "layers", "animation", "export_readiness" }) do
+    { "palette", "strays", "outline", "banding", "antialiasing", "layers", "animation", "export_readiness" }) do
     wanted[c] = true
   end
 

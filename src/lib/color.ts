@@ -111,19 +111,33 @@ export interface HueShiftOptions {
   hueShiftDegrees?: number;
 }
 
+/** Where shading pulls a hue: shadows toward blue, highlights toward yellow. */
+const SHADOW_HUE = 240;
+const LIGHT_HUE = 60;
+
+/** Rotate `h` toward `target` along the shorter arc, by at most `degrees`. */
+export function rotateHueToward(h: number, target: number, degrees: number): number {
+  const delta = ((((target - h) % 360) + 540) % 360) - 180; // −180 … 180
+  const step = Math.sign(delta) * Math.min(Math.abs(delta), degrees);
+  return (((h + step) % 360) + 360) % 360;
+}
+
 /**
  * Shade a colour the way a pixel artist does, not the way a brightness slider
  * does: shadows rotate toward blue and desaturate slightly, highlights rotate
- * toward yellow/orange and saturate. Flat luminance ramps are the single most
- * common tell of machine-made pixel art.
+ * toward yellow and saturate. Flat luminance ramps are the single most common
+ * tell of machine-made pixel art.
+ *
+ * The rotation goes toward a target hue, not a fixed direction round the
+ * wheel: a fixed "+N° for shadows" sends red shadows toward orange and yellow,
+ * which is the opposite of what a red ramp needs.
  */
 export function hueShiftShade(colour: Rgb, opts: HueShiftOptions): Rgb {
   const { amount } = opts;
   const degrees = opts.hueShiftDegrees ?? 25;
   const { h, s, l } = rgbToHsl(colour);
 
-  const shift = -Math.sign(amount) * degrees * Math.abs(amount);
-  const newHue = (((h + shift) % 360) + 360) % 360;
+  const newHue = rotateHueToward(h, amount < 0 ? SHADOW_HUE : LIGHT_HUE, degrees * Math.abs(amount));
   const newLight = clamp01(l + amount * 0.5);
   const newSat = clamp01(s + (amount > 0 ? 0.06 : -0.04) * Math.abs(amount) * 2);
 
