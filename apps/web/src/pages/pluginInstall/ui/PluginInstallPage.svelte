@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import ArrowLeftIcon from '~icons/pixelarticons/arrow-left';
+	import BrushIcon from '~icons/pixelarticons/brush';
 	import ExternalLinkIcon from '~icons/pixelarticons/external-link';
 	import { CopyButton } from '#features/copyPrompt/index.js';
 	import { Markdown } from '#shared/ui/markdown/index.js';
@@ -31,7 +32,8 @@
 				'/plugin marketplace add with-pebbly/aseprite-ai-artist',
 				'/plugin install aseprite@aseprite-ai-artist'
 			],
-			note: 'Type these in a Claude Code session.'
+			note: 'Type these in a Claude Code session.',
+			prompt: '>'
 		},
 		{
 			name: 'omp',
@@ -39,12 +41,14 @@
 				'omp plugin marketplace add with-pebbly/aseprite-ai-artist',
 				'omp plugin install aseprite@aseprite-ai-artist'
 			],
-			note: 'Run these in your shell.'
+			note: 'Run these in your shell.',
+			prompt: '$'
 		},
 		{
 			name: 'Codex, Gemini CLI, Cursor, VS Code, Windsurf',
 			commands: [`npx ${NPM_PACKAGE} install codex`],
-			note: 'Swap codex for gemini or cursor, or pass --all. Your config is backed up first; --dry-run shows the change.'
+			note: 'Swap codex for gemini or cursor, or pass --all. Your config is backed up first; --dry-run shows the change.',
+			prompt: '$'
 		}
 	];
 
@@ -101,31 +105,43 @@
 	];
 </script>
 
-{#snippet command(text: string)}
-	<div class="mt-4 flex flex-wrap items-center gap-4">
-		<pre
-			class="min-w-0 flex-1 overflow-x-auto border-4 border-pixel bg-card px-4 py-3 font-mono text-sm"><code
-				>{text}</code
+<!-- A command as a framed terminal: the title bar carries the dots, the shell or agent it is for,
+     and the copy button. The prompt glyph is decoration, outside the copied text. -->
+{#snippet command(text: string, title: string, prompt: string)}
+	<div class="pixel-frame mt-4 bg-card [--frame:4px]">
+		<div class="flex items-center gap-2 border-b-4 border-pixel py-1 pr-2 pl-4">
+			<span class="size-2.5 bg-pico-red" aria-hidden="true"></span>
+			<span class="size-2.5 bg-pico-yellow" aria-hidden="true"></span>
+			<span class="size-2.5 bg-pico-green" aria-hidden="true"></span>
+			<span class="ml-2 min-w-0 flex-1 truncate retro text-[0.625rem] text-muted-foreground"
+				>{title}</span
+			>
+			<CopyButton {text} label="Copy" done="Copied: {text}" />
+		</div>
+		<pre class="overflow-x-auto px-4 py-4 font-mono text-sm"><code
+				><span class="text-accent-ink select-none" aria-hidden="true">{prompt} </span>{text}</code
 			></pre>
-		<CopyButton {text} label="Copy" done="Copied: {text}" />
 	</div>
 {/snippet}
 
 <Seo title="Install {PLUGIN_NAME}" {description} {jsonLd} />
 
-<div class="mx-auto max-w-3xl px-4 pt-10 sm:px-6">
+<header class="page-hero mx-auto max-w-3xl px-4 pt-10 sm:px-6">
 	<nav aria-label="Breadcrumb">
 		<a
 			href={resolve('plugin')}
-			class="inline-flex h-10 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+			class="inline-flex h-11 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
 		>
 			<ArrowLeftIcon aria-hidden="true" />
 			{PLUGIN_NAME}
 		</a>
 	</nav>
 
-	<h1 class="mt-4 text-2xl leading-snug sm:text-4xl">Install {PLUGIN_NAME}</h1>
-	<p class="mt-5 max-w-[62ch] text-lg text-muted-foreground">
+	<p class="eyebrow mt-6">Quick start</p>
+	<h1 class="title-depth mt-5 text-2xl leading-snug sm:text-4xl sm:leading-snug">
+		Install {PLUGIN_NAME}
+	</h1>
+	<p class="lead mt-5">
 		You need <a
 			href="https://www.aseprite.org/"
 			rel="noopener"
@@ -133,29 +149,44 @@
 		>
 		1.3 or later and Node.js 22.6 or later, on macOS, Linux or Windows. Three commands, about a minute.
 	</p>
+</header>
 
-	<ol class="mt-12 space-y-12">
+<div class="mx-auto max-w-3xl px-4 sm:px-6">
+	<!-- The stepper: a dashed pixel rail runs from gem to gem. Its first and last pixels stop short
+	     of each gem so the rail never touches the numbers. -->
+	<ol class="mt-14">
 		{#each steps as step, index (step.id)}
-			<li id={step.id} class="grid scroll-mt-24 grid-cols-[auto_minmax(0,1fr)] gap-x-5">
-				<span
-					class="grid size-10 place-items-center bg-primary retro text-sm text-primary-foreground"
-					aria-hidden="true"
-				>
-					{index + 1}
+			<li
+				id={step.id}
+				class="relative grid scroll-mt-24 grid-cols-[auto_minmax(0,1fr)] gap-x-5 pb-14 last:pb-0 sm:gap-x-7"
+			>
+				{#if index < steps.length - 1}
+					<span
+						class="absolute top-[3.75rem] bottom-2 left-[22px] w-1 bg-[repeating-linear-gradient(180deg,var(--pixel)_0_8px,transparent_8px_16px)]"
+						aria-hidden="true"
+					></span>
+				{/if}
+				<span class="z-10 h-fit" aria-hidden="true">
+					<span class="gem grid size-12 place-items-center retro text-base">{index + 1}</span>
 				</span>
-				<div>
+				<div class="min-w-0 pt-2">
 					<h2 class="text-sm leading-relaxed sm:text-base">{step.title}</h2>
 					<p class="mt-3 text-muted-foreground">{step.body}</p>
 					{#if step.command}
-						{@render command(step.command)}
+						{@render command(step.command, 'shell', '$')}
 					{:else}
-						<div class="mt-6 space-y-8">
+						<div class="mt-6 space-y-6">
 							{#each agents as agent (agent.name)}
-								<section aria-labelledby="agent-{agent.name}">
-									<h3 id="agent-{agent.name}" class="text-base font-normal">{agent.name}</h3>
+								<section
+									class="border-l-4 border-dashed border-pixel pl-4"
+									aria-labelledby="agent-{agent.name}"
+								>
+									<h3 id="agent-{agent.name}" class="text-sm leading-relaxed font-normal">
+										{agent.name}
+									</h3>
 									<p class="mt-1 text-sm text-muted-foreground">{agent.note}</p>
 									{#each agent.commands as line (line)}
-										{@render command(line)}
+										{@render command(line, agent.name, agent.prompt)}
 									{/each}
 								</section>
 							{/each}
@@ -166,36 +197,54 @@
 		{/each}
 	</ol>
 
-	<section class="mt-14 border-l-6 border-pixel pl-4" aria-labelledby="first-prompt">
-		<h2 id="first-prompt" class="text-sm leading-relaxed">Your first drawing</h2>
-		<p class="mt-3 text-muted-foreground">
-			Open a sprite in Aseprite and ask your agent for something, for example
-			<em class="text-foreground"
-				>"Draw me a 32×32 knight in the PICO-8 palette, then give him a 4-frame idle."</em
-			>
-			In Claude Code, <code class="text-foreground">/aseprite:studio</code> runs the whole job.
-		</p>
+	<!-- A callout, not a step: the accent gem marks it as the payoff. -->
+	<section class="mt-20" aria-labelledby="first-prompt">
+		<div class="pixel-frame flex gap-4 bg-card p-5 sm:p-6">
+			<span class="gem grid size-12 shrink-0 place-items-center" aria-hidden="true">
+				<BrushIcon />
+			</span>
+			<div>
+				<h2 id="first-prompt" class="text-sm leading-relaxed">Your first drawing</h2>
+				<p class="mt-3 text-muted-foreground">
+					Open a sprite in Aseprite and ask your agent for something, for example
+					<em class="text-foreground"
+						>"Draw me a 32×32 knight in the PICO-8 palette, then give him a 4-frame idle."</em
+					>
+					In Claude Code, <code class="text-foreground">/aseprite:studio</code> runs the whole job.
+				</p>
+			</div>
+		</div>
 	</section>
 </div>
 
-<section class="mx-auto max-w-4xl px-4 pt-16 sm:px-6" aria-labelledby="guide-heading">
+<section class="mx-auto max-w-4xl px-4 pt-24 sm:px-6" aria-labelledby="guide-heading">
 	<div class="flex flex-wrap items-baseline justify-between gap-4">
-		<h2 id="guide-heading" class="text-lg sm:text-xl">Full install guide</h2>
+		<h2 id="guide-heading" class="section-title text-lg sm:text-2xl">Full install guide</h2>
 		<a
 			href={INSTALL_DOC_URL}
 			rel="noopener"
-			class="inline-flex items-center gap-1.5 text-sm underline underline-offset-4"
+			class="inline-flex min-h-11 items-center gap-1.5 text-sm underline underline-offset-4"
 		>
 			View on GitHub
 			<ExternalLinkIcon aria-hidden="true" />
 		</a>
 	</div>
-	<p class="mt-4 max-w-[62ch] text-muted-foreground">
+	<p class="mt-5 max-w-[62ch] text-muted-foreground">
 		Every agent, project scope, headless mode, troubleshooting and uninstalling.
 	</p>
 	{#if guide}
-		<div class="mt-8 border-4 border-pixel bg-card px-5 py-2 sm:px-10 sm:py-6">
-			<Markdown html={guide} />
+		<div class="mt-8">
+			<div class="pixel-frame bg-card">
+				<div class="flex items-center gap-2 border-b-4 border-pixel px-4 py-2.5">
+					<span class="size-2.5 bg-pico-red" aria-hidden="true"></span>
+					<span class="size-2.5 bg-pico-yellow" aria-hidden="true"></span>
+					<span class="size-2.5 bg-pico-green" aria-hidden="true"></span>
+					<span class="ml-2 truncate retro text-[0.625rem] text-muted-foreground">INSTALL.md</span>
+				</div>
+				<div class="px-5 py-2 sm:px-10 sm:py-6">
+					<Markdown html={guide} />
+				</div>
+			</div>
 		</div>
 	{:else}
 		<p class="mt-6">

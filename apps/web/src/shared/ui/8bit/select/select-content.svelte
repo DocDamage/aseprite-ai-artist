@@ -17,7 +17,7 @@
 	class={cn(
 		font !== 'normal' && 'retro',
 		className,
-		'relative mt-1 -ml-1 rounded-none border-4 border-pixel'
+		'relative mt-1 -ml-1 rounded-none border-4 border-pixel bg-popover shadow-[4px_4px_0_var(--pixel)]'
 	)}
 >
 	{@render children?.()}

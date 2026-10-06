@@ -7,6 +7,12 @@
 	let { class: className, children, ...restProps }: HTMLAttributes<HTMLTableRowElement> = $props();
 </script>
 
-<ShadcnTableRow {...restProps} class={cn(className, 'border-b-4 border-dashed border-pixel')}>
+<ShadcnTableRow
+	{...restProps}
+	class={cn(
+		className,
+		'border-b-4 border-dashed border-pixel transition-colors hover:bg-muted/60 data-[state=selected]:bg-muted'
+	)}
+>
 	{@render children?.()}
 </ShadcnTableRow>

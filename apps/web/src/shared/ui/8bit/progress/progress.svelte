@@ -36,7 +36,7 @@
 	<ProgressPrimitive.Root
 		data-slot="progress"
 		class={cn(
-			'relative w-full overflow-hidden bg-primary/20',
+			'relative w-full overflow-hidden bg-primary/20 [background-image:repeating-linear-gradient(90deg,transparent_0_6px,var(--background)_6px_8px)]',
 			heightClass,
 			font !== 'normal' && 'retro'
 		)}
@@ -60,7 +60,7 @@
 			<div
 				data-slot="progress-indicator"
 				class={cn(
-					'h-full w-full flex-1 transition-all',
+					'h-full w-full flex-1 [mask-image:repeating-linear-gradient(90deg,#000_0_6px,transparent_6px_8px)] transition-transform duration-300 ease-[steps(8,end)] motion-reduce:transition-none',
 					isClass ? progressBg : !progressBg && 'bg-primary'
 				)}
 				style:background-color={progressBg && !isClass ? progressBg : undefined}

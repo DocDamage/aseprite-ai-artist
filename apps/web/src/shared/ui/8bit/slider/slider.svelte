@@ -32,7 +32,10 @@
 	>
 		{#snippet children({ thumbItems })}
 			<span data-slot="slider-track" class="relative h-2 w-full grow overflow-hidden bg-secondary">
-				<SliderPrimitive.Range data-slot="slider-range" class="absolute h-full bg-primary" />
+				<SliderPrimitive.Range
+					data-slot="slider-range"
+					class="absolute h-full bg-primary [mask-image:repeating-linear-gradient(90deg,#000_0_6px,transparent_6px_8px)]"
+				/>
 			</span>
 			{#each thumbItems as thumb (thumb.index)}
 				<SliderPrimitive.Thumb
@@ -40,7 +43,7 @@
 					aria-label={label}
 					aria-valuetext={valueText}
 					data-slot="slider-thumb"
-					class="block size-5 cursor-grab border-2 border-foreground bg-foreground transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:cursor-grabbing disabled:pointer-events-none disabled:opacity-50 dark:border-ring dark:bg-ring"
+					class="block size-5 cursor-grab border-2 border-accent-foreground bg-accent transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:cursor-grabbing disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none"
 				/>
 			{/each}
 		{/snippet}

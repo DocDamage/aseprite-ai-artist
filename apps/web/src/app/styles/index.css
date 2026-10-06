@@ -68,6 +68,12 @@
 	/* Pixel borders in a deep lavender ink, not near-black: full-strength foreground made every
 	   frame, button and divider read as a heavy charcoal outline on the light ground. */
 	--pixel: #574c70;
+
+	/* The light the page sits in (.atmosphere): one faint lavender wash from the top. */
+	--glow-1: rgb(131 118 156 / 0.16);
+	/* Hard pixel shadow under display headings (.title-depth). */
+	--title-depth: #d9d0e9;
+	--scanline: transparent;
 }
 
 .dark {
@@ -102,6 +108,11 @@
 	--canvas-b: #16141d;
 	--grid-dot: rgb(241 237 246 / 0.07);
 	--pixel: var(--ring);
+
+	--glow-1: rgb(131 118 156 / 0.2);
+	--title-depth: #3b2f5c;
+	/* One dark line every third pixel, faint: a CRT's grain, felt more than seen. */
+	--scanline: rgb(0 0 0 / 0.18);
 }
 
 @theme inline {
@@ -160,6 +171,13 @@
 	body {
 		@apply bg-background text-foreground antialiased;
 		line-height: 1.6;
+	}
+	html {
+		scrollbar-color: var(--pixel) transparent;
+	}
+	::selection {
+		background: var(--accent);
+		color: var(--accent-foreground);
 	}
 	h1,
 	h2,
@@ -272,6 +290,107 @@
 	.grid-dots {
 		background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1.5px);
 		background-size: 16px 16px;
+	}
+
+	/*
+	 * The light the whole site sits in, fixed behind everything (app/layout): one faint lavender
+	 * wash from the top, under faint scanlines in the dark theme. Kept to one colour and low on
+	 * purpose — more pools of light competed with the art.
+	 */
+	.atmosphere {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background:
+			repeating-linear-gradient(0deg, var(--scanline) 0 1px, transparent 1px 3px),
+			radial-gradient(80rem 36rem at 30% -12%, var(--glow-1), transparent 70%);
+	}
+
+	/*
+	 * The top of a page — eyebrow, title, lead: the dot grid fades in behind it from the top,
+	 * centred on --hero-x (30% for a left-aligned header, 50% for a centred one).
+	 */
+	.page-hero {
+		--hero-x: 30%;
+		position: relative;
+		isolation: isolate;
+	}
+	.page-hero::before {
+		content: '';
+		position: absolute;
+		inset: -3rem 0 -2rem;
+		z-index: -1;
+		pointer-events: none;
+		background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1.5px);
+		background-size: 16px 16px;
+		mask: radial-gradient(ellipse 75% 100% at var(--hero-x) 0%, #000 20%, transparent 80%);
+	}
+
+	/* A small label above a title: an accent pixel, then the words in spaced capitals. */
+	.eyebrow {
+		/* Block-level, so it starts its own line even after an inline back link. */
+		display: flex;
+		width: fit-content;
+		align-items: center;
+		gap: 0.75rem;
+		font-family: var(--font-retro);
+		font-size: 0.625rem;
+		line-height: 1.5;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--accent-ink);
+	}
+	.eyebrow::before {
+		content: '';
+		flex-shrink: 0;
+		width: 8px;
+		height: 8px;
+		background: var(--accent);
+	}
+
+	/* Press Start 2P draws on an 8px grid, so 0.125em is one of its pixels: the drop shadow is
+	   one font pixel down and right, hard, the way an arcade title is set. */
+	.title-depth {
+		text-shadow: 0.125em 0.125em 0 var(--title-depth);
+	}
+
+	/* A section's h2: two accent pixels stepping down in front of it, like a cursor. */
+	.section-title {
+		display: flex;
+		align-items: baseline;
+		gap: 1em;
+	}
+	/* A heading with its own icon ("Score over time", the knowledge base's Skills and Agents)
+	   uses the icon as its marker, in the stair's colour: one mark in front, never two. */
+	.section-title:has(svg)::before {
+		content: none;
+	}
+	.section-title svg {
+		color: var(--accent-ink);
+	}
+	.section-title::before {
+		content: '';
+		flex-shrink: 0;
+		width: 0.5em;
+		height: 0.5em;
+		translate: 0 -0.5em;
+		background: var(--accent);
+		box-shadow: 0.5em 0.5em 0 color-mix(in oklab, var(--accent) 45%, transparent);
+	}
+
+	.lead {
+		max-width: 62ch;
+		font-size: 1.125rem;
+		line-height: 1.7;
+		color: var(--muted-foreground);
+		text-wrap: pretty;
+	}
+
+	/* A dashed divider in the frame colour, at the art's own step. */
+	.pixel-rule {
+		height: 4px;
+		background: repeating-linear-gradient(90deg, var(--pixel) 0 8px, transparent 8px 16px);
 	}
 }
 
@@ -415,6 +534,17 @@
 }
 
 /*
+ * A holo word inside a .title-depth heading. Its glyphs are transparent over a clipped
+ * gradient, so the heading's inherited text-shadow shows through the letters and muddies them;
+ * it takes the same one-font-pixel step as a drop-shadow instead, drawn behind the rendered
+ * gradient. Unlayered on purpose: `text-holo` is a utility and would win over a components rule.
+ */
+.title-depth .text-holo {
+	text-shadow: none;
+	filter: drop-shadow(0.125em 0.125em 0 var(--holo-depth)) drop-shadow(0 0 6px var(--holo-glow));
+}
+
+/*
  * View transitions between pages. The header and footer have names of their own, so they
  * hold still while the page between them changes. The cross-fade is stepped rather than
  * smooth: a pixel-art site that dissolves through 60 blended frames looks out of character.
@@ -439,6 +569,24 @@
 ::view-transition-old(*),
 ::view-transition-new(*) {
 	image-rendering: pixelated;
+}
+/*
+ * A pack flies from the wall to its page (and back, while it is still sealed): smooth and a
+ * little longer than the stepped page fade, because a jerky 240ms hop across half the screen
+ * reads as a glitch, not a move. The wall tile's caption plate fades out on the way while the
+ * page's captionless pack fades in. The pack page waits this long (plus a beat) before it
+ * starts the opening; keep the two in step (pages/pack/ui/PackOpening, `--arrive`).
+ */
+::view-transition-group(*.pack) {
+	z-index: 50;
+	animation-duration: 480ms;
+	/* Lifts off gently and lands soft, so the middle of the flight is actually seen. */
+	animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
+}
+::view-transition-old(*.pack),
+::view-transition-new(*.pack) {
+	animation-duration: 320ms;
+	animation-timing-function: ease-in-out;
 }
 
 @media (prefers-reduced-motion: reduce) {

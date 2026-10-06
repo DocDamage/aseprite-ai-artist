@@ -11,16 +11,19 @@
 
 {#if reports.length > 0}
 	<section aria-labelledby="validate">
-		<h2 id="validate" class="text-sm sm:text-base">Validate reports</h2>
-		<p class="mt-2 text-sm text-muted-foreground">
+		<h2 id="validate" class="section-title text-base sm:text-xl">Validate reports</h2>
+		<p class="mt-4 text-sm text-muted-foreground">
 			What the plugin's own lint said at the end of each step.
 		</p>
-		<ul class="mt-5 space-y-3">
+		<ul class="mt-6 space-y-3">
 			{#each reports as report, i (i)}
 				<li
-					class="flex flex-wrap items-center gap-x-4 gap-y-1 border-l-4 border-pixel py-1 pl-4 text-sm"
+					class={[
+						'flex flex-wrap items-center gap-x-4 gap-y-1 border-l-4 bg-muted/40 py-3 pr-4 pl-4 text-sm',
+						report.passed ? 'border-secondary' : 'border-pico-red'
+					]}
 				>
-					<span class="font-medium">Step {report.step}</span>
+					<span class="retro text-[0.625rem]">Step {report.step}</span>
 					<span
 						class={[
 							'inline-flex items-center gap-1 font-medium',

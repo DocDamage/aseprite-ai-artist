@@ -31,11 +31,13 @@
 	);
 </script>
 
-<div class="mt-12">
-	<h3 id="leaderboard-history" class="flex items-center gap-3 text-sm sm:text-base">
-		<TrendingUpIcon class="text-accent-ink" aria-hidden="true" />Score over time
+<div class="pt-16">
+	<h3 id="leaderboard-history" class="section-title text-sm sm:text-lg">
+		<span class="flex items-center gap-3"
+			><TrendingUpIcon class="text-accent-ink" aria-hidden="true" />Score over time</span
+		>
 	</h3>
-	<p class="mt-2 max-w-[62ch] text-sm text-muted-foreground">
+	<p class="mt-4 max-w-[70ch] text-sm text-muted-foreground">
 		Each model's leaderboard score from the first run to today (a year at most). A marker is a day
 		the model ran; the line is solid between runs and dashed where it did not run, carrying its
 		nearest score. Benchmarks it had not run yet count 0, so a line climbs both when the model draws

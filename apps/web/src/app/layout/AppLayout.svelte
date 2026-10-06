@@ -17,15 +17,22 @@
 	// Page changes cross-fade through the View Transitions API where the browser has it; the
 	// header and footer carry their own transition names, so only the page between them moves.
 	// Same-page query updates (filters, the compare page's picks) are not navigations here.
+	// <html> carries `view-transitioning` while one runs, so a page can tell that it arrived
+	// through one (the pack page holds its opening until the pack has flown in).
 	onNavigate((navigation) => {
 		if (navigation.shallow) return;
 		if (!document.startViewTransition) return;
 		if (navigation.from?.url.pathname === navigation.to?.url.pathname) return;
+		const root = document.documentElement;
 		return new Promise((resolve) => {
-			document.startViewTransition(async () => {
+			root.classList.add('view-transitioning');
+			const transition = document.startViewTransition(async () => {
 				resolve();
 				await navigation.complete;
 			});
+			// `finished` rejects when the navigation is aborted mid-way; the mark goes either way.
+			const unmark = () => root.classList.remove('view-transitioning');
+			transition.finished.then(unmark, unmark);
 		});
 	});
 </script>
@@ -54,10 +61,14 @@
 <ModeWatcher defaultMode="dark" />
 <Toaster position="bottom-center" />
 <HoloDefs />
+<div class="atmosphere" aria-hidden="true"></div>
 
 <div class="flex min-h-dvh flex-col">
 	<SiteHeader />
-	<main id="main" tabindex="-1" class="flex-1 outline-none">
+	<!-- `overflow-x: clip` here, not on <body>: body's value moves to the viewport, where it only
+	hides the scrollbar, and a phone still widens its layout to fit whatever spills past the edge
+	(the pack stage's rays). Clip is not a scroll container, so sticky still works. -->
+	<main id="main" tabindex="-1" class="flex-1 overflow-x-clip outline-none">
 		{@render children()}
 	</main>
 	<SiteFooter />

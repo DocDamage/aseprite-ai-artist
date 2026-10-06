@@ -5,3 +5,4 @@ export { default as BoosterPack } from './ui/BoosterPack.svelte';
 export { default as WallTileCard } from './ui/WallTileCard.svelte';
 export { wallTiles, wallTileKey, type WallTile } from './lib/wall';
 export type { PackSummary } from './model/types';
+export { takeFlight } from './model/flight';

@@ -29,15 +29,15 @@
 	);
 </script>
 
-<section class="mt-20" aria-labelledby="progress">
-	<h2 id="progress" class="text-lg sm:text-2xl">Run by run</h2>
-	<p class="mt-2 max-w-[62ch] text-sm text-muted-foreground">
+<section class="pt-24" aria-labelledby="progress">
+	<h2 id="progress" class="section-title text-lg sm:text-2xl">Run by run</h2>
+	<p class="mt-4 max-w-[62ch] text-sm text-muted-foreground">
 		Every run of this prompt from the first one to today (a year at most), each model on its own
 		line. A marker is a run; the line is solid between runs and dashed where the model did not run,
 		carrying its nearest score. Point at a run to compare the models that day; pick a model below to
 		bring its line to the front.
 	</p>
-	<div class="mt-6 px-1.5">
+	<div class="mt-8 px-1.5">
 		<Card font="normal" class="gap-0 py-0">
 			<div class="px-3 pt-6 pb-5 sm:px-6">
 				<LineChart

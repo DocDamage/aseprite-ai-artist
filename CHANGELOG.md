@@ -50,6 +50,20 @@ All notable changes to this project are documented here. Format follows
   GitHub count and the theme switch move into a burger menu — a sheet from the
   right edge that traps focus, closes on Escape, a backdrop click or
   navigation, and hands focus back to the button. Knowledge joins the links.
+- **Site: a redesign pass over every page.** The site sits in a faint lavender
+  wash (with CRT scanlines in the dark theme) under a glass
+  header. Every page opens with the same hero — a spaced-caps eyebrow, a title
+  with a one-pixel arcade drop shadow, a lead — and sections carry a stepped
+  accent marker. One orange call to action per screen; cards and framed
+  buttons lift a step on hover. The leaderboard gets gold, silver and bronze
+  rank gems; the install and contribute pages get a numbered stepper with
+  framed terminals; the compare page a control deck; the knowledge base, piece
+  pages, 404 and the 8-bit controls (inputs, selects, toggles, tables,
+  sliders, toasts, the mobile menu) are restyled to match.
+- **Site: a pack flies to its page.** Opening a pack from the gallery or home
+  wall carries the sealed booster across the screen into the pack page through
+  a view transition, and the opening waits for it to land before it shakes
+  and tears.
 
 ## [0.7.0] — 2026-10-06
 

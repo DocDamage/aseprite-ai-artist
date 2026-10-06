@@ -46,7 +46,11 @@
 	<ShadcnBadge
 		{...restProps}
 		{variant}
-		class={cn('h-full w-full rounded-none', font !== 'normal' && 'retro', visual)}
+		class={cn(
+			'h-full w-full rounded-none leading-none tracking-wide',
+			font !== 'normal' && 'retro',
+			visual
+		)}
 	>
 		{@render children?.()}
 	</ShadcnBadge>

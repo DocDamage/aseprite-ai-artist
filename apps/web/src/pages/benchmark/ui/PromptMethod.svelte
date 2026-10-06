@@ -36,7 +36,7 @@ lives in the page hero, so this card opens with the full summary instead. -->
 				<li><Badge variant="secondary" class="text-[0.625rem]">{chip}</Badge></li>
 			{/each}
 		</ul>
-		<dl class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 px-1.5 text-sm">
+		<dl class="plate mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 text-sm">
 			<dt class="text-muted-foreground">Canvas</dt>
 			<dd class="tabular-nums">
 				{prompt.setup.canvas.width}×{prompt.setup.canvas.height}

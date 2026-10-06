@@ -19,17 +19,21 @@
 </script>
 
 <section aria-labelledby={`criteria-${prompt.id}`}>
-	<h2 id={`criteria-${prompt.id}`} class="text-sm sm:text-base">
+	<h2 id={`criteria-${prompt.id}`} class="section-title text-sm sm:text-base">
 		{plural(prompt.criteria.length, 'criterion', 'criteria')}
 	</h2>
-	<ol class="mt-4 space-y-5">
+	<ol class="mt-6 space-y-6">
 		{#each byStep as group (group.number)}
 			{#if group.criteria.length > 0}
 				<li>
-					<p class="text-sm font-medium text-muted-foreground">
+					<p class="flex items-center gap-3 text-sm font-medium text-muted-foreground">
+						<span
+							class="gem flex size-6 items-center justify-center retro text-[0.625rem] tabular-nums"
+							>{group.number}</span
+						>
 						Step {group.number}: {group.step.title}
 					</p>
-					<ul class="mt-2 space-y-2 text-sm">
+					<ul class="mt-3 space-y-2 border-l-4 border-dashed border-pixel pl-4 text-sm">
 						{#each group.criteria as criterion (criterion.id)}
 							<li class="flex gap-2">
 								<CheckIcon class="shrink-0 text-secondary" aria-hidden="true" />

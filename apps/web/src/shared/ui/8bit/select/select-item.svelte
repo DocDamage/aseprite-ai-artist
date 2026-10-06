@@ -16,6 +16,6 @@
 	{children}
 	class={cn(
 		className,
-		'rounded-none border-y-3 border-dashed border-ring/0 hover:border-foreground dark:hover:border-ring'
+		"relative rounded-none border-y-3 border-dashed border-ring/0 transition-colors hover:border-foreground hover:bg-muted focus:bg-muted data-highlighted:bg-muted data-highlighted:before:absolute data-highlighted:before:top-1/2 data-highlighted:before:left-0 data-highlighted:before:h-3 data-highlighted:before:w-1.5 data-highlighted:before:-translate-y-1/2 data-highlighted:before:bg-accent data-highlighted:before:content-[''] data-[state=checked]:bg-muted data-[state=checked]:before:absolute data-[state=checked]:before:top-1/2 data-[state=checked]:before:left-0 data-[state=checked]:before:h-3 data-[state=checked]:before:w-1.5 data-[state=checked]:before:-translate-y-1/2 data-[state=checked]:before:bg-accent data-[state=checked]:before:content-[''] dark:hover:border-ring"
 	)}
 />

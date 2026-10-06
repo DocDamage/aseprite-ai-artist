@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import ChartIcon from '~icons/pixelarticons/chart-bar';
 	import { CopyButton } from '#features/copyPrompt/index.js';
 	import {
 		Button,
@@ -32,24 +33,31 @@
 
 <Seo title="Contribute" description="How to add your own AI-drawn pixel art to the gallery." />
 
-<div class="mx-auto max-w-3xl px-4 pt-14 sm:px-6">
-	<h1 class="text-2xl sm:text-4xl">Add your work</h1>
-	<p class="mt-5 max-w-[62ch] text-lg text-muted-foreground">
+<header class="page-hero mx-auto max-w-3xl px-4 pt-12 sm:px-6 sm:pt-16">
+	<p class="eyebrow">Contribute</p>
+	<h1 class="title-depth mt-5 text-2xl leading-snug sm:text-4xl sm:leading-snug">Add your work</h1>
+	<p class="lead mt-5">
 		The gallery is a folder in the repository, and every piece arrives as a pull request. You keep
 		the credit; the files, prompts and model names stay with the art so anyone can reproduce or
 		compare it.
 	</p>
+</header>
 
-	<ol class="mt-12 space-y-8">
+<div class="mx-auto max-w-3xl px-4 sm:px-6">
+	<!-- The same stepper as the install page: a dashed pixel rail from gem to gem. -->
+	<ol class="mt-14">
 		{#each steps as step, index (step.title)}
-			<li class="grid grid-cols-[auto_1fr] gap-x-5">
-				<span
-					class="grid size-10 place-items-center bg-primary retro text-sm text-primary-foreground"
-					aria-hidden="true"
-				>
-					{index + 1}
+			<li class="relative grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 pb-14 last:pb-0 sm:gap-x-7">
+				{#if index < steps.length - 1}
+					<span
+						class="absolute top-[3.75rem] bottom-2 left-[22px] w-1 bg-[repeating-linear-gradient(180deg,var(--pixel)_0_8px,transparent_8px_16px)]"
+						aria-hidden="true"
+					></span>
+				{/if}
+				<span class="z-10 h-fit" aria-hidden="true">
+					<span class="gem grid size-12 place-items-center retro text-base">{index + 1}</span>
 				</span>
-				<div>
+				<div class="min-w-0 pt-2">
 					<h2 class="text-sm leading-relaxed sm:text-base">{step.title}</h2>
 					<p class="mt-3 text-muted-foreground">{step.body}</p>
 					{#if index === 0}
@@ -65,9 +73,20 @@
 						</p>
 					{/if}
 					{#if index === 1}
-						<div class="mt-5 flex flex-wrap items-center gap-6 px-1.5">
-							<Kbd class="h-9 px-3 text-sm">/aseprite:submit</Kbd>
-							<CopyButton text="/aseprite:submit" label="Copy" done="Copied /aseprite:submit" />
+						<div class="pixel-frame mt-5 bg-card [--frame:4px]">
+							<div class="flex items-center gap-2 border-b-4 border-pixel py-1 pr-2 pl-4">
+								<span class="size-2.5 bg-pico-red" aria-hidden="true"></span>
+								<span class="size-2.5 bg-pico-yellow" aria-hidden="true"></span>
+								<span class="size-2.5 bg-pico-green" aria-hidden="true"></span>
+								<span
+									class="ml-2 min-w-0 flex-1 truncate retro text-[0.625rem] text-muted-foreground"
+									>Claude Code</span
+								>
+								<CopyButton text="/aseprite:submit" label="Copy" done="Copied /aseprite:submit" />
+							</div>
+							<div class="px-4 py-4">
+								<Kbd class="h-9 px-3 text-sm">/aseprite:submit</Kbd>
+							</div>
 						</div>
 					{/if}
 				</div>
@@ -75,16 +94,23 @@
 		{/each}
 	</ol>
 
-	<section class="mt-14 border-l-6 border-pixel pl-4" aria-labelledby="benchmarks-note">
-		<h2 id="benchmarks-note" class="text-sm leading-relaxed">What about benchmarks?</h2>
-		<p class="mt-3 text-muted-foreground">
-			Contributions go to the gallery. The benchmarks are run by the maintainers, under the same
-			fixed setup every time, so the scores stay comparable; new models are added as they are
-			tested.
-		</p>
+	<section class="mt-20" aria-labelledby="benchmarks-note">
+		<div class="pixel-frame flex gap-4 bg-card p-5 sm:p-6">
+			<span class="gem grid size-12 shrink-0 place-items-center" aria-hidden="true">
+				<ChartIcon />
+			</span>
+			<div>
+				<h2 id="benchmarks-note" class="text-sm leading-relaxed">What about benchmarks?</h2>
+				<p class="mt-3 text-muted-foreground">
+					Contributions go to the gallery. The benchmarks are run by the maintainers, under the same
+					fixed setup every time, so the scores stay comparable; new models are added as they are
+					tested.
+				</p>
+			</div>
+		</div>
 	</section>
 
-	<div class="mt-14 px-1.5">
+	<div class="mt-16 px-1.5 pb-4">
 		<Card font="normal">
 			<CardHeader>
 				<CardTitle class="text-sm leading-relaxed sm:text-base">Prefer to do it by hand?</CardTitle>
@@ -97,7 +123,7 @@
 				Run <code class="text-foreground">pnpm gallery:check</code> before you push; CI runs it too.
 			</CardContent>
 			<CardFooter class="flex flex-wrap gap-6 pt-2">
-				<Button href={GALLERY_README_URL} rel="noopener">Gallery README</Button>
+				<Button href={GALLERY_README_URL} variant="outline" rel="noopener">Gallery README</Button>
 				<Button href={SUBMIT_SKILL_URL} variant="outline" rel="noopener">Submit skill</Button>
 			</CardFooter>
 		</Card>

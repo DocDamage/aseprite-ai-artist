@@ -139,174 +139,182 @@
 	</div>
 {/snippet}
 
-<div class="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
+<header class="page-hero mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-14">
 	<a
 		href={resolve('/benchmarks/[prompt]', { prompt: prompt.id })}
-		class="inline-flex h-10 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+		class="inline-flex h-11 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
 	>
 		<ArrowLeftIcon aria-hidden="true" />
 		{prompt.title}
 	</a>
 
-	<h1 class="mt-4 text-xl sm:text-3xl">Compare runs</h1>
+	<p class="eyebrow mt-4">Compare runs</p>
+	<h1 class="title-depth mt-5 text-2xl leading-snug sm:text-4xl sm:leading-snug">Compare runs</h1>
+</header>
 
+<div class="mx-auto max-w-6xl px-4 sm:px-6">
 	{#if runs.length < 2 || !view}
-		<p class="mt-4 text-muted-foreground">
+		<p class="plate mt-8 max-w-xl p-5 text-muted-foreground">
 			This benchmark needs at least two runs before there is anything to compare.
 		</p>
 	{:else}
-		<div class="mt-8 flex flex-wrap items-start gap-x-8 gap-y-6 px-1.5">
-			<div>
-				<span id="label-mode" class="mb-3 block retro text-[0.625rem]">Mode</span>
+		<!-- The control deck: what to look at (mode, image), how it plays, and which runs. -->
+		<div class="plate mt-8 space-y-6 p-5 sm:p-6">
+			<div class="flex flex-wrap items-start gap-x-8 gap-y-6">
+				<div>
+					<span id="label-mode" class="mb-3 block retro text-[0.625rem]">Mode</span>
 
-				<!-- One mode is always on: an empty value (the pressed item clicked again) is ignored. -->
-				<ToggleGroup.Root
-					aria-labelledby="label-mode"
-					class="px-0"
-					bind:value={
-						() => mode,
-						(next) => {
-							if (next === 'slider' || next === 'grid') {
-								mode = next;
-								syncUrl();
+					<!-- One mode is always on: an empty value (the pressed item clicked again) is ignored. -->
+					<ToggleGroup.Root
+						aria-labelledby="label-mode"
+						class="px-0"
+						bind:value={
+							() => mode,
+							(next) => {
+								if (next === 'slider' || next === 'grid') {
+									mode = next;
+									syncUrl();
+								}
 							}
 						}
-					}
-				>
-					<ToggleGroup.Item value="slider">{filmstrip ? 'Two runs' : 'Slider'}</ToggleGroup.Item>
-					<ToggleGroup.Item value="grid">{filmstrip ? 'Many runs' : 'Grid'}</ToggleGroup.Item>
-				</ToggleGroup.Root>
-			</div>
-			<div class="min-w-64 flex-1">
-				<span id="label-view" class="mb-3 block retro text-[0.625rem]">Image</span>
-
-				<Select.Root
-					type="single"
-					value={view.key}
-					onValueChange={(next) => next && ((viewKey = next), syncUrl())}
-				>
-					<Select.Trigger
-						id="view"
-						aria-labelledby="label-view view"
-						font="normal"
-						class="w-full text-sm">{view.label}</Select.Trigger
 					>
+						<ToggleGroup.Item value="slider">{filmstrip ? 'Two runs' : 'Slider'}</ToggleGroup.Item>
+						<ToggleGroup.Item value="grid">{filmstrip ? 'Many runs' : 'Grid'}</ToggleGroup.Item>
+					</ToggleGroup.Root>
+				</div>
+				<div class="min-w-64 flex-1">
+					<span id="label-view" class="mb-3 block retro text-[0.625rem]">Image</span>
 
-					<Select.Content font="normal">
-						{#each views as candidate (candidate.key)}
-							<Select.Item value={candidate.key} label={candidate.label} class="text-sm"
-								>{candidate.label}</Select.Item
-							>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</div>
-		</div>
-
-		{#if animated}
-			<div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 px-1.5">
-				<Button
-					variant="outline"
-					size="icon"
-					aria-label={playback.playing ? 'Pause' : 'Play'}
-					onclick={() => (playback.playing ? playback.pause() : playback.play())}
-				>
-					{#if playback.playing}<PauseIcon aria-hidden="true" />{:else}<PlayIcon
-							aria-hidden="true"
-						/>{/if}
-				</Button>
-				<Button
-					variant="outline"
-					size="icon"
-					aria-label="Restart from the first frame"
-					onclick={() => playback.restart()}
-				>
-					<ReloadIcon aria-hidden="true" />
-				</Button>
-				<!-- Grabbing the scrubber pauses the clock; while paused, every value change is the user's.
-				While playing, bits-ui echoes the clock's own updates (rounded to `step`) through
-				onValueChange, and those must not be mistaken for a scrub. -->
-				<div
-					class="flex min-w-48 flex-1 items-center gap-4 text-sm"
-					role="presentation"
-					onpointerdowncapture={() => playback.pause()}
-					onkeydowncapture={(event) => {
-						// Only keys that move the thumb: Tab out of the scrubber must not stop playback.
-						if (
-							[
-								'ArrowLeft',
-								'ArrowRight',
-								'ArrowUp',
-								'ArrowDown',
-								'Home',
-								'End',
-								'PageUp',
-								'PageDown'
-							].includes(event.key)
-						)
-							playback.pause();
-					}}
-				>
-					<span class="shrink-0 text-muted-foreground tabular-nums"
-						>{((playback.position * playback.cycle) / 1000).toFixed(1)} s</span
+					<Select.Root
+						type="single"
+						value={view.key}
+						onValueChange={(next) => next && ((viewKey = next), syncUrl())}
 					>
+						<Select.Trigger
+							id="view"
+							aria-labelledby="label-view view"
+							font="normal"
+							class="w-full text-sm">{view.label}</Select.Trigger
+						>
 
-					<!-- Whole thousandths, not a 0–1 float: bits-ui snaps the value to `step`, and a float
-					snapped and fed back can flip between two neighbouring doubles forever. -->
-					<Slider
-						value={Math.round(playback.position * 1000)}
-						min={0}
-						max={1000}
-						step={10}
-						label="Playback position"
-						valueText="{Math.round(playback.position * 100)}% through the loop"
-						onValueChange={(next) => {
-							if (!playback.playing) playback.seek(next / 1000);
+						<Select.Content font="normal">
+							{#each views as candidate (candidate.key)}
+								<Select.Item value={candidate.key} label={candidate.label} class="text-sm"
+									>{candidate.label}</Select.Item
+								>
+							{/each}
+						</Select.Content>
+					</Select.Root>
+				</div>
+			</div>
+
+			{#if animated}
+				<div class="pixel-rule opacity-40"></div>
+				<div class="flex flex-wrap items-center gap-x-6 gap-y-4">
+					<Button
+						variant="outline"
+						size="icon"
+						aria-label={playback.playing ? 'Pause' : 'Play'}
+						onclick={() => (playback.playing ? playback.pause() : playback.play())}
+					>
+						{#if playback.playing}<PauseIcon aria-hidden="true" />{:else}<PlayIcon
+								aria-hidden="true"
+							/>{/if}
+					</Button>
+					<Button
+						variant="outline"
+						size="icon"
+						aria-label="Restart from the first frame"
+						onclick={() => playback.restart()}
+					>
+						<ReloadIcon aria-hidden="true" />
+					</Button>
+					<!-- Grabbing the scrubber pauses the clock; while paused, every value change is the user's.
+					While playing, bits-ui echoes the clock's own updates (rounded to `step`) through
+					onValueChange, and those must not be mistaken for a scrub. -->
+					<div
+						class="flex min-w-48 flex-1 items-center gap-4 text-sm"
+						role="presentation"
+						onpointerdowncapture={() => playback.pause()}
+						onkeydowncapture={(event) => {
+							// Only keys that move the thumb: Tab out of the scrubber must not stop playback.
+							if (
+								[
+									'ArrowLeft',
+									'ArrowRight',
+									'ArrowUp',
+									'ArrowDown',
+									'Home',
+									'End',
+									'PageUp',
+									'PageDown'
+								].includes(event.key)
+							)
+								playback.pause();
 						}}
-					/>
-				</div>
-				<p class="w-full text-sm text-muted-foreground">
-					Every animation is stretched to the longest loop ({(playback.cycle / 1000).toFixed(1)} s), so
-					all of them start and end together.
-				</p>
-			</div>
-		{/if}
+					>
+						<span class="shrink-0 retro text-xs text-accent-ink tabular-nums"
+							>{((playback.position * playback.cycle) / 1000).toFixed(1)} s</span
+						>
 
-		{#if mode === 'slider'}
-			<div class="mt-10 grid grid-cols-1 gap-6 px-1.5 md:grid-cols-2">
-				{@render runSelect(
-					'before',
-					filmstrip ? 'First' : 'Left',
-					before,
-					(id) => ((beforeId = id), syncUrl())
-				)}
-				{@render runSelect(
-					'after',
-					filmstrip ? 'Second' : 'Right',
-					after,
-					(id) => ((afterId = id), syncUrl())
-				)}
-			</div>
-		{:else}
-			<fieldset class="mt-10 px-1.5">
-				<legend class="mb-3 block retro text-[0.625rem]">Runs</legend>
-				<div class="flex flex-wrap gap-x-6 gap-y-3">
-					{#each runs as run (run.id)}
-						<label class="flex cursor-pointer items-center gap-3 text-sm">
-							<Checkbox
-								checked={gridRuns.includes(run)}
-								// At least one run stays picked: an empty pick would show every run again.
-								disabled={// At least one run stays picked: an empty pick would show every run again.
-								gridRuns.length === 1 && gridRuns.includes(run)}
-								onCheckedChange={() => toggle(run.id)}
-							/>
-
-							{runLabel(run)}
-						</label>
-					{/each}
+						<!-- Whole thousandths, not a 0–1 float: bits-ui snaps the value to `step`, and a float
+						snapped and fed back can flip between two neighbouring doubles forever. -->
+						<Slider
+							value={Math.round(playback.position * 1000)}
+							min={0}
+							max={1000}
+							step={10}
+							label="Playback position"
+							valueText="{Math.round(playback.position * 100)}% through the loop"
+							onValueChange={(next) => {
+								if (!playback.playing) playback.seek(next / 1000);
+							}}
+						/>
+					</div>
+					<p class="w-full text-sm text-muted-foreground">
+						Every animation is stretched to the longest loop ({(playback.cycle / 1000).toFixed(1)} s),
+						so all of them start and end together.
+					</p>
 				</div>
-			</fieldset>
-		{/if}
+			{/if}
+
+			<div class="pixel-rule opacity-40"></div>
+			{#if mode === 'slider'}
+				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+					{@render runSelect(
+						'before',
+						filmstrip ? 'First' : 'Left',
+						before,
+						(id) => ((beforeId = id), syncUrl())
+					)}
+					{@render runSelect(
+						'after',
+						filmstrip ? 'Second' : 'Right',
+						after,
+						(id) => ((afterId = id), syncUrl())
+					)}
+				</div>
+			{:else}
+				<fieldset>
+					<legend class="mb-3 block retro text-[0.625rem]">Runs</legend>
+					<div class="flex flex-wrap gap-x-6 gap-y-1">
+						{#each runs as run (run.id)}
+							<label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
+								<Checkbox
+									checked={gridRuns.includes(run)}
+									// At least one run stays picked: an empty pick would show every run again.
+									disabled={// At least one run stays picked: an empty pick would show every run again.
+									gridRuns.length === 1 && gridRuns.includes(run)}
+									onCheckedChange={() => toggle(run.id)}
+								/>
+
+								{runLabel(run)}
+							</label>
+						{/each}
+					</div>
+				</fieldset>
+			{/if}
+		</div>
 	{/if}
 </div>
 
@@ -323,7 +331,7 @@
 	{:else}
 		<div class="mx-auto max-w-6xl px-4 sm:px-6">
 			{#if mode === 'slider'}
-				<div class="mt-10">
+				<div class="mt-12">
 					{#if before && after && before.images[view.key] && after.images[view.key]}
 						<CompareSlider
 							before={{ file: before.images[view.key], label: runLabel(before) }}
@@ -346,12 +354,12 @@
 								/>
 							{/snippet}
 						</Lightbox>
-						<div class="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
+						<div class="mx-auto mt-10 grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
 							<RunCaption run={before} note={tempo(before)} />
-							<RunCaption run={after} note={tempo(after)} />
+							<RunCaption run={after} note={tempo(after)} align="end" />
 						</div>
 					{:else}
-						<p class="text-muted-foreground">
+						<p class="plate p-5 text-muted-foreground">
 							{[before, after]
 								.filter((run) => run && !run.images[view.key])
 								.map((run) => runLabel(run!))
@@ -365,7 +373,7 @@
 			{:else}
 				<ul
 					class={[
-						'mt-10 grid grid-cols-1 gap-x-8 gap-y-10 px-1.5',
+						'mt-12 grid grid-cols-1 gap-x-8 gap-y-12 px-1.5',
 						gridRuns.length > 1 && 'md:grid-cols-2',
 						gridRuns.length > 2 && 'xl:grid-cols-3'
 					]}

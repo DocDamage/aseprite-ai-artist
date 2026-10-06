@@ -15,7 +15,7 @@
 
 <div
 	class={cn(
-		'relative flex shrink-0 items-center justify-center border-y-[6px] border-pixel',
+		'relative flex shrink-0 items-center justify-center border-y-[6px] border-pixel hover:border-foreground/70 has-focus-visible:border-accent has-data-[state=checked]:border-accent',
 		className
 	)}
 >
@@ -23,7 +23,7 @@
 		bind:ref
 		bind:checked
 		data-slot="checkbox"
-		class="peer grid size-6 place-content-center outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+		class="peer grid size-6 place-content-center outline-offset-4 focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
 		{...restProps}
 	>
 		{#snippet children({ checked })}
@@ -31,7 +31,7 @@
 		{/snippet}
 	</CheckboxPrimitive.Root>
 	<div
-		class="pointer-events-none absolute inset-0 -mx-1.5 border-x-[6px] border-pixel"
+		class="pointer-events-none absolute inset-0 -mx-1.5 border-x-[6px] border-pixel transition-colors duration-150 peer-hover:border-foreground/70 peer-data-[state=checked]:border-accent"
 		aria-hidden="true"
 	></div>
 </div>

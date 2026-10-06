@@ -8,6 +8,9 @@
 		variants: {
 			variant: {
 				default: 'bg-primary text-primary-foreground hover:bg-primary/80',
+				/* The one call to action on a screen: PICO-8 orange, brighter on hover. */
+				accent:
+					'bg-accent text-accent-foreground hover:bg-[color-mix(in_oklch,var(--accent),white_14%)]',
 				outline:
 					'border-border bg-background hover:bg-muted hover:text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 aria-expanded:bg-muted aria-expanded:text-foreground shadow-xs',
 				secondary:

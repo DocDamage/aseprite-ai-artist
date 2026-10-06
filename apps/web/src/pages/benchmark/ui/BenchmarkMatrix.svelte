@@ -32,7 +32,9 @@
 
 <section id="ranking" class="scroll-mt-24" aria-labelledby={`results-${benchmark.prompt.id}`}>
 	<div class="flex flex-wrap items-center justify-between gap-3">
-		<h2 id={`results-${benchmark.prompt.id}`} class="text-lg sm:text-2xl">Full ranking</h2>
+		<h2 id={`results-${benchmark.prompt.id}`} class="section-title text-lg sm:text-2xl">
+			Full ranking
+		</h2>
 		{#if benchmark.outdatedRuns.length > 0}
 			<Badge variant="outline" class="text-[0.625rem]">
 				{plural(benchmark.outdatedRuns.length, 'unranked run')} on older revisions
@@ -40,12 +42,12 @@
 		{/if}
 	</div>
 	{#if benchmark.cells.length === 0}
-		<p class="mt-3 text-sm text-muted-foreground">
+		<p class="mt-4 text-sm text-muted-foreground">
 			No ranked runs on revision {benchmark.prompt.revision} yet. The maintainers run the benchmarks;
 			new models are added as they are tested.
 		</p>
 	{:else}
-		<p class="mt-2 text-sm text-muted-foreground">
+		<p class="mt-4 text-sm text-muted-foreground">
 			Rows are models, strongest first; columns are plugin versions, newest first. Each cell is the
 			best run's score and its craft rating.
 		</p>
@@ -64,7 +66,7 @@
 				</Table.Header>
 				<Table.Body>
 					{#each benchmark.models as model (model)}
-						<Table.Row class="last:border-b-0">
+						<Table.Row class="last:border-b-0 hover:bg-muted/60">
 							<Table.Head scope="row" class="font-medium whitespace-normal text-foreground"
 								>{model}</Table.Head
 							>
@@ -128,7 +130,7 @@
 						</Table.Header>
 						<Table.Body>
 							{#each benchmark.prompt.criteria as criterion (criterion.id)}
-								<Table.Row class="last:border-b-0">
+								<Table.Row class="last:border-b-0 hover:bg-muted/60">
 									<Table.Head
 										scope="row"
 										class="h-auto max-w-[46ch] py-3 align-top font-normal whitespace-normal text-foreground"

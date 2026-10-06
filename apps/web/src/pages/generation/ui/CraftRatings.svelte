@@ -25,19 +25,19 @@
 </script>
 
 <section aria-labelledby="craft">
-	<h2 id="craft" class="text-sm sm:text-base">Craft</h2>
+	<h2 id="craft" class="section-title text-base sm:text-xl">Craft</h2>
 	{#if craft && ratings.length > 0}
-		<p class="mt-2 text-sm text-muted-foreground">
+		<p class="mt-4 text-sm text-muted-foreground">
 			<span class="retro text-xs text-foreground tabular-nums"
 				>{Math.round(craft.score * 100)}%</span
 			>
 			from {plural(craft.judges, 'judge')}, each axis scored 0–4 against
 			<a href={RUBRIC_URL} class="underline underline-offset-4" rel="noopener">the rubric</a>.
 		</p>
-		<div class="mt-5 overflow-x-auto px-2 pb-2">
+		<div class="pixel-frame mt-6 overflow-x-auto bg-card">
 			<Table.Root font="normal" containerClass="w-full min-w-max" class="text-sm">
 				<caption class="sr-only">Craft scores per judge, 0 to 4 on each axis</caption>
-				<Table.Header>
+				<Table.Header class="bg-muted/60">
 					<Table.Row>
 						<Table.Head class="retro text-[0.625rem]">Judge</Table.Head>
 						{#each axes as axis (axis.id)}
@@ -46,7 +46,7 @@
 						<Table.Head class="retro text-[0.625rem]">Note</Table.Head>
 					</Table.Row>
 				</Table.Header>
-				<Table.Body>
+				<Table.Body class="[&_tr:nth-child(even)]:bg-muted/30">
 					{#each ratings as rating (rating.judge)}
 						<Table.Row>
 							<Table.Head scope="row" class="font-medium text-foreground">
@@ -65,7 +65,7 @@
 							>
 						</Table.Row>
 					{/each}
-					<Table.Row class="last:border-b-0">
+					<Table.Row class="border-t-4 border-pixel bg-muted/60 last:border-b-0">
 						<Table.Head scope="row" class="retro text-[0.625rem] text-foreground">Mean</Table.Head>
 						{#each axes as axis (axis.id)}
 							{@const mean = craft.axes[axis.id]}
@@ -81,7 +81,7 @@
 			</Table.Root>
 		</div>
 	{:else}
-		<p class="mt-2 text-sm text-muted-foreground">
+		<p class="mt-4 text-sm text-muted-foreground">
 			Not rated yet. Judges score craft 0–4 on five axes;
 			<a href={RUBRIC_URL} class="underline underline-offset-4" rel="noopener">read the rubric</a>.
 		</p>

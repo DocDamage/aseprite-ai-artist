@@ -6,7 +6,7 @@
 		variants: {
 			variant: {
 				default: 'bg-transparent',
-				icon: 'bg-muted text-foreground relative flex size-12 shrink-0 items-center justify-center'
+				icon: 'bg-muted text-accent-ink relative flex size-12 shrink-0 items-center justify-center'
 			},
 			font: { normal: '', retro: 'retro' }
 		},

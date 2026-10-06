@@ -68,19 +68,19 @@
 	}}
 />
 
-<div class="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
+<div class="mx-auto max-w-6xl px-4 pt-8 pb-8 sm:px-6 sm:pt-10">
 	<nav
 		aria-label="Breadcrumb"
 		class="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground"
 	>
-		<a href={resolve('gallery')} class="inline-flex h-10 items-center gap-1.5 hover:text-foreground"
+		<a href={resolve('gallery')} class="inline-flex h-11 items-center gap-1.5 hover:text-foreground"
 			><ArrowLeftIcon aria-hidden="true" />Gallery</a
 		>
 		{#if g.pack}
 			<span aria-hidden="true">/</span>
 			<a
 				href={resolve('/packs/[id]', { id: g.pack.id })}
-				class="inline-flex h-10 items-center hover:text-foreground"
+				class="inline-flex h-11 items-center hover:text-foreground"
 				>Pack: <span class="ml-1 text-foreground underline underline-offset-4">{g.pack.title}</span
 				></a
 			>
@@ -88,9 +88,9 @@
 	</nav>
 
 	<div
-		class="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14"
+		class="page-hero mt-4 grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16"
 	>
-		<div class="self-start px-1.5">
+		<div class="self-start px-1.5 lg:sticky lg:top-24">
 			<div
 				class="pixel-frame canvas-checker overflow-hidden"
 				style:view-transition-name="art-{g.id}"
@@ -99,34 +99,70 @@
 			</div>
 		</div>
 
-		<div>
-			<div class="mb-8 flex flex-wrap gap-6 px-1.5">
-				<CopyButton
-					text={sequenceText(g.steps)}
-					label={g.steps.length > 1 ? 'Copy full prompt' : 'Copy prompt'}
-					done="Copied the full prompt"
-					variant="default"
-					size="default"
-				/>
+		<div class="min-w-0">
+			<p class="eyebrow">{g.modelLabel}</p>
+			<h1 class="title-depth mt-5 text-2xl leading-snug sm:text-3xl sm:leading-snug">{g.title}</h1>
+			{#if g.description}
+				<p class="lead mt-5">{g.description}</p>
+			{/if}
+
+			<div class="mt-8 flex flex-wrap gap-4 px-1.5">
 				{#if source}
 					<Button
 						href={source.url}
 						download={source.name}
 						onclick={(event: MouseEvent) => saveFrom(event, source.url, source.name)}
-						variant="outline"
+						variant="accent"
 					>
 						<DownloadIcon aria-hidden="true" />
 						Download .aseprite
 					</Button>
 				{/if}
+				<CopyButton
+					text={sequenceText(g.steps)}
+					label={g.steps.length > 1 ? 'Copy full prompt' : 'Copy prompt'}
+					done="Copied the full prompt"
+					variant={source ? 'outline' : 'accent'}
+					size="default"
+				/>
 			</div>
-			<h1 class="text-xl leading-snug sm:text-3xl sm:leading-snug">{g.title}</h1>
-			{#if g.description}
-				<p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{g.description}</p>
+
+			{#if g.benchmark}
+				<div class="plate mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 px-5 py-4">
+					<div class="min-w-0 space-y-1">
+						<p class="retro text-[0.625rem] tracking-widest text-muted-foreground uppercase">
+							Benchmark
+						</p>
+						<p>
+							<a
+								href={resolve('/benchmarks/[prompt]', { prompt: g.benchmark.prompt })}
+								class="font-medium underline underline-offset-4"
+							>
+								{g.benchmark.promptTitle}
+							</a>
+							<span class="text-sm text-muted-foreground">revision {g.benchmark.revision}</span>
+						</p>
+						{#if g.outdated}
+							<Badge variant="outline" class="text-[0.625rem]">Older revision, unranked</Badge>
+						{/if}
+						{#if g.score}
+							<p class="text-xs text-muted-foreground tabular-nums">
+								{g.score.passed}/{g.score.total} criteria{g.outdated
+									? ' · older revision, not ranked'
+									: ''}
+							</p>
+						{/if}
+					</div>
+					{#if g.points !== null}
+						<div class="ml-auto"><ScoreMeter points={g.points} size="lg" /></div>
+					{/if}
+				</div>
 			{/if}
 
-			<dl class="mt-8 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-[0.95rem]">
-				<dt class="text-muted-foreground">Author</dt>
+			<dl
+				class="plate mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 px-5 py-5 text-[0.95rem] [&>dt]:pt-0.5 [&>dt]:text-sm [&>dt]:text-muted-foreground"
+			>
+				<dt>Author</dt>
 				<dd>
 					{#if g.author.github}
 						<a
@@ -141,13 +177,13 @@
 						{g.author.name}
 					{/if}
 				</dd>
-				<dt class="text-muted-foreground">Date</dt>
-				<dd><time datetime={g.date}>{formatDate(g.date)}</time></dd>
-				<dt class="text-muted-foreground">Plugin</dt>
-				<dd>v{g.plugin}</dd>
-				<dt class="text-muted-foreground">Harness</dt>
+				<dt>Date</dt>
+				<dd><time datetime={g.date} class="tabular-nums">{formatDate(g.date)}</time></dd>
+				<dt>Plugin</dt>
+				<dd class="tabular-nums">v{g.plugin}</dd>
+				<dt>Harness</dt>
 				<dd>{g.harness}</dd>
-				<dt class="text-muted-foreground">{g.models.length === 1 ? 'Model' : 'Models'}</dt>
+				<dt>{g.models.length === 1 ? 'Model' : 'Models'}</dt>
 				<dd>
 					<ul class="space-y-1">
 						{#each modelSteps as entry (entry.model)}
@@ -164,7 +200,7 @@
 						{/each}
 					</ul>
 				</dd>
-				<dt class="text-muted-foreground">Reference</dt>
+				<dt>Reference</dt>
 				<dd>
 					{#if g.references.source === 'generated'}
 						{g.references.kinds.join(', ')} generated by
@@ -181,34 +217,9 @@
 						</details>
 					{/if}
 				</dd>
-				{#if g.benchmark}
-					<dt class="text-muted-foreground">Benchmark</dt>
-					<dd class="space-y-1.5">
-						<a
-							href={resolve('/benchmarks/[prompt]', { prompt: g.benchmark.prompt })}
-							class="underline underline-offset-4"
-						>
-							{g.benchmark.promptTitle}
-						</a>
-						<span class="text-muted-foreground">revision {g.benchmark.revision}</span>
-						{#if g.outdated}
-							<Badge variant="outline" class="ml-2 text-[0.625rem]">Older revision, unranked</Badge>
-						{/if}
-						{#if g.points !== null}
-							<div><ScoreMeter points={g.points} size="lg" /></div>
-						{/if}
-						{#if g.score}
-							<div class="text-xs text-muted-foreground tabular-nums">
-								{g.score.passed}/{g.score.total} criteria{g.outdated
-									? ' · older revision, not ranked'
-									: ''}
-							</div>
-						{/if}
-					</dd>
-				{/if}
 				{#if g.tags.length > 0}
-					<dt class="text-muted-foreground">Tags</dt>
-					<dd class="flex flex-wrap gap-4 px-1.5">
+					<dt>Tags</dt>
+					<dd class="flex flex-wrap gap-3">
 						{#each g.tags as tag (tag)}
 							<Badge
 								variant="secondary"
@@ -220,7 +231,7 @@
 				{/if}
 			</dl>
 
-			<div class="mt-10 flex flex-wrap gap-6 px-1.5">
+			<div class="mt-6 flex flex-wrap gap-4 px-1.5">
 				<CopyButton text={g.yaml} label="Copy YAML" done="Copied generation.yaml" variant="ghost" />
 				<Button href={g.githubUrl} variant="ghost" rel="noopener">
 					<ExternalLinkIcon aria-hidden="true" />
@@ -229,6 +240,8 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="pixel-rule mt-20 opacity-40" aria-hidden="true"></div>
 
 	<div class="mt-16 max-w-3xl px-1.5">
 		<PromptTimeline
@@ -241,18 +254,26 @@
 
 	{#if g.results.length > 0 || g.validate.length > 0}
 		<section
-			class="mt-16 grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
+			class="mt-24 grid grid-cols-[minmax(0,1fr)] gap-16 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
 		>
 			<div>
 				{#if g.results.length > 0}
 					<section aria-labelledby="results">
-						<h2 id="results" class="text-base sm:text-lg">Benchmark results</h2>
-						<p class="mt-2 text-sm text-muted-foreground">
+						<h2 id="results" class="section-title text-lg sm:text-2xl">Benchmark results</h2>
+						<p class="mt-4 text-sm text-muted-foreground">
+							<span class="retro text-xs text-foreground tabular-nums" aria-hidden="true"
+								>{passed}/{g.results.length}</span
+							>
 							{passed} of {g.results.length} criteria passed.
 						</p>
-						<ul class="mt-5 space-y-4">
+						<ul class="mt-6 space-y-3">
 							{#each g.results as result (result.criterion)}
-								<li class="flex gap-3">
+								<li
+									class={[
+										'flex gap-4 border-l-4 bg-muted/40 py-3 pr-4 pl-4',
+										result.pass ? 'border-secondary' : 'border-pico-red'
+									]}
+								>
 									<span
 										class={[
 											'mt-0.5 grid size-7 shrink-0 place-items-center',
@@ -310,12 +331,22 @@
 									</span>
 									<div class="min-w-0 text-sm">
 										<p>{result.text ?? result.criterion}</p>
-										<p class="mt-0.5 text-xs text-muted-foreground">
+										<p class="mt-1 text-xs text-muted-foreground">
+											<span
+												class={[
+													'retro text-[0.625rem] tracking-wider uppercase',
+													result.pass ? 'text-foreground' : 'text-destructive'
+												]}
+												aria-hidden="true">{result.pass ? 'Pass' : 'Fail'}</span
+											>
+											·
 											{#if result.step}Step {result.step},
 											{/if}<code>{result.criterion}</code>
 										</p>
 										{#if result.note}
-											<p class="mt-1.5 border-l-2 border-pixel pl-2.5">{result.note}</p>
+											<p class="mt-2 border-l-2 border-pixel pl-2.5 text-muted-foreground">
+												{result.note}
+											</p>
 										{/if}
 									</div>
 								</li>
@@ -331,16 +362,16 @@
 		</section>
 	{/if}
 
-	<section class="mt-16 flex min-w-0 flex-col gap-12">
+	<section class="mt-24 flex min-w-0 flex-col gap-20">
 		<CraftRatings ratings={g.ratings} craft={g.craft} />
 		<RunMetrics metrics={g.metrics} />
 	</section>
 
-	<div class="mt-16">
+	<div class="mt-24">
 		<MoreViews generation={g} />
 	</div>
 
-	<div class="mt-16">
+	<div class="mt-24">
 		<GenerationFiles files={g.files} />
 	</div>
 </div>

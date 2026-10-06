@@ -38,58 +38,61 @@
 </script>
 
 <!-- Rounded the way the rest of the site rounds a card: `pixel-frame` steps the corners one art
-pixel at a time instead of a smooth border-radius arc. -->
-<article
-	class="pixel-frame flex h-full flex-col bg-card transition-[translate] duration-150 hover:-translate-y-1 motion-reduce:hover:translate-y-0"
+pixel at a time instead of a smooth border-radius arc. The lift sits on a wrapper because the
+frame clip-paths itself. -->
+<div
+	class="h-full transition-[translate] duration-150 hover:-translate-y-1 motion-reduce:hover:translate-y-0"
 >
-	<!-- The palette is the card's picture: a fixed-height block, so every card in a row lines up
-	whatever its colour count. -->
-	<div
-		class="canvas-checker flex h-28 flex-col border-b-4 border-pixel"
-		role="img"
-		aria-label="{name}: {colors.length} colours"
-		title={colors.join(' ')}
-	>
-		{#each rows as background, index (index)}
-			<div class="min-h-0 flex-1" style:background-image={background}></div>
-		{/each}
-	</div>
-	<div class="flex flex-1 flex-col p-4">
-		<div class="flex items-start justify-between gap-3">
-			<svelte:element
-				this={heading}
-				class="min-w-0 font-sans text-lg leading-snug font-semibold break-words"
-				>{name}</svelte:element
-			>
-			<span
-				class="gem shrink-0 px-1.5 py-0.5 retro text-[0.625rem] tabular-nums"
-				aria-label="{colors.length} colours">{colors.length}</span
-			>
-		</div>
-		<p class="mt-0.5 truncate text-sm text-muted-foreground">by {author}</p>
-		{#if notes}
-			<p class="mt-3 line-clamp-2 text-sm text-muted-foreground">{notes}</p>
-		{/if}
-		<div class="min-h-4 flex-1" aria-hidden="true"></div>
+	<article class="pixel-frame flex h-full flex-col bg-card">
+		<!-- The palette is the card's picture: a fixed-height block, so every card in a row lines up
+	whatever its colour count. Gradient stops are hard, so every swatch stays crisp. -->
 		<div
-			class="flex items-center justify-between gap-2 border-t-2 border-dashed border-border pt-3"
+			class="canvas-checker flex h-28 flex-col border-b-4 border-pixel"
+			role="img"
+			aria-label="{name}: {colors.length} colours"
+			title={colors.join(' ')}
 		>
-			<code class="min-w-0 truncate text-sm text-primary-ink" title={id}>{id}</code>
-			<div class="flex shrink-0 items-center">
-				{@render actions?.()}
-				{#if source}
-					<Button
-						href={source}
-						rel="noopener"
-						variant="ghost"
-						size="sm"
-						class="size-10 px-0"
-						aria-label="{name} on Lospec"
-					>
-						<ExternalLinkIcon aria-hidden="true" />
-					</Button>
-				{/if}
+			{#each rows as background, index (index)}
+				<div class="min-h-0 flex-1" style:background-image={background}></div>
+			{/each}
+		</div>
+		<div class="flex flex-1 flex-col p-4">
+			<div class="flex items-start justify-between gap-3">
+				<svelte:element
+					this={heading}
+					class="min-w-0 font-sans text-lg leading-snug font-semibold break-words"
+					>{name}</svelte:element
+				>
+				<span
+					class="gem shrink-0 px-1.5 py-0.5 retro text-[0.625rem] tabular-nums"
+					aria-label="{colors.length} colours">{colors.length}</span
+				>
+			</div>
+			<p class="mt-0.5 truncate text-sm text-muted-foreground">by {author}</p>
+			{#if notes}
+				<p class="mt-3 line-clamp-2 text-sm text-muted-foreground">{notes}</p>
+			{/if}
+			<div class="min-h-4 flex-1" aria-hidden="true"></div>
+			<div
+				class="flex items-center justify-between gap-2 border-t-2 border-dashed border-border pt-3"
+			>
+				<code class="min-w-0 truncate text-sm text-primary-ink" title={id}>{id}</code>
+				<div class="flex shrink-0 items-center">
+					{@render actions?.()}
+					{#if source}
+						<Button
+							href={source}
+							rel="noopener"
+							variant="ghost"
+							size="sm"
+							class="size-10 px-0"
+							aria-label="{name} on Lospec"
+						>
+							<ExternalLinkIcon aria-hidden="true" />
+						</Button>
+					{/if}
+				</div>
 			</div>
 		</div>
-	</div>
-</article>
+	</article>
+</div>

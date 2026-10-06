@@ -7,6 +7,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { formatDate, plural } from '#shared/lib/format.js';
+	import { markFlight } from '../model/flight';
 	import type { PackSummary } from '../model/types';
 	import BoosterPack from './BoosterPack.svelte';
 
@@ -21,12 +22,22 @@
 		...new Set(pack.generations.map((generation) => generation.modelLabel))
 	]);
 	const first = $derived(pack.generations[0]!);
+
+	// A plain click navigates here, in this tab, so the pack is about to fly; a modified click
+	// opens another tab, where nothing flies.
+	function launch(event: MouseEvent) {
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+			return;
+		}
+		markFlight(pack.id);
+	}
 </script>
 
 <a
 	href={resolve('/packs/[id]', { id: pack.id })}
 	class="pack-tile group relative block outline-offset-8"
 	aria-label="Open the pack {pack.title}: {plural(pack.generations.length, 'card')}"
+	onclick={launch}
 >
 	<!-- Card backs, deepest first, so each sits under the one after it. -->
 	<div class="back pixel-frame absolute inset-0 [--d:2] [--frame:4px]" aria-hidden="true"></div>

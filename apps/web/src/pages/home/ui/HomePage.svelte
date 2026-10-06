@@ -8,7 +8,6 @@
 	import { Masonry, WALL_COLUMNS } from '#shared/ui/masonry/index.js';
 	import { PixelAnimation } from '#shared/ui/pixel/index.js';
 	import {
-		Badge,
 		Button,
 		Card,
 		CardContent,
@@ -35,6 +34,12 @@
 	let { data }: Props = $props();
 
 	const { counts, newest, latest, teasers } = $derived(data);
+	const word = (count: number, one: string, many = `${one}s`) => (count === 1 ? one : many);
+	const stats = $derived([
+		{ value: counts.generations, label: word(counts.generations, 'piece') },
+		{ value: counts.models, label: word(counts.models, 'model') },
+		{ value: counts.prompts, label: word(counts.prompts, 'benchmark') }
+	]);
 </script>
 
 <Seo
@@ -60,27 +65,21 @@
 	]}
 />
 
-<section class="grid-dots border-b-6 border-pixel">
+<section class="page-hero">
 	<div
-		class="mx-auto grid max-w-6xl items-center gap-14 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16"
+		class="mx-auto grid max-w-7xl items-center gap-14 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:gap-16 lg:py-24"
 	>
 		<div>
-			<div class="flex flex-wrap gap-4 px-1.5">
-				<Badge class="border-accent bg-accent text-[0.625rem] text-accent-foreground"
-					>{plural(counts.generations, 'piece')}</Badge
-				>
-				<Badge variant="secondary" class="text-[0.625rem]">{plural(counts.models, 'model')}</Badge>
-				<Badge variant="secondary" class="text-[0.625rem]"
-					>{plural(counts.prompts, 'benchmark')}</Badge
-				>
-			</div>
-			<h1 class="mt-8 text-2xl leading-snug sm:text-4xl sm:leading-snug">
+			<p class="eyebrow">Gallery &amp; benchmark</p>
+			<h1
+				class="title-depth mt-7 text-[1.625rem] leading-snug sm:text-4xl sm:leading-[1.25] xl:text-[2.75rem]"
+			>
 				Pixel art, drawn by <span class="text-holo">agents</span> in a real Aseprite window.
 			</h1>
-			<p class="mt-6 max-w-[58ch] text-lg text-muted-foreground">
+			<p class="lead mt-7 sm:text-xl">
 				Everything here was made with <a
 					href="https://github.com/with-pebbly/aseprite-ai-artist"
-					class="text-foreground underline underline-offset-4"
+					class="text-foreground underline decoration-accent underline-offset-4"
 					rel="noopener">Aseprite AI Artist</a
 				>, the plugin that lets Claude, GPT and friends hold the brush. Each piece comes with the
 				exact prompts, the model that answered each one, and the
@@ -89,10 +88,19 @@
 			</p>
 
 			<div class="mt-10 flex flex-wrap items-center gap-6 px-1.5">
-				<Button href={resolve('gallery')} size="lg">Browse the gallery</Button>
-
+				<Button href={resolve('gallery')} variant="accent" size="lg">Browse the gallery</Button>
 				<Button href={resolve('benchmarks')} variant="outline" size="lg">See the benchmark</Button>
 			</div>
+
+			<!-- The counts as a scoreboard: big numbers, the label under each. -->
+			<dl class="mt-12 grid max-w-md grid-cols-3 gap-4 border-t-4 border-dashed border-pixel pt-6">
+				{#each stats as stat (stat.label)}
+					<div class="flex flex-col-reverse gap-2">
+						<dt class="text-sm text-muted-foreground">{stat.label}</dt>
+						<dd class="retro text-xl text-foreground tabular-nums sm:text-2xl">{stat.value}</dd>
+					</div>
+				{/each}
+			</dl>
 		</div>
 
 		<figure class="w-full justify-self-center lg:max-w-[26rem] lg:justify-self-end">
@@ -130,10 +138,12 @@
 <!-- Full width, the same wall as the gallery page: this is a preview of it. -->
 <section class="px-4 pt-16 sm:px-6 lg:px-10" aria-labelledby="newest">
 	<div class="flex flex-wrap items-end justify-between gap-4">
-		<h2 id="newest" class="text-lg sm:text-2xl">Newest pieces</h2>
+		<h2 id="newest" class="section-title text-lg sm:text-2xl">Newest pieces</h2>
 		{#if counts.generations > latest.length}
-			<a href={resolve('gallery')} class="text-sm font-medium underline underline-offset-4"
-				>All {counts.generations} pieces</a
+			<a
+				href={resolve('gallery')}
+				class="text-sm font-medium underline decoration-accent underline-offset-4 hover:text-accent-ink"
+				>All {counts.generations} pieces →</a
 			>
 		{/if}
 	</div>
@@ -162,15 +172,15 @@
 </section>
 
 {#if teasers.length > 0}
-	<section class="mx-auto max-w-6xl px-4 pt-20 sm:px-6" aria-labelledby="bench">
-		<h2 id="bench" class="text-lg sm:text-2xl">The benchmark</h2>
-		<p class="mt-3 max-w-[64ch] text-muted-foreground">
+	<section class="mx-auto max-w-6xl px-4 pt-24 sm:px-6" aria-labelledby="bench">
+		<h2 id="bench" class="section-title text-lg sm:text-2xl">The benchmark</h2>
+		<p class="lead mt-4 text-base">
 			Same prompt, same canvas, same palette, judged against the same written criteria. Scores are
 			kept per plugin version, so you can see whether a model got better or the tool did.
 		</p>
 		<div class="mt-10 grid grid-cols-[minmax(0,1fr)] gap-10 px-1.5 md:grid-cols-2">
 			{#each teasers as teaser (teaser.id)}
-				<Card font="normal">
+				<Card font="normal" class="h-full">
 					<CardHeader>
 						<CardTitle class="text-base leading-relaxed">
 							<a

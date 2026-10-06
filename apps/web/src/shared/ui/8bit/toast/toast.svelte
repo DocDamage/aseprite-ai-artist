@@ -4,9 +4,7 @@
 </script>
 
 <div class="relative retro">
-	<div
-		class="flex w-full items-center rounded-lg bg-background p-4 shadow-lg ring-1 ring-black/5 md:max-w-[364px]"
-	>
+	<div class="flex w-full items-center bg-card p-4 text-card-foreground md:max-w-[364px]">
 		<div class="flex flex-1 items-center gap-3">
 			<!-- Not in 8bitcn: a moss square marks the confirmation in the site's success colour. -->
 			<span class="size-3 shrink-0 bg-secondary" aria-hidden="true"></span>

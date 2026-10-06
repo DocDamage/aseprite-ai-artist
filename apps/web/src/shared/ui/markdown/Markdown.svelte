@@ -28,6 +28,8 @@
 	}
 	.markdown :global(h2) {
 		font-size: 1.25rem;
+		padding-bottom: 0.75rem;
+		border-bottom: 4px dashed var(--pixel);
 	}
 	.markdown :global(h3) {
 		font-size: 1rem;
@@ -36,6 +38,7 @@
 	}
 	.markdown :global(:where(h4, h5, h6)) {
 		font-size: 0.75rem;
+		color: var(--primary-ink);
 	}
 	.markdown :global(.markdown-heading) {
 		margin-top: 2.5rem;
@@ -64,13 +67,21 @@
 	.markdown :global(a:not(.anchor)) {
 		color: var(--foreground);
 		text-decoration: underline;
+		text-decoration-color: var(--accent);
+		text-decoration-thickness: 2px;
 		text-underline-offset: 4px;
+	}
+	.markdown :global(a:not(.anchor):hover) {
+		background: color-mix(in oklab, var(--accent) 22%, transparent);
 	}
 	.markdown :global(:where(ul, ol)) {
 		padding-left: 1.5rem;
 	}
 	.markdown :global(ul) {
 		list-style: square;
+	}
+	.markdown :global(::marker) {
+		color: var(--accent-ink);
 	}
 	.markdown :global(ol) {
 		list-style: decimal;
@@ -79,15 +90,23 @@
 		margin-top: 0.35rem;
 	}
 	.markdown :global(blockquote) {
-		border-left: 6px solid var(--pixel);
-		padding-left: 1rem;
+		border-left: 6px solid var(--accent);
+		background: color-mix(in oklab, var(--muted) 70%, transparent);
+		padding: 0.75rem 1rem;
 		color: var(--muted-foreground);
+	}
+	.markdown :global(blockquote > :first-child) {
+		margin-top: 0;
+	}
+	.markdown :global(blockquote > :last-child) {
+		margin-bottom: 0;
 	}
 	.markdown :global(:not(pre) > code) {
 		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 		font-size: 0.875em;
 		background: var(--muted);
-		padding: 0.1rem 0.35rem;
+		border: 2px solid var(--border);
+		padding: 0.05rem 0.35rem;
 	}
 	.markdown :global(pre) {
 		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -95,7 +114,10 @@
 		line-height: 1.6;
 		background: var(--card);
 		border: 4px solid var(--pixel);
-		padding: 1rem;
+		box-shadow:
+			inset 0 0 0 2px var(--muted),
+			4px 4px 0 var(--title-depth);
+		padding: 1rem 1.25rem;
 		overflow-x: auto;
 		overflow-wrap: normal;
 	}
@@ -108,15 +130,21 @@
 		display: block;
 		overflow-x: auto;
 		border-collapse: collapse;
+		border: 4px solid var(--pixel);
 	}
 	.markdown :global(:where(th, td)) {
 		border: 2px solid var(--border);
-		padding: 0.4rem 0.75rem;
+		padding: 0.5rem 0.75rem;
 		text-align: left;
 		vertical-align: top;
 	}
 	.markdown :global(th) {
 		background: var(--muted);
+		border-bottom: 4px solid var(--pixel);
+		font-weight: 600;
+	}
+	.markdown :global(tbody tr:nth-child(even)) {
+		background: color-mix(in oklab, var(--muted) 45%, transparent);
 	}
 	.markdown :global(img) {
 		display: inline-block;

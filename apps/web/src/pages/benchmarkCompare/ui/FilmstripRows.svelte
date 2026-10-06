@@ -38,16 +38,18 @@ they move together. -->
 				</div>
 				{#if file}
 					{@const fitted = size(file)}
-					<img
-						src={file.url}
-						alt={label(run)}
-						width={fitted?.width}
-						height={fitted?.height}
-						loading="lazy"
-						decoding="async"
-						class="canvas-checker pixelated pixel-notch block max-w-none [--notch:4px]"
-						style:height={fitted ? undefined : `${target}px`}
-					/>
+					<div class="w-fit">
+						<img
+							src={file.url}
+							alt={label(run)}
+							width={fitted?.width}
+							height={fitted?.height}
+							loading="lazy"
+							decoding="async"
+							class="canvas-checker pixelated pixel-notch block max-w-none [--notch:4px]"
+							style:height={fitted ? undefined : `${target}px`}
+						/>
+					</div>
 				{:else}
 					<p class="text-sm text-muted-foreground">No filmstrip in this run.</p>
 				{/if}

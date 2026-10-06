@@ -186,9 +186,17 @@
 	}
 </script>
 
-<form class="space-y-6 px-1.5" role="search" onsubmit={(event) => event.preventDefault()}>
+<!-- A control panel: the search is the prominent row, the filters sit in a grid under a dashed rule. -->
+<form
+	class="pixel-frame bg-card/70 p-5 sm:p-6"
+	role="search"
+	onsubmit={(event) => event.preventDefault()}
+>
 	<div>
-		<label for="gallery-search" class="mb-3 block retro text-[0.625rem]">Search</label>
+		<label for="gallery-search" class="mb-3 flex items-center gap-2 retro text-[0.625rem]">
+			<SearchIcon class="text-accent-ink" aria-hidden="true" />
+			Search
+		</label>
 		<Input
 			id="gallery-search"
 			type="search"
@@ -196,9 +204,10 @@
 			bind:value={query}
 			oninput={refilter}
 			placeholder="Title, prompt text, author, tag…"
-			class="h-11 text-base md:text-base"
+			class="h-12 text-base md:text-base"
 		/>
 	</div>
+	<div class="pixel-rule my-5 opacity-40" aria-hidden="true"></div>
 	<div
 		class={[
 			'grid grid-cols-2 gap-x-6 gap-y-5',
@@ -241,8 +250,13 @@
 	</div>
 </form>
 
-<div class="mt-6 flex min-h-10 flex-wrap items-center justify-between gap-3">
-	<p class="text-sm text-muted-foreground" aria-live="polite">{countLine}</p>
+<div class="mt-5 flex min-h-11 flex-wrap items-center justify-between gap-3">
+	<p
+		class="pixel-notch border-2 border-pixel bg-muted px-3 py-2 text-sm text-foreground [--notch:2px]"
+		aria-live="polite"
+	>
+		{countLine}
+	</p>
 	{#if active}
 		<Button variant="ghost" size="sm" onclick={reset}>
 			<CloseIcon aria-hidden="true" />

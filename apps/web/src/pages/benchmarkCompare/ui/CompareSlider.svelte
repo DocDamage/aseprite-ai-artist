@@ -28,9 +28,9 @@
 	let available = $state<number | null>(null);
 	let dragging = $state(false);
 
-	/** The frame border on both sides, and the divider slider under the art in a box. */
+	/** The frame border on both sides, and the divider plate under the art in a box. */
 	const FRAME = 12;
-	const CONTROLS = 64;
+	const CONTROLS = 112;
 
 	const native = (file: FileView) =>
 		file.width && file.height
@@ -65,7 +65,7 @@
 	}
 </script>
 
-<div class="w-full" bind:clientWidth={available}>
+<div class="group/cmp w-full" bind:clientWidth={available}>
 	{#if layout}
 		<div class="overflow-x-auto">
 			<div
@@ -122,12 +122,21 @@
 					style:left="{position}%"
 				>
 					<div
-						class="mx-auto h-full w-1 bg-foreground shadow-[0_0_0_2px_rgb(0_0_0/0.35)] dark:bg-ring"
+						class="mx-auto h-full w-1 bg-foreground shadow-[0_0_0_2px_rgb(0_0_0/0.35)] transition-colors group-has-[[role=slider]:focus-visible]/cmp:bg-accent dark:bg-ring"
 					></div>
+					<!-- 44px wide: a thumb-sized grip. The whole frame takes the pointer, this is its marker;
+					keyboard focus on the divider slider below lights it up. -->
 					<div
-						class="absolute top-1/2 left-1/2 grid h-10 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center border-4 border-foreground bg-background/70 backdrop-blur-md dark:border-ring"
+						class={[
+							'absolute top-1/2 left-1/2 grid h-14 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center border-4 border-foreground bg-background/80 backdrop-blur-md transition-colors group-has-[[role=slider]:focus-visible]/cmp:border-accent group-has-[[role=slider]:focus-visible]/cmp:outline-4 group-has-[[role=slider]:focus-visible]/cmp:outline-accent dark:border-ring',
+							dragging && 'bg-accent/40'
+						]}
 					>
-						<span class="block h-4 w-1 bg-pixel"></span>
+						<span class="grid grid-cols-2 gap-1" aria-hidden="true">
+							{#each { length: 6 } as _, i (i)}
+								<span class="block size-1.5 bg-pixel"></span>
+							{/each}
+						</span>
 					</div>
 				</div>
 				<span
@@ -143,7 +152,7 @@
 				{#if onexpand}
 					<button
 						type="button"
-						class="pixel-notch absolute right-3 bottom-3 grid size-10 place-items-center border-4 border-foreground/50 bg-background/55 opacity-0 backdrop-blur-md transition-opacity [--notch:4px] group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] dark:border-ring/70 [@media(hover:none)]:opacity-100"
+						class="pixel-notch absolute right-3 bottom-3 grid size-11 place-items-center border-4 border-foreground/50 bg-background/55 opacity-0 backdrop-blur-md transition-opacity [--notch:4px] group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] dark:border-ring/70 [@media(hover:none)]:opacity-100"
 						aria-label="Open the comparison full screen"
 						onpointerdown={(event) => event.stopPropagation()}
 						onclick={onexpand}
@@ -153,15 +162,16 @@
 				{/if}
 			</div>
 		</div>
-		<Slider
-			bind:value={position}
-			min={0}
-			max={100}
-			step={0.5}
-			label="Divider: left {before.label}, right {after.label}"
-			valueText="{Math.round(position)}% {before.label}"
-			class="mx-auto mt-8 max-w-md"
-		/>
+		<div class="plate mx-auto mt-8 max-w-md px-6 py-4">
+			<Slider
+				bind:value={position}
+				min={0}
+				max={100}
+				step={0.5}
+				label="Divider: left {before.label}, right {after.label}"
+				valueText="{Math.round(position)}% {before.label}"
+			/>
+		</div>
 	{:else}
 		<p class="text-sm text-muted-foreground">
 			One of these images has no readable size, so they cannot be aligned.

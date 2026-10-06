@@ -46,7 +46,7 @@
 	{/if}
 	<button
 		type="button"
-		class="pixel-notch absolute top-0 right-0 grid size-10 place-items-center border-4 border-foreground/50 bg-background/55 opacity-0 backdrop-blur-md transition-opacity [--notch:4px] group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] dark:border-ring/70 [@media(hover:none)]:opacity-100"
+		class="pixel-notch absolute top-0 right-0 grid size-11 place-items-center border-4 border-foreground/50 bg-background/55 opacity-0 backdrop-blur-md transition-opacity [--notch:4px] group-hover/zoom:opacity-100 focus-visible:opacity-100 focus-visible:outline-offset-[-4px] dark:border-ring/70 [@media(hover:none)]:opacity-100"
 		aria-label="Open full screen: {alt}"
 		onclick={() => (zoomed = true)}
 	>

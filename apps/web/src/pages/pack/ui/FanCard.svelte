@@ -67,7 +67,7 @@
 		</header>
 
 		<div
-			class="pixel-frame canvas-checker relative grid min-h-0 flex-1 place-items-center [--frame:4px]"
+			class="pixel-frame canvas-checker relative grid min-h-0 flex-1 place-items-center shadow-[inset_0_0.3em_0.6em_rgb(0_0_0/0.28)] [--frame:4px]"
 		>
 			<img
 				src={generation.cover.url}
@@ -83,7 +83,7 @@
 			<p class="truncate text-[0.85em] font-medium">
 				{modelFirst ? formatDate(generation.date) : generation.modelLabel}
 			</p>
-			<p class="truncate text-[0.72em] text-muted-foreground">
+			<p class="truncate text-[0.72em] text-muted-foreground tabular-nums">
 				v{generation.plugin} · {generation.harness}
 			</p>
 		</footer>

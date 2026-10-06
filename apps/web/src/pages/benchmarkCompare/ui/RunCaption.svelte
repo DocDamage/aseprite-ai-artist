@@ -8,14 +8,23 @@
 		run: CompareRun;
 		/** An extra line, e.g. the animation's own length and the speed it plays at here. */
 		note?: string;
+		/** `end` mirrors the plate so a left/right pair faces each other on wide screens. */
+		align?: 'start' | 'end';
 	}
 
-	let { run, note }: Props = $props();
+	let { run, note, align = 'start' }: Props = $props();
 </script>
 
-<div class="flex flex-wrap items-center justify-between gap-2 text-sm">
-	<div>
-		<a href={resolve('/g/[id]', { id: run.id })} class="font-medium text-foreground hover:underline"
+<div
+	class={[
+		'plate flex flex-wrap items-center justify-between gap-x-4 gap-y-3 p-4 text-sm',
+		align === 'end' && 'md:flex-row-reverse md:text-right'
+	]}
+>
+	<div class="min-w-0">
+		<a
+			href={resolve('/g/[id]', { id: run.id })}
+			class="inline-flex min-h-11 items-center font-medium text-foreground hover:underline"
 			>{run.modelLabel}</a
 		>
 		<span class="block text-muted-foreground">

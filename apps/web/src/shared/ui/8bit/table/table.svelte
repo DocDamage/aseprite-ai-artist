@@ -38,7 +38,7 @@
 <div
 	class={cn('relative flex w-fit justify-center', tableVariants({ font, variant }), containerClass)}
 >
-	<ShadcnTable {...restProps} class={className}>
+	<ShadcnTable {...restProps} class={cn('tabular-nums', className)}>
 		{@render children?.()}
 	</ShadcnTable>
 	{#if variant !== 'borderless'}

@@ -31,15 +31,21 @@
 
 <!-- Full width, like a pin board: the wall of art is the page, and a wide screen gets more columns
 rather than wider margins. -->
-<div class="px-4 pt-14 sm:px-6 lg:px-10">
-	<div class="flex flex-wrap items-center justify-between gap-4">
-		<h1 class="text-2xl sm:text-4xl">Gallery</h1>
-		<Button href={resolve('contribute')}>Add your art</Button>
-	</div>
-	<p class="mt-4 max-w-[62ch] text-lg text-muted-foreground">
-		Every piece submitted so far, newest first. Runs that belong together, like one benchmark's,
-		come sealed in a pack. Open a piece to see the prompts that made it and download the source.
-	</p>
+<div class="px-4 pt-12 sm:px-6 sm:pt-16 lg:px-10">
+	<header class="page-hero">
+		<div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
+			<div>
+				<p class="eyebrow">Gallery</p>
+				<h1 class="title-depth mt-5 text-2xl leading-snug sm:text-4xl sm:leading-snug">Gallery</h1>
+			</div>
+			<!-- Outline, not accent: the wall below is the page, and this is the way in for contributors. -->
+			<Button href={resolve('contribute')} variant="outline">Add your art</Button>
+		</div>
+		<p class="lead mt-5">
+			Every piece submitted so far, newest first. Runs that belong together, like one benchmark's,
+			come sealed in a pack. Open a piece to see the prompts that made it and download the source.
+		</p>
+	</header>
 
 	{#if generations.length === 0 && packs.length === 0}
 		<Empty
@@ -54,7 +60,10 @@ rather than wider margins. -->
 				</EmptyDescription>
 			</EmptyHeader>
 
-			<EmptyContent><Button href={resolve('contribute')}>Add the first piece</Button></EmptyContent>
+			<EmptyContent
+				><Button href={resolve('contribute')} variant="accent">Add the first piece</Button
+				></EmptyContent
+			>
 		</Empty>
 	{:else}
 		<div class="mt-10">

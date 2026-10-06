@@ -68,23 +68,26 @@
 
 	<!-- Kept short: the opening below is the point of the page and should start above the fold. -->
 	<!-- Above the stage's glow, which spreads up behind it. -->
-	<header class="relative z-10 mx-auto mt-2 max-w-[72ch] text-center">
-		<p class="retro text-[0.625rem] tracking-[0.2em]">
-			<span class="text-holo">BOOSTER PACK</span>
-		</p>
-		<h1 class="mt-3 text-lg leading-snug text-balance sm:text-2xl sm:leading-snug">
+	<header class="page-hero relative z-10 mx-auto mt-2 max-w-[72ch] text-center [--hero-x:50%]">
+		<p class="eyebrow mx-auto">Booster pack</p>
+		<h1 class="title-depth mt-5 text-lg leading-snug text-balance sm:text-2xl sm:leading-snug">
 			{pack.title}
 		</h1>
 		{#if pack.description}
-			<p class="mt-3 text-pretty text-muted-foreground">{pack.description}</p>
+			<p class="lead mx-auto mt-4">{pack.description}</p>
 		{/if}
-		<ul class="mt-4 flex flex-wrap justify-center gap-3" aria-label="About this pack">
-			<li><Badge class="text-[0.625rem]">{plural(pack.generations.length, 'card')}</Badge></li>
+		<ul class="mt-6 flex flex-wrap justify-center gap-3" aria-label="About this pack">
 			<li>
-				<Badge variant="secondary" class="text-[0.625rem]">{plural(models.length, 'model')}</Badge>
+				<Badge class="text-[0.625rem] tabular-nums">{plural(pack.generations.length, 'card')}</Badge
+				>
 			</li>
 			<li>
-				<Badge variant="outline" class="text-[0.625rem]">
+				<Badge variant="secondary" class="text-[0.625rem] tabular-nums"
+					>{plural(models.length, 'model')}</Badge
+				>
+			</li>
+			<li>
+				<Badge variant="outline" class="text-[0.625rem] tabular-nums">
 					{first === last ? formatDate(first) : `${formatDate(first)} – ${formatDate(last)}`}
 				</Badge>
 			</li>
@@ -118,8 +121,8 @@ navigating from one pack to another plays the new one from sealed. -->
 </div>
 
 <!-- Full width, the same wall as the gallery: every card at its own shape, with the full plate. -->
-<section class="px-4 pt-16 sm:px-6 lg:px-10" aria-labelledby="cards">
-	<h2 id="cards" class="text-lg sm:text-2xl">Every card</h2>
+<section class="px-4 pt-20 sm:px-6 lg:px-10" aria-labelledby="cards">
+	<h2 id="cards" class="section-title text-lg sm:text-2xl">Every card</h2>
 	<p class="mt-3 text-muted-foreground">In the order the pack deals them.</p>
 	<Masonry
 		items={pack.generations}

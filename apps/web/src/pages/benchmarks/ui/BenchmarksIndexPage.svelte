@@ -45,17 +45,18 @@
 	description="Fixed pixel-art tasks run by different models on different plugin versions, scored criterion by criterion."
 />
 
-<div class="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
-	<h1 class="text-2xl sm:text-4xl">Benchmarks</h1>
-	<p class="mt-4 max-w-[62ch] text-lg text-muted-foreground">
+<header class="page-hero mx-auto max-w-6xl px-4 pt-12 sm:px-6 sm:pt-16">
+	<p class="eyebrow">Leaderboard</p>
+	<h1 class="title-depth mt-5 text-2xl leading-snug sm:text-4xl sm:leading-snug">Benchmarks</h1>
+	<p class="lead mt-5">
 		How well each model draws pixel art through the plugin, on the same fixed tasks.
 	</p>
+</header>
 
-	<section class="mt-10" aria-labelledby="leaderboard">
-		<h2 id="leaderboard" class="flex items-center gap-3 text-lg sm:text-2xl">
-			<TrophyIcon class="text-accent-ink" aria-hidden="true" />Leaderboard
-		</h2>
-		<p class="mt-2 text-sm text-muted-foreground">
+<div class="mx-auto max-w-6xl px-4 pt-16 sm:px-6">
+	<section aria-labelledby="leaderboard">
+		<h2 id="leaderboard" class="section-title text-lg sm:text-2xl">Leaderboard</h2>
+		<p class="mt-4 max-w-[70ch] text-sm text-muted-foreground">
 			Score is 0–100: 50% criteria passed, 35% craft from human judges, 15% speed relative to the
 			fastest run of each benchmark. A run with no recorded time is scored on criteria and craft
 			alone. Each model's best run per benchmark counts, averaged over every benchmark; unrated
@@ -63,12 +64,12 @@
 			<a href={RUBRIC_URL} class="underline underline-offset-4" rel="noopener">Read the rubric</a>.
 		</p>
 		{#if leaderboard.length > 0}
-			<div class="mt-6 overflow-x-auto px-2 pb-2">
+			<div class="mt-8 overflow-x-auto px-2 pb-2">
 				<Table.Root font="normal" containerClass="w-full min-w-max" class="text-sm">
 					<caption class="sr-only">Models ranked by their mean score out of 100</caption>
 					<Table.Header>
 						<Table.Row>
-							<Table.Head class="w-12 retro text-[0.625rem]">#</Table.Head>
+							<Table.Head class="w-16 retro text-[0.625rem]">#</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Model</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Score</Table.Head>
 							<Table.Head class="retro text-[0.625rem]">Compliance</Table.Head>
@@ -80,13 +81,35 @@
 					</Table.Header>
 					<Table.Body>
 						{#each leaderboard as entry, rank (entry.modelLabel)}
-							<Table.Row class="last:border-b-0">
-								<Table.Cell class={['retro text-xs tabular-nums', rank === 0 && 'text-accent-ink']}
-									>{rank + 1}</Table.Cell
+							<Table.Row
+								class={[
+									'last:border-b-0 hover:bg-muted/60',
+									rank === 0 &&
+										'bg-accent/10 shadow-[inset_4px_0_0_var(--accent)] hover:bg-accent/15'
+								]}
+							>
+								<Table.Cell class="py-3">
+									<!-- Gold, silver and bronze are PICO-8's yellow, silver and brown: the podium reads
+									from colour and the number, so it holds up without the colour alone. -->
+									<span
+										class={[
+											'gem inline-flex h-8 min-w-8 items-center justify-center px-2 retro text-xs tabular-nums',
+											rank === 0 && 'border-[#7a6a00] bg-(--pico-yellow) text-black',
+											rank === 1 && 'border-[#6b6c70] bg-(--pico-silver) text-black',
+											rank === 2 && 'border-[#4a2418] bg-(--pico-brown) text-(--pico-white)',
+											rank > 2 && 'border-pixel bg-muted text-muted-foreground shadow-none'
+										]}>{rank + 1}</span
+									>
+								</Table.Cell>
+								<Table.Head
+									scope="row"
+									class={['font-medium text-foreground', rank === 0 && 'text-base']}
 								>
-								<Table.Head scope="row" class="font-medium text-foreground"
-									>{entry.modelLabel}</Table.Head
-								>
+									<span class="inline-flex items-center gap-2">
+										{entry.modelLabel}
+										{#if rank === 0}<TrophyIcon class="text-accent-ink" aria-hidden="true" />{/if}
+									</span>
+								</Table.Head>
 								<Table.Cell>
 									<ScoreMeter points={Math.round(entry.score)} />
 								</Table.Cell>
@@ -109,7 +132,7 @@
 			<LeaderboardHistory {leaderboard} {total} />
 		{:else}
 			<p
-				class="pixel-notch mt-6 border-6 border-dashed border-pixel p-4 text-sm text-muted-foreground [--notch:6px]"
+				class="pixel-notch canvas-checker mt-8 border-6 border-dashed border-pixel p-6 text-center text-sm text-muted-foreground [--notch:6px]"
 			>
 				No model has been ranked yet. The maintainers run the benchmarks; new models are added as
 				they are tested.
@@ -117,9 +140,10 @@
 		{/if}
 	</section>
 
-	<section class="mt-16" aria-labelledby="all-benchmarks">
-		<h2 id="all-benchmarks" class="text-lg sm:text-2xl">All benchmarks</h2>
-		<ul class="mt-8 grid grid-cols-1 gap-x-8 gap-y-10 px-1.5 sm:grid-cols-2 lg:grid-cols-3">
+	<section class="pt-24" aria-labelledby="all-benchmarks">
+		<h2 id="all-benchmarks" class="section-title text-lg sm:text-2xl">All benchmarks</h2>
+		<!-- ArtCard carries its own hover lift. -->
+		<ul class="mt-10 grid grid-cols-1 gap-x-8 gap-y-10 px-1.5 sm:grid-cols-2 lg:grid-cols-3">
 			{#each cards as card (card.id)}
 				<li>
 					<ArtCard
@@ -150,7 +174,11 @@
 								<ol class="space-y-2 pt-2 text-sm">
 									{#each card.top as entry, rank (entry.modelLabel)}
 										<li class="flex items-center gap-2">
-											<span class="w-5 retro text-[0.625rem] text-muted-foreground">{rank + 1}</span
+											<span
+												class={[
+													'w-5 retro text-[0.625rem] tabular-nums',
+													rank === 0 ? 'text-accent-ink' : 'text-muted-foreground'
+												]}>{rank + 1}</span
 											>
 											<span class="min-w-0 flex-1 truncate">{entry.modelLabel}</span>
 											<ScoreMeter points={entry.points} />
@@ -173,19 +201,24 @@
 			{/each}
 		</ul>
 	</section>
-	<section aria-label="How a benchmark works" class="mt-16">
-		<ol class="grid gap-4 sm:grid-cols-3 sm:gap-6">
+	<section aria-label="How a benchmark works" class="pt-24 pb-4">
+		<ol class="grid gap-6 px-1.5 sm:grid-cols-3 sm:gap-8">
 			{#each explainerSteps as step, index (step.title)}
-				<li class="flex items-start gap-3 border-l-4 border-pixel pl-3">
-					<step.icon class="shrink-0 text-accent-ink" aria-hidden="true" />
-					<div>
-						<p class="retro text-[0.625rem] leading-relaxed">{index + 1}. {step.title}</p>
-						<p class="mt-1 text-sm text-muted-foreground">{step.body}</p>
+				<li class="plate flex items-start gap-4 p-4">
+					<span
+						class="gem flex size-10 shrink-0 items-center justify-center retro text-sm tabular-nums"
+						>{index + 1}</span
+					>
+					<div class="min-w-0">
+						<p class="flex items-center gap-2 retro text-[0.625rem] leading-relaxed">
+							<step.icon class="text-accent-ink" aria-hidden="true" />{step.title}
+						</p>
+						<p class="mt-2 text-sm text-muted-foreground">{step.body}</p>
 					</div>
 				</li>
 			{/each}
 		</ol>
-		<p class="mt-4 text-xs text-muted-foreground">
+		<p class="mt-6 max-w-[70ch] text-xs text-muted-foreground">
 			Benchmarks are run by the maintainers; new models are added as they are tested. A prompt's
 			revision changes when its wording or criteria do, and only runs on the current revision are
 			ranked.

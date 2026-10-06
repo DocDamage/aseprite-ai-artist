@@ -4,7 +4,7 @@
 	import ArrowDownIcon from '~icons/pixelarticons/arrow-down';
 	import ArrowLeftIcon from '~icons/pixelarticons/arrow-left';
 	import SlidersIcon from '~icons/pixelarticons/sliders';
-	import { Button } from '#shared/ui/8bit/index.js';
+	import { Badge, Button } from '#shared/ui/8bit/index.js';
 	import { PromptTimeline } from '#widgets/promptTimeline/index.js';
 	import { GalleryGrid, type FilterKey } from '#features/filterGenerations/index.js';
 	import { plural } from '#shared/lib/format.js';
@@ -63,14 +63,29 @@ test works comes last, for whoever wants to check it. -->
 			><ArrowLeftIcon aria-hidden="true" />All benchmarks</a
 		>
 
+		<p class="eyebrow mt-6">Benchmark</p>
 		<h1
 			id="benchmark-title"
-			class="mt-6 max-w-[28ch] text-2xl leading-snug sm:text-4xl sm:leading-snug"
+			class="title-depth mt-5 max-w-[28ch] text-2xl leading-snug sm:text-4xl sm:leading-snug"
 		>
 			{prompt.title}
 		</h1>
 
-		<p class="mt-5 max-w-[60ch] text-lg text-muted-foreground">
+		<ul class="mt-5 flex flex-wrap gap-3 px-1.5" aria-label="Benchmark details">
+			<li><Badge variant="outline" class="text-[0.625rem]">Revision {prompt.revision}</Badge></li>
+			<li>
+				<Badge variant="outline" class="text-[0.625rem]">
+					{plural(prompt.criteria.length, 'criterion', 'criteria')}
+				</Badge>
+			</li>
+			<li>
+				<Badge variant="outline" class="text-[0.625rem]"
+					>{plural(prompt.steps.length, 'step')}</Badge
+				>
+			</li>
+		</ul>
+
+		<p class="lead mt-5">
 			{lede}
 			{#if offStage > 0}
 				{plural(contenders.length, 'model')} got the same prompt. These are the top three.
@@ -84,7 +99,7 @@ test works comes last, for whoever wants to check it. -->
 		{#if winner}
 			<div
 				class={[
-					'mt-10 grid gap-6 px-1.5 sm:gap-8',
+					'mt-12 grid gap-6 px-1.5 sm:gap-8',
 					runnersUp.length > 0 ? 'lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]' : 'max-w-2xl'
 				]}
 			>
@@ -129,7 +144,7 @@ test works comes last, for whoever wants to check it. -->
 	</div>
 </section>
 
-<div class="mx-auto max-w-6xl px-4 pt-16 sm:px-6">
+<div class="mx-auto max-w-6xl px-4 pt-16 sm:px-6 sm:pt-20">
 	{#if showRanking}
 		<BenchmarkMatrix {benchmark} />
 	{/if}
@@ -141,7 +156,7 @@ test works comes last, for whoever wants to check it. -->
 	{#if runs.length > 0}
 		<section class={[showRanking && 'mt-20']} aria-labelledby="runs">
 			<div class="flex flex-wrap items-center justify-between gap-4">
-				<h2 id="runs" class="text-lg sm:text-2xl">Every run</h2>
+				<h2 id="runs" class="section-title text-lg sm:text-2xl">Every run</h2>
 				{#if runs.length > 1}
 					<Button
 						variant="outline"
@@ -152,7 +167,7 @@ test works comes last, for whoever wants to check it. -->
 					</Button>
 				{/if}
 			</div>
-			<p class="mt-2 text-sm text-muted-foreground">
+			<p class="mt-4 text-sm text-muted-foreground">
 				{plural(runs.length, 'run')} of this prompt, newest first. Runs on an older revision are marked
 				unranked.
 			</p>
@@ -172,8 +187,8 @@ test works comes last, for whoever wants to check it. -->
 		class={['scroll-mt-24', runs.length > 0 && 'mt-20']}
 		aria-labelledby="method-title"
 	>
-		<h2 id="method-title" class="text-lg sm:text-2xl">How it was tested</h2>
-		<p class="mt-2 max-w-[62ch] text-sm text-muted-foreground">
+		<h2 id="method-title" class="section-title text-lg sm:text-2xl">How it was tested</h2>
+		<p class="mt-4 max-w-[62ch] text-sm text-muted-foreground">
 			Every model gets this prompt word for word, on the same canvas and palette, and draws it in a
 			live Aseprite window. Each criterion is a yes-or-no check on the files it hands back.
 		</p>

@@ -64,7 +64,7 @@
 	{jsonLd}
 />
 
-<div class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-10">
+<div class="mx-auto max-w-7xl px-4 pt-8 pb-24 sm:px-6 lg:px-10">
 	<nav aria-label="Breadcrumb" class="text-sm text-muted-foreground">
 		<ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
 			<li>
@@ -92,14 +92,14 @@
 	>
 		<aside class="hidden lg:block" aria-label="Knowledge base">
 			<div
-				class="sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain pr-2 pb-8"
+				class="sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain border-r-4 border-dashed border-border pr-4 pb-8"
 			>
 				<KnowledgeNav groups={data.nav} current={path} />
 			</div>
 		</aside>
 
 		<article class="min-w-0">
-			<details class="kb-disclosure mb-8 border-4 border-pixel lg:hidden">
+			<details class="kb-disclosure mb-8 border-4 border-pixel bg-card/80 lg:hidden">
 				<summary class="flex min-h-12 cursor-pointer items-center px-4 retro text-[0.625rem]">
 					Browse the knowledge base
 				</summary>
@@ -108,11 +108,18 @@
 				</div>
 			</details>
 
-			<header class="max-w-3xl">
-				<code class="retro text-[0.625rem] break-all text-primary-ink">{data.address}</code>
-				<h1 class="mt-4 text-xl leading-snug sm:text-3xl">{data.title}</h1>
-				<Markdown html={data.lead} class="mt-6 text-lg [&_p]:m-0" />
-				<div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+			<header class="page-hero max-w-[70ch]">
+				<p class="eyebrow">{kind}</p>
+				<code class="mt-4 block retro text-[0.625rem] break-all text-primary-ink"
+					>{data.address}</code
+				>
+				<h1 class="title-depth mt-5 text-xl leading-snug sm:text-3xl sm:leading-snug">
+					{data.title}
+				</h1>
+				<Markdown html={data.lead} class="lead mt-6 [&_p]:m-0" />
+				<div
+					class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-t-4 border-dashed border-border pt-4 text-sm text-muted-foreground"
+				>
 					{#if data.templates > 0}
 						<span class="inline-flex items-center gap-1.5">
 							<GridIcon aria-hidden="true" />
@@ -131,7 +138,7 @@
 			</header>
 
 			{#if data.headings.length > 2}
-				<details class="kb-disclosure mt-8 max-w-3xl border-4 border-pixel xl:hidden">
+				<details class="kb-disclosure mt-8 max-w-[70ch] border-4 border-pixel bg-card/80 xl:hidden">
 					<summary class="flex min-h-12 cursor-pointer items-center px-4 retro text-[0.625rem]">
 						On this page
 					</summary>
@@ -141,17 +148,17 @@
 				</details>
 			{/if}
 
-			<Markdown html={data.html} class="kb-article mt-4 max-w-3xl" />
+			<Markdown html={data.html} class="kb-article mt-6 max-w-[70ch]" />
 
 			{#if data.previous || data.next}
-				<nav aria-label="{data.sectionTitle}, previous and next" class="mt-16 max-w-3xl">
+				<nav aria-label="{data.sectionTitle}, previous and next" class="mt-16 max-w-[70ch]">
 					<ul class="grid gap-4 sm:grid-cols-2">
 						<li>
 							{#if data.previous}
 								<a
 									href={data.previous.href}
 									rel="prev"
-									class="group flex h-full flex-col gap-2 border-4 border-pixel bg-card p-4 transition-colors hover:bg-muted"
+									class="group pixel-frame flex h-full flex-col gap-2 bg-card p-4 transition-colors hover:bg-muted"
 								>
 									<span class="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
 										<ArrowLeftIcon aria-hidden="true" />Previous
@@ -170,7 +177,7 @@
 								<a
 									href={data.next.href}
 									rel="next"
-									class="group flex h-full flex-col items-end gap-2 border-4 border-pixel bg-card p-4 text-right transition-colors hover:bg-muted"
+									class="group pixel-frame flex h-full flex-col items-end gap-2 bg-card p-4 text-right transition-colors hover:bg-muted"
 								>
 									<span class="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
 										Next<ArrowRightIcon aria-hidden="true" />

@@ -92,37 +92,38 @@
 	description="Every palette Aseprite AI Artist can load by name: the console classics and the {data.fromLospec} most-downloaded palettes on Lospec, searchable by name, author, tag and size."
 />
 
-<section class="grid-dots border-b-6 border-pixel">
-	<div class="px-4 py-12 sm:px-6 sm:py-16 lg:px-10">
-		<nav aria-label="Breadcrumb" class="text-sm text-muted-foreground">
-			<a
-				href={resolve('/knowledge')}
-				class="underline-offset-4 hover:text-foreground hover:underline">Knowledge base</a
-			>
-			<span aria-hidden="true"> / </span><span class="text-foreground">Palettes</span>
-		</nav>
-		<Badge class="mt-6 text-[0.625rem]">{data.total} palettes</Badge>
-		<h1 class="mt-6 text-2xl leading-snug sm:text-4xl">
-			Every <span class="text-holo">palette</span>, by name
-		</h1>
-		<p class="mt-6 max-w-[62ch] text-lg">
-			An agent loads any of these with <code>palette</code> op <code>preset</code> and its key — no
-			file, no download. A name that is not a key works as a search, so asking for
-			<code>"endesga"</code> lists every Endesga palette.
-		</p>
-		<p class="mt-4 max-w-[62ch] text-muted-foreground">
-			The console classics, then the most-downloaded palettes on
-			<a
-				href="https://lospec.com/palette-list"
-				rel="noopener"
-				class="text-foreground underline underline-offset-4">Lospec</a
-			>, each credited to its author.
-		</p>
-	</div>
-</section>
+<header class="page-hero px-4 pt-12 sm:px-6 sm:pt-16 lg:px-10">
+	<nav aria-label="Breadcrumb" class="text-sm text-muted-foreground">
+		<a href={resolve('/knowledge')} class="underline-offset-4 hover:text-foreground hover:underline"
+			>Knowledge base</a
+		>
+		<span aria-hidden="true"> / </span><span class="text-foreground">Palettes</span>
+	</nav>
+	<p class="eyebrow mt-6">{data.total} palettes</p>
+	<h1 class="title-depth mt-5 text-2xl leading-snug sm:text-4xl sm:leading-snug">
+		Every <span class="text-holo">palette</span>, by name
+	</h1>
+	<p class="lead mt-5">
+		An agent loads any of these with <code class="text-foreground">palette</code> op
+		<code class="text-foreground">preset</code> and its key — no file, no download. A name that is
+		not a key works as a search, so asking for <code class="text-foreground">"endesga"</code> lists every
+		Endesga palette.
+	</p>
+	<p class="mt-4 max-w-[62ch] text-muted-foreground">
+		The console classics, then the most-downloaded palettes on
+		<a
+			href="https://lospec.com/palette-list"
+			rel="noopener"
+			class="text-foreground underline underline-offset-4">Lospec</a
+		>, each credited to its author.
+	</p>
+</header>
 
-<div class="px-4 sm:px-6 lg:px-10">
-	<search class="block pt-10" aria-label="Palettes">
+<div class="px-4 pb-24 sm:px-6 lg:px-10">
+	<search
+		class="pixel-frame mt-10 block bg-card/80 p-5 backdrop-blur-sm sm:p-6"
+		aria-label="Palettes"
+	>
 		<label for="palette-search" class="flex items-center gap-2 text-sm text-muted-foreground">
 			<SearchIcon aria-hidden="true" />
 			Search by name, author or tag
@@ -139,7 +140,7 @@
 				bind:value={query}
 			/>
 		</div>
-		<div class="mt-6">
+		<div class="mt-6 border-t-4 border-dashed border-border pt-5">
 			<p id="palette-size" class="text-sm text-muted-foreground">Colours</p>
 			<ToggleGroup.Root bind:value={sizeLabel} aria-labelledby="palette-size" class="mt-3">
 				{#each SIZES as option (option.label)}
@@ -147,7 +148,7 @@
 				{/each}
 			</ToggleGroup.Root>
 		</div>
-		<p class="mt-4 text-sm text-muted-foreground" aria-live="polite">
+		<p class="mt-4 text-sm text-muted-foreground tabular-nums" aria-live="polite">
 			{#if failed}
 				The full list did not load; showing the first {data.first.length} of {data.total}. Reload to
 				try again.
@@ -202,7 +203,7 @@
 			{/if}
 		</p>
 	{:else}
-		<div class="mt-10 border-4 border-dashed border-border p-8 text-center">
+		<div class="mt-10 border-4 border-dashed border-border bg-card/60 p-8 text-center">
 			<p class="retro text-xs">No palette matches</p>
 			<p class="mt-3 text-muted-foreground">
 				Try one word of the name or the author, or

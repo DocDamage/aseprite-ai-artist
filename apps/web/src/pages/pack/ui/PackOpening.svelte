@@ -9,12 +9,15 @@
 	sealed state toward it. Switching the animations off — reduced motion, or a skip — therefore
 	lands on the open fan, never on a half-open pack.
 
+	Arriving from a wall, the sealed pack is the same element as the tile that was clicked (one
+	view-transition name): it flies here from the wall, and the opening waits for it to land.
+
 	The fan is a duplicate of the list under it, which is the way in for the keyboard and screen
 	readers; here it is hidden from both and left to the pointer.
 -->
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { BoosterPack, type PackSummary } from '#entities/pack/index.js';
+	import { onMount, untrack } from 'svelte';
+	import { BoosterPack, takeFlight, type PackSummary } from '#entities/pack/index.js';
 	import FanCard from './FanCard.svelte';
 
 	interface Props {
@@ -34,6 +37,23 @@
 	let playing = $state(false);
 	let skipped = $state(false);
 	let stage: HTMLDivElement;
+	/**
+	 * The pack flew in from a wall tile: that tile was clicked (`takeFlight`), and app/layout
+	 * marks <html> while the page transition runs. Read once, at creation — which happens inside
+	 * the transition's update — because changing the delays of running animations later would
+	 * make them jump. `takeFlight` runs first so the mark is cleared even without a transition.
+	 */
+	// The initial pack on purpose: the page keys this stage on the pack, so it never changes here.
+	const flew = untrack(() => takeFlight(pack.id));
+	const arrived =
+		flew &&
+		typeof document !== 'undefined' &&
+		document.documentElement.classList.contains('view-transitioning');
+	/**
+	 * The pack keeps the shared name only while it is still sealed. Once it has dropped away it
+	 * is hidden, and going back must not fly an invisible pack to the wall.
+	 */
+	let named = $state(true);
 
 	onMount(() => {
 		// The animation starts at first paint, not at hydration: on a slow load it may already be
@@ -41,6 +61,7 @@
 		playing =
 			!matchMedia('(prefers-reduced-motion: reduce)').matches &&
 			stage.getAnimations({ subtree: true }).some((animation) => animation.playState === 'running');
+		if (!playing && !arrived) named = false;
 	});
 
 	function skip(event: MouseEvent) {
@@ -48,11 +69,15 @@
 		event.preventDefault();
 		skipped = true;
 		playing = false;
+		named = false;
 	}
 
 	function landed(event: AnimationEvent) {
 		const target = event.target as HTMLElement;
-		if (target.dataset.last !== undefined && event.animationName.endsWith('deal')) playing = false;
+		if (target.dataset.last !== undefined && event.animationName.endsWith('deal')) {
+			playing = false;
+			named = false;
+		}
 	}
 
 	// A loose, hand-held stack before it is dealt: each card a degree or two off, the same way
@@ -68,7 +93,12 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div
 	bind:this={stage}
-	class={['stage relative mx-auto w-full', skipped && 'skipped', playing && 'playing']}
+	class={[
+		'stage relative mx-auto w-full',
+		arrived && 'arrived',
+		skipped && 'skipped',
+		playing && 'playing'
+	]}
 	style:--n={count}
 	title={playing ? 'Click to skip' : undefined}
 	onclick={skip}
@@ -96,7 +126,14 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 
 	<div class="booster-wrap absolute left-1/2">
 		<div class="flash absolute"></div>
-		<BoosterPack title={pack.title} {count} cover={pack.generations[0]!.cover} heading="p" eager />
+		<BoosterPack
+			title={pack.title}
+			{count}
+			cover={pack.generations[0]!.cover}
+			heading="p"
+			eager
+			transitionName={named ? `pack-${pack.id}` : undefined}
+		/>
 	</div>
 </div>
 
@@ -115,9 +152,12 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 		--card-h: calc(var(--card-w) * 88 / 63);
 		/* Dealing: when the centre card swings out, the gap to each next pair outward, how long
 		   each swing takes. */
-		--deal-at: 1150ms;
+		--deal-at: calc(1150ms + var(--arrive));
 		--deal-stagger: 90ms;
 		--deal-for: 720ms;
+		/* Every start below waits this long: nothing, unless the pack is still flying in from
+		   the wall — then the flight (app/styles, `*.pack`) plus a beat to settle. */
+		--arrive: 0ms;
 		/* The fan's pivot sits this far below the cards: further gives a flatter, wider arc. */
 		--pivot: calc(var(--card-h) * 1.6);
 		--spread: 66deg;
@@ -134,6 +174,9 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 		overflow-x: clip;
 		user-select: none;
 	}
+	.stage.arrived {
+		--arrive: 560ms;
+	}
 	@media (max-width: 640px) {
 		.stage {
 			--card-w: clamp(124px, 32vw, 216px);
@@ -148,7 +191,11 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 		width: var(--card-w);
 		height: var(--card-h);
 		translate: -50% 0;
-		animation: rise 640ms cubic-bezier(0.3, 0, 0.3, 1) 760ms both;
+		/* `unseen` keeps the stack hidden while the pack is in flight: the pack flies above the
+		   page in a layer of its own, so nothing on the stage would be covering the cards yet. */
+		animation:
+			rise 640ms cubic-bezier(0.3, 0, 0.3, 1) calc(760ms + var(--arrive)) both,
+			unseen var(--arrive) step-end both;
 	}
 	.slot {
 		--angle: calc((var(--i) - (var(--n) - 1) / 2) * var(--step));
@@ -187,9 +234,9 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 		opacity: 0;
 		visibility: hidden;
 		animation:
-			shake 380ms ease-in-out 160ms both,
-			sweep 900ms ease-in-out 0ms both,
-			drop 520ms cubic-bezier(0.5, 0, 0.75, 0) 980ms both;
+			shake 380ms ease-in-out calc(160ms + var(--arrive)) both,
+			sweep 900ms ease-in-out var(--arrive) both,
+			drop 520ms cubic-bezier(0.5, 0, 0.75, 0) calc(980ms + var(--arrive)) both;
 	}
 	/* Tall enough to hide a whole card before it rises. */
 	.booster-wrap :global(.window) {
@@ -197,14 +244,14 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 	}
 	.booster-wrap :global([data-part='top']) {
 		transform-origin: 85% 100%;
-		animation: tear 460ms cubic-bezier(0.3, 0, 0.6, 1) 560ms both;
+		animation: tear 460ms cubic-bezier(0.3, 0, 0.6, 1) calc(560ms + var(--arrive)) both;
 	}
 	.flash {
 		inset: -30% -40% auto;
 		height: 60%;
 		background: radial-gradient(closest-side, rgb(255 255 255 / 0.8), transparent);
 		opacity: 0;
-		animation: flash 600ms ease-out 600ms both;
+		animation: flash 600ms ease-out calc(600ms + var(--arrive)) both;
 	}
 
 	/* --- The light behind the fan ------------------------------------------------------------- */
@@ -229,7 +276,7 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 		);
 		filter: blur(16px);
 		opacity: 0.7;
-		animation: swell 1100ms cubic-bezier(0.2, 0.8, 0.3, 1) 900ms both;
+		animation: swell 1100ms cubic-bezier(0.2, 0.8, 0.3, 1) calc(900ms + var(--arrive)) both;
 	}
 	.burst {
 		width: calc(var(--card-h) * 3.2);
@@ -243,8 +290,8 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 		mask: radial-gradient(closest-side, #000 18%, transparent 78%);
 		opacity: 0.55;
 		animation:
-			swell 1000ms cubic-bezier(0.2, 0.8, 0.3, 1) 1000ms both,
-			spin 120s linear 1000ms infinite;
+			swell 1000ms cubic-bezier(0.2, 0.8, 0.3, 1) calc(1000ms + var(--arrive)) both,
+			spin 120s linear calc(1000ms + var(--arrive)) infinite;
 	}
 
 	@keyframes shake {
@@ -328,6 +375,11 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 		}
 		45% {
 			translate: 0 -6%;
+		}
+	}
+	@keyframes unseen {
+		from {
+			visibility: hidden;
 		}
 	}
 	@keyframes swell {

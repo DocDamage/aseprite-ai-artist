@@ -53,8 +53,9 @@
 	>Skip to content</a
 >
 
+<!-- Glass over the page: translucent and blurred, so the art scrolls under it softened. -->
 <header
-	class="site-header sticky top-0 z-40 border-b-6 border-pixel bg-background/95 backdrop-blur"
+	class="site-header sticky top-0 z-40 border-b-6 border-pixel bg-background/70 backdrop-blur-xl backdrop-saturate-150"
 >
 	<div class="flex h-16 items-center gap-x-4 px-4 sm:px-6 lg:gap-x-6 lg:px-10">
 		<BrandLink size="sm" class="py-1.5" />
@@ -67,7 +68,7 @@
 						<a
 							href={link.href}
 							aria-current={current(link.href) ? 'page' : undefined}
-							class="relative inline-flex h-11 items-center px-2 retro text-[0.625rem] text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:text-foreground aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-2 aria-[current=page]:after:bottom-1 aria-[current=page]:after:h-1 aria-[current=page]:after:bg-primary xl:text-xs"
+							class="relative inline-flex h-11 items-center px-2 retro text-[0.625rem] text-muted-foreground transition-colors after:absolute after:inset-x-2 after:bottom-1 after:h-1 after:bg-transparent after:transition-colors hover:text-foreground hover:after:bg-pixel aria-[current=page]:text-foreground aria-[current=page]:after:bg-accent xl:text-xs"
 						>
 							<span class={link.accent ? 'text-holo' : undefined}>{link.label}</span>
 						</a>

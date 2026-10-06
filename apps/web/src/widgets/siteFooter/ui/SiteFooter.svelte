@@ -17,7 +17,10 @@
 	];
 </script>
 
-<footer class="site-footer mt-24 border-t-6 border-pixel">
+<!-- A slightly raised ground, so the footer reads as the floor the page comes to rest on. -->
+<footer
+	class="site-footer mt-24 border-t-6 border-pixel bg-card/30 [&_li_a]:text-muted-foreground [&_li_a]:transition-colors [&_li_a:hover]:text-foreground"
+>
 	<!-- PICO-8's sixteen colours: every benchmark and the mascot are drawn in it. -->
 	<div class="flex h-2" aria-hidden="true">
 		{#each swatches as color (color)}

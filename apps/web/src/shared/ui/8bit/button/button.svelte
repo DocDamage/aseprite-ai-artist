@@ -29,7 +29,11 @@
 	{size}
 	{variant}
 	class={cn(
-		'relative inline-flex items-center justify-center gap-1.5 rounded-none border-none transition-transform active:translate-y-1',
+		'relative inline-flex items-center justify-center gap-1.5 rounded-none border-none transition-[translate,scale] duration-150 active:translate-y-1',
+		// Framed buttons rise a step under the pointer, the frame decorations with them.
+		variant !== 'ghost' &&
+			variant !== 'link' &&
+			'hover:-translate-y-0.5 motion-reduce:hover:translate-y-0',
 		size === 'icon' && 'mx-1 my-0',
 		font !== 'normal' && 'retro',
 		className

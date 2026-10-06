@@ -29,14 +29,14 @@
 
 {#if metrics.length > 0}
 	<section aria-labelledby="metrics">
-		<h2 id="metrics" class="text-sm sm:text-base">Run metrics</h2>
-		<p class="mt-2 text-sm text-muted-foreground">
+		<h2 id="metrics" class="section-title text-base sm:text-xl">Run metrics</h2>
+		<p class="mt-4 text-sm text-muted-foreground">
 			What each step cost, as the harness reported it.
 		</p>
-		<div class="mt-5 overflow-x-auto px-2 pb-2">
+		<div class="pixel-frame mt-6 overflow-x-auto bg-card">
 			<Table.Root font="normal" containerClass="w-full min-w-max" class="text-sm">
 				<caption class="sr-only">Time, tool calls, output tokens and cost per step</caption>
-				<Table.Header>
+				<Table.Header class="bg-muted/60">
 					<Table.Row>
 						<Table.Head class="retro text-[0.625rem]">Step</Table.Head>
 						{#each columns as column (column.id)}
@@ -44,7 +44,7 @@
 						{/each}
 					</Table.Row>
 				</Table.Header>
-				<Table.Body>
+				<Table.Body class="[&_tr:nth-child(even)]:bg-muted/30">
 					{#each metrics as step (step.step)}
 						<Table.Row>
 							<Table.Head scope="row" class="font-medium text-foreground">{step.step}</Table.Head>
@@ -56,7 +56,7 @@
 							{/each}
 						</Table.Row>
 					{/each}
-					<Table.Row class="last:border-b-0">
+					<Table.Row class="border-t-4 border-pixel bg-muted/60 last:border-b-0">
 						<Table.Head scope="row" class="retro text-[0.625rem] text-foreground">Total</Table.Head>
 						{#each columns as column (column.id)}
 							{@const total = totals[column.id]}

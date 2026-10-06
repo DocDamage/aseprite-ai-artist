@@ -59,7 +59,7 @@
 	bind:this={dialog}
 	{id}
 	aria-labelledby="{id}-title"
-	class="site-menu m-0 ml-auto h-dvh max-h-none w-[min(22rem,100vw)] max-w-none border-0 border-l-6 border-pixel bg-background p-0 text-foreground"
+	class="site-menu m-0 ml-auto h-dvh max-h-none w-[min(24rem,100vw)] max-w-none border-0 border-l-6 border-pixel bg-background/80 p-0 text-foreground backdrop-blur-xl"
 	onclose={() => (open = false)}
 	onclick={(event) => {
 		// The dialog element itself is only hit through the backdrop.
@@ -81,16 +81,19 @@
 
 		<nav aria-label="Main" class="min-h-0 flex-1 overflow-y-auto py-3">
 			<ul>
-				{#each links as link (link.href)}
-					<li>
+				{#each links as link, i (link.href)}
+					<li class="site-menu-item" style:--i={i}>
 						<a
 							href={link.href}
 							aria-current={current(link.href) ? 'page' : undefined}
-							class="flex min-h-14 items-center gap-4 border-l-6 border-transparent px-5 retro text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground aria-[current=page]:border-primary aria-[current=page]:bg-muted aria-[current=page]:text-foreground"
+							class="relative flex min-h-14 items-center gap-4 border-l-6 border-transparent px-5 retro text-xs text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-accent aria-[current=page]:border-accent aria-[current=page]:bg-muted aria-[current=page]:text-foreground"
 							onclick={() => (open = false)}
 						>
 							<link.icon aria-hidden="true" />
 							<span class={link.accent ? 'text-holo' : undefined}>{link.label}</span>
+							{#if current(link.href)}
+								<span class="ml-auto size-2 bg-accent" aria-hidden="true"></span>
+							{/if}
 						</a>
 					</li>
 				{/each}
@@ -144,6 +147,17 @@
 	.site-menu[open]::backdrop {
 		animation: site-menu-fade 160ms steps(4, end);
 	}
+	/* Rows step in one after another; --i is the row index set in the markup. */
+	.site-menu[open] .site-menu-item {
+		animation: site-menu-item-in 240ms steps(4, end) backwards;
+		animation-delay: calc(80ms + var(--i, 0) * 40ms);
+	}
+	@keyframes site-menu-item-in {
+		from {
+			opacity: 0;
+			transform: translateX(1.5rem);
+		}
+	}
 	@keyframes site-menu-in {
 		from {
 			transform: translateX(100%);
@@ -156,7 +170,8 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.site-menu[open],
-		.site-menu[open]::backdrop {
+		.site-menu[open]::backdrop,
+		.site-menu[open] .site-menu-item {
 			animation: none;
 		}
 	}

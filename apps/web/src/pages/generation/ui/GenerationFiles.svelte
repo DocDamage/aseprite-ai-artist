@@ -13,11 +13,11 @@
 </script>
 
 <section aria-labelledby="files">
-	<h2 id="files" class="text-lg sm:text-2xl">Files</h2>
-	<div class="mt-8 overflow-x-auto px-2 pb-2">
+	<h2 id="files" class="section-title text-lg sm:text-2xl">Files</h2>
+	<div class="pixel-frame mt-8 overflow-x-auto bg-card">
 		<Table.Root font="normal" containerClass="w-full min-w-max" class="text-sm">
 			<caption class="sr-only">Every file in this generation</caption>
-			<Table.Header>
+			<Table.Header class="bg-muted/60">
 				<Table.Row>
 					<Table.Head class="retro text-[0.625rem]">File</Table.Head>
 					<Table.Head class="retro text-[0.625rem]">Role</Table.Head>
@@ -26,7 +26,7 @@
 					<Table.Head><span class="sr-only">Download</span></Table.Head>
 				</Table.Row>
 			</Table.Header>
-			<Table.Body>
+			<Table.Body class="[&_tr:nth-child(even)]:bg-muted/30">
 				{#each files as file (file.name)}
 					<Table.Row class="last:border-b-0">
 						<Table.Head scope="row" class="h-auto py-3 font-medium text-foreground">

@@ -18,20 +18,22 @@
 </script>
 
 <section aria-labelledby={`steps-${prompt.id}`}>
-	<h2 id={`steps-${prompt.id}`} class="text-sm sm:text-base">{heading}</h2>
+	<h2 id={`steps-${prompt.id}`} class="section-title text-lg sm:text-2xl">{heading}</h2>
 
-	<ol class="mt-5">
+	<ol class="mt-8">
 		{#each prompt.steps as step, index (index)}
 			<li class="contents">
-				<div class="border-l-6 border-pixel pl-4">
+				<!-- The rail is the box's own left border, so it stays unbroken between the badge
+				     and the connector below. -->
+				<div class="border-l-6 border-pixel pl-5 sm:pl-6">
 					<div class="flex flex-wrap items-center gap-3">
 						<span
-							class="grid size-7 place-items-center bg-primary retro text-[0.625rem] text-primary-foreground"
+							class="-ml-[calc(1.25rem+21px)] grid size-9 place-items-center bg-primary retro text-xs text-primary-foreground tabular-nums sm:-ml-[calc(1.5rem+21px)]"
 							aria-hidden="true"
 						>
 							{index + 1}
 						</span>
-						<h3 class="text-xs leading-relaxed">
+						<h3 class="text-xs leading-relaxed sm:text-sm">
 							<span class="sr-only">Step {index + 1}: </span>{step.title ?? `Step ${index + 1}`}
 						</h3>
 						<CopyButton
@@ -46,7 +48,11 @@
 							Run by <span class="font-medium text-foreground">{step.model}</span>
 						</p>
 					{/if}
-					<p class="mt-3 bg-muted/60 px-3 py-2 leading-relaxed whitespace-pre-wrap">{step.text}</p>
+					<p
+						class="mt-4 max-w-[68ch] border-l-4 border-accent/60 bg-muted/60 px-4 py-3 text-[1.0625rem] leading-relaxed whitespace-pre-wrap"
+					>
+						{step.text}
+					</p>
 					{#if step.original}
 						<details class="mt-2 text-sm">
 							<summary class="cursor-pointer text-muted-foreground"
@@ -76,7 +82,7 @@
 					{/if}
 				</div>
 				{#if index < prompt.steps.length - 1}
-					<div class="flex items-center gap-3 py-3 pl-1 text-muted-foreground">
+					<div class="-ml-2.5 flex items-center gap-3 py-4 text-muted-foreground">
 						<ArrowDownIcon aria-hidden="true" />
 						{#if freshSessions}
 							<Badge variant="outline" class="text-[0.625rem]">new session</Badge>

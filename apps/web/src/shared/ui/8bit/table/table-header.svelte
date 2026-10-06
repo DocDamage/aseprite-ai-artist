@@ -11,6 +11,12 @@
 	}: HTMLAttributes<HTMLTableSectionElement> = $props();
 </script>
 
-<ShadcnTableHeader {...restProps} class={cn(className, 'border-b-4 border-pixel')}>
+<ShadcnTableHeader
+	{...restProps}
+	class={cn(
+		className,
+		'border-b-4 border-pixel bg-muted/60 text-muted-foreground [&_th]:text-xs [&_th]:tracking-wide'
+	)}
+>
 	{@render children?.()}
 </ShadcnTableHeader>
