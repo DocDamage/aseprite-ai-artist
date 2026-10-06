@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-10-06
+
 ### Added
 
 - **A subject-by-subject pixel-art rulebook**
@@ -20,8 +22,8 @@ All notable changes to this project are documented here. Format follows
   has size budgets, procedures, mistakes, a review list and ` ```grid `
   templates in the exact shape `draw` op `grid` takes — hands at 8–64 px, eye
   ladders, walk and run key poses, quadrupeds, circles and isometric cubes,
-  tiles, flames. Distilled from sixteen books and the major free tutorials, in
-  our own words. `rules://index` groups them by band, `studio` maps each
+  tiles, flames. Written in our own words. `rules://index` groups them by
+  band, `studio` maps each
   subject to its files, and the drawing skills and agents read them.
   `tests/rules.test.ts` compiles every template through the grid compiler,
   `scripts/rule-templates.ts` renders them to PNG for review, and a server

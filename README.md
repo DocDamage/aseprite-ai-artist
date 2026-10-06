@@ -139,6 +139,32 @@ Early signal, not a measurement: with the same model and prompts, the mage
 benchmark went 3 → 4/10 and the road 1 → 3/10; the tree stayed at 2
 ([compare them](https://pixeli.pebbly.space/benchmarks)).
 
+### 📚 The pixel-art knowledge base
+
+New in 0.7.0. The agent doesn't improvise how a hand looks at 16 px or how a
+horse's legs move in a walk — it reads it. [`rules/`](rules/) holds 62 files
+of pixel-art craft, by subject:
+
+| Band | Covers |
+|---|---|
+| `0x` | core discipline: the loop, palette, shading, silhouette, outlines, review |
+| `1x` | technique: lines and curves, clusters, anti-aliasing, dithering, readability |
+| `2x` | colour: hue-shifted ramps, platform palettes, materials, lighting |
+| `3x` | characters: proportions, anatomy, heads, eyes and expressions, hands and feet, hair and clothing, views, portraits |
+| `4x` | animation: timing, idle, walk and run, jumps, attacks and hitstop, secondary motion, subpixel, top-down |
+| `5x` | creatures: quadrupeds and their gaits, birds, small creatures, monsters |
+| `6x` | environments: skies, landscapes, parallax, trees, water, ground, tiles, buildings |
+| `7x` | objects and 3D: perspective, isometric, solid forms, props, vehicles, turnarounds |
+| `8x` | effects and UI: fire, smoke, magic, impacts and game feel, particles, icons, fonts |
+| `9x` | style: console eras, composition, and the tells of generated art |
+
+Each file has size budgets (what fits at 8, 16, 32, 64 px), a procedure,
+the usual mistakes, a review checklist — and around 400 pixel templates in
+all, written as grids the agent can paste straight onto the canvas: hand
+ladders, eye sets, walk and run key poses, quadrupeds, circles and isometric
+cubes, seamless tiles, flame frames. `studio` sends each stage to the files
+for its subject, and every client reads them as `rules://` resources.
+
 ## 🧰 Skills
 
 `studio` picks these for you. Call one directly when you know the step you want
@@ -194,8 +220,9 @@ your agent  ──MCP──▶  server  ──▶  bridge  ──▶  Aseprite e
 - **18 tools, grouped by noun** (`draw`, `look`, `layer`, `frame`, `export`…)
   instead of ninety — every tool costs context on every turn.
   [Reference](docs/TOOLS.md).
-- **A rulebook** in [`rules/`](rules/) — palettes, shading, outlines, timing —
-  served over MCP, so every client gets the same craft knowledge.
+- **A knowledge base** in [`rules/`](rules/) — 62 files from line craft to
+  walk cycles, with pixel templates — served over MCP, so every client gets the
+  same craft knowledge.
 - **Safe by default.** Every action is one undo step. With Aseprite detached,
   tools refuse instead of editing files on disk. Everything binds to
   `127.0.0.1`. [Details](docs/ARCHITECTURE.md) · [security](SECURITY.md).
