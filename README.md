@@ -141,40 +141,25 @@ benchmark went 3 → 4/10 and the road 1 → 3/10; the tree stayed at 2
 
 ### 📚 The pixel-art knowledge base
 
-New in 0.7.0. The agent doesn't improvise how a hand looks at 16 px or how a
-horse's legs move in a walk — it reads it. [`rules/`](rules/) holds 62 files
-of pixel-art craft, by subject:
+The agent doesn't improvise a hand at 16 px or a horse's walk — it looks them up.
 
-| Band | Covers |
+**62 rules · ~400 pixel templates · 2006 palettes** — browse them at
+**[pixeli.pebbly.space/knowledge](https://pixeli.pebbly.space/knowledge)** 👀
+
+| 🧍 Craft | 🌍 World |
 |---|---|
-| `0x` | core discipline: the loop, palette, shading, silhouette, outlines, review |
-| `1x` | technique: lines and curves, clusters, anti-aliasing, dithering, readability |
-| `2x` | colour: hue-shifted ramps, platform palettes, materials, lighting |
-| `3x` | characters: proportions, anatomy, heads, eyes and expressions, hands and feet, hair and clothing, views, portraits |
-| `4x` | animation: timing, idle, walk and run, jumps, attacks and hitstop, secondary motion, subpixel, top-down |
-| `5x` | creatures: quadrupeds and their gaits, birds, small creatures, monsters |
-| `6x` | environments: skies, landscapes, parallax, trees, water, ground, tiles, buildings |
-| `7x` | objects and 3D: perspective, isometric, solid forms, props, vehicles, turnarounds |
-| `8x` | effects and UI: fire, smoke, magic, impacts and game feel, particles, icons, fonts |
-| `9x` | style: console eras, composition, and the tells of generated art |
+| `0x` **Core** — loop, palette, shading, outlines | `5x` **Creatures** — quadrupeds, birds, monsters |
+| `1x` **Technique** — lines, anti-aliasing, dithering | `6x` **Environments** — skies, water, tiles, buildings |
+| `2x` **Colour** — hue-shifted ramps, materials, light | `7x` **Objects & 3D** — perspective, isometric, props |
+| `3x` **Characters** — anatomy, faces, hands, clothing | `8x` **Effects & UI** — fire, magic, particles, fonts |
+| `4x` **Animation** — idle, walk, jumps, attacks | `9x` **Style** — console eras, tells of generated art |
 
-Each file has size budgets (what fits at 8, 16, 32, 64 px), a procedure,
-the usual mistakes, a review checklist — and around 400 pixel templates in
-all, written as grids the agent can paste straight onto the canvas: hand
-ladders, eye sets, walk and run key poses, quadrupeds, circles and isometric
-cubes, seamless tiles, flame frames. `studio` sends each stage to the files
-for its subject, and every client reads them as `rules://` resources.
+Every rule gives size budgets, a procedure, common mistakes and grid templates
+the agent pastes straight onto the canvas. Any MCP client reads them as
+`rules://` resources from [`rules/`](rules/).
 
-**About 2000 palettes** come bundled: the console classics (`pico8`,
-`gameboy`, `cga`, `1bit`…) and the most-downloaded palettes on
-[Lospec](https://lospec.com/palette-list), each credited to its author. Ask
-for one by key — `palette` op `preset`, `"endesga-32"` — or by a word of its
-name, and the agent gets the matching keys back. Nothing to download.
-
-**Read it on the web:** [pixeli.pebbly.space/knowledge](https://pixeli.pebbly.space/knowledge)
-shows the same files from the same commit — every rule with its templates
-drawn as pixel pictures, every skill and agent, and a searchable
-[palette catalogue](https://pixeli.pebbly.space/knowledge/palettes).
+🎨 **Palettes:** the console classics plus Lospec's 2000 most-downloaded, each
+credited — `preset: "endesga-32"`, or just a word of the name.
 
 ## 🧰 Skills
 
