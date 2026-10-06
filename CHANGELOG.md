@@ -18,10 +18,9 @@ All notable changes to this project are documented here. Format follows
   kept only if one critic call, shown the old and new versions blind, picks
   the new one — scores from separate calls proved not to share a scale.
   `animate` draws objects that grow on screen at three or four hand-made
-  sizes, and the critic inspects key frames at full zoom. Found over twelve
-  experiment runs, now in the gallery beside the benchmark rows: the best
-  house went from 3/10 to 8/10 under the loop, and a good tree draft got
-  worse before the blind-comparison guard.
+  sizes, and the critic inspects key frames at full zoom. The effect on
+  quality is not established: twelve single-run experiments, all in the
+  gallery beside the benchmark rows.
 
 - **Site: a knowledge base.** `/knowledge` shows the pixel-art rulebook the
   agents follow — every rule, grouped by band, with its ` ```grid ` templates

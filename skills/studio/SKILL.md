@@ -71,15 +71,14 @@ workflow it names and follow that — do not do the step from memory.
    The critique decides whether you iterate at all. A draft ships as it is
    when its critique has **no BLOCKING finding and scores 7/10 or more** —
    note its other findings in your report and stop. Below that, or while any
-   BLOCKING finding remains, fix it — at most three fix rounds. In the
-   benchmark runs a first draft at 3/10 became 8/10 this way, and stopping a
-   weak draft for want of a blocker left it weak.
+   BLOCKING finding remains, fix it — at most three fix rounds. Stopping a
+   weak draft only because nothing was marked BLOCKING leaves it weak.
 
    Each round fixes the BLOCKING findings, or when there are none the one
    change the critic names as its first fix — never a general polish. A
    fresh critic always finds something, and each finds something different;
-   polishing on that alone is how a dense, lively canopy got rebuilt into a
-   thinner one. The guards below are what keep a round from doing that:
+   polishing on that alone rebuilds parts that already worked. The guards
+   below are what keep a round from doing that:
 
    - **Snapshot before you touch it.** `export op="png"` the current frame (or
      `op="gif"` for an animation) to a scratch path, and keep an exact copy of
