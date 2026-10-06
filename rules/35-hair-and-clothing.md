@@ -8,6 +8,27 @@ the mass shapes, the fold types, the cloth-versus-armour split and the cape shap
 with templates. How they move is `rules://45-secondary-motion`; materials and colour
 are `rules://23-materials-soft`, `rules://22-materials-hard` and `rules://20-color-for-pixel-art`.
 
+## Essentials
+
+- Hair is 3–5 masses, never strands. Separate masses by a 1 px darker line, outline notch or lightness step.
+- Push hair 1–3 px past the skull outline and run the flat-fill silhouette test; a style that lives only inside the face outline won't read at 16 px.
+- One highlight band, curved with the skull, on top of the head not the hairline: 3–6 × 1–2 px at 32 px, 2 px at 16 px. Tones: 3 at ≤ 32 px, 4–5 at 48 px.
+- Hairline by colour, not outline: no black line across the forehead. Every hair mass ≥ 2 px wide where it meets skin or a headband.
+- Locks taper in run lengths like 4-3-2-1; spikes 2–4 px wide stepped 3-2-1.
+- Cloth reads by silhouette first: hems fan from hip/knee; 1 shadow tone + outline at ≤ 32 px; no highlights on cloth.
+- Folds start at a support point (shoulder, elbow, waist, knee, belt). Budget: 16 px 1 fold + hem arc; 32 px ≤ 2 per region; 48 px 3–4; 64 px 4–6. Tight clothing has none.
+- Separate garments by colour, not outline. One signature accessory per character.
+- Armour = large planes, 2–3 colour chunks, highlight line mid-piece, hard seams; cloth = one tone + shadow.
+- Cape is one ribbon: 2–3 value bands + 1 fold at 16 px, 4–5 px wide at 32 px at rest. Shape follows state; never merge with legs.
+
+Mistakes:
+- Speckled halo of hair → strands pixel by pixel → masses with 1 px lines.
+- Face floats on hair → black hairline → colour step plus a shadow row.
+- Cloth wrinkled like paper → folds from nowhere, too many → support points, budget.
+- Cape is a red rectangle → straight edges → folds, scalloped hem, shape by state.
+
+Templates: `hair-16-front` / `hair-16-side` (short, spiky, long), `hair-32-front` / `hair-32-side`, `hair-lock-taper`, `folds-32-types` (pipe, zigzag, spiral, drop), `cloth-vs-armour-32`, `cape-32-side`, `cape-32-views`. Full rules and templates: rules://35-hair-and-clothing
+
 ## Rules
 
 **Hair**

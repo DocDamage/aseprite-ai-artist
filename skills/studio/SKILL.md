@@ -71,6 +71,9 @@ workflow it names and follow that — do not do the step from memory.
    written), what you decided on the user's behalf, what you compromised on and
    why — including where the sprite departs from the reference on purpose.
    Show it — a `look` preview or the exported file's path, not an adjective.
+   End with a line `Rules used:` naming the rule files and templates you
+   actually applied (e.g. `34-hands-and-feet: hands-16-front`), or "none" —
+   an honest "none" is information; a list of files you did not open is not.
 
 ## Live or headless
 
@@ -125,9 +128,14 @@ If a request fits no row, it is usually a direct tool call ("rename the layer",
 
 ## Subject rules
 
-Before a stage draws or animates something, read the rule files for its
-subject — every stage, and every agent you hand a stage to. Two or three files
-is normal; reading all of them is not. Each one has size budgets, mistakes, a
+In Claude Code and omp, a hook has usually already put a **craft briefing**
+into your context — the `Essentials` of the files your request's subject
+calls for. Treat it as decisions to apply, and open a full file when you need
+one of the templates it names. Where there is no briefing, or the stage's
+subject is not in it, read the rule files for that subject yourself before
+the stage draws or animates — every stage, and every agent you hand a stage
+to. Two or three files is normal; reading all of them is not. Each one has
+size budgets, mistakes, a
 review list and ` ```grid ` templates to transcribe with `draw` op `grid`.
 
 | Drawing | Read |

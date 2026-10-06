@@ -8,6 +8,26 @@ slime, undead and dragon rules, size by game role, and templates for each. Gener
 silhouette is `rules://36-character-design`; animal anatomy is `rules://50-quadrupeds`; small
 animals are `rules://53-small-creatures`.
 
+## Essentials
+
+- Write the five-question line first (animal/vegetable/mineral, goal, strength and weakness, proud or shy, burden or conqueror); the weakness becomes a visible target.
+- One dominant shape in the whole outline, echoed in eyes, mouth, limbs: circle friendly, square brute, triangle/spike aggressive.
+- Danger shapes (spikes, claws, thin limbs) sit at extremities; the core stays simple. Give one identifying element that survives silhouette and recolour.
+- Shake and bake from at most 2–3 source animals, one body region each.
+- Build in three passes: flat-colour silhouette → colour-coded blocks per part → final palette and light.
+- Size by role: minion 12–16 px, hero 24–32, boss 64–128, final boss 128–256. Eyes 2×2 or 1×2 at 16 px; a fang is 1 white pixel.
+- One signature hue per creature plus one complementary accent; villains lean dark, cool or heavy. Ramp 5–8 swatches; 3–4 tones at 16 px.
+- Slime: neutral, squash 1.3× wide / 0.8× high, stretch 0.7× wide / 1.45× high, area near-constant; tones specular, base, shadow (+ reflection above 20 px).
+
+Mistakes:
+- Pile of parts → five animals in one body → max three sources.
+- Mushy silhouette → wings or arms merge with head → 1 px gap or move below the head.
+- Everything spiky → spikes only at extremities.
+- Same silhouette across a set → give each a different dominant shape and mass distribution.
+
+Templates: `monster-round-28`, `monster-square-34`, `monster-spike-35` (shape language), `monster-build-1-silhouette` / `monster-build-2-blocking` / `monster-build-3-finished` (build order), `slime-neutral-20` / `slime-squash-20` / `slime-stretch-20`, `undead-skeleton-37`, `undead-ghost-20`, `monster-dragon-51`.
+Full rules and templates: rules://54-monster-design
+
 ## Rules
 
 1. **Answer five questions in one line before drawing.** Animal, vegetable or mineral? Its goal?

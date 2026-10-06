@@ -2,6 +2,25 @@
 
 A scene is a decision about where the eye goes. Without it an agent renders every region at equal importance: same cluster size, same contrast, same texture, no resting place, a horizon through the middle and a hero sitting on a tangent. The result is correct pixels and no picture. Decide the focal point, the value groups and the quiet zones on a thumbnail before any colour is chosen.
 
+## Essentials
+
+1. Write one purpose sentence first; delete any cluster that does not serve it. Gameplay scenes want a muted, simple background; RPG scenes can be rich.
+2. Thumbnail before colour: 1⁄6–1⁄10 scale (32×24 for 192×144), three value masses via `draw` op `grid`, then `look` op `preview`. Fix layout there.
+3. Horizon at 33–45% from the top (land) or 55–65% (sky drama). Never 50%.
+4. Subject on the centre line or a third, with a subject-width of calm around it. Height 27–49% in scenic pieces, 10–16% of screen for a platformer hero.
+5. One focal point: strongest value contrast, sharpest detail, the one accent hue (usually the complement).
+6. ≤3 planes, flat silhouettes first. Saturation and contrast fall with distance; blend toward haze about 0/25/50/75/90% per plane. Cluster size falls too: near blades several px, next 1–2 px, far flat colour.
+7. The interactive layer outranks scenery: at least 2 value steps between character and background; keep the play lane calm; hazards and pickups are isolated bright accents.
+8. Colours ≤16 at 192×144, reusing entries across planes. Dither only in transition bands, never a field.
+
+Mistakes:
+- Hero vanishes → lower background contrast near the lane; give the hero the strongest value pair.
+- Flat wallpaper scene → scale clusters by plane; saturate near, wash far.
+- Busy everywhere → remove detail outside the focal region; leave quiet zones.
+- Horizon cuts picture in half → move to 33–45% or 55–65%.
+
+Templates: `scene-thumb-three-plane` (landscape, horizon 45%), `scene-thumb-jrpg-battle` (192×144 battle layout), `scene-thumb-platformer-lane` (320×180 calm lane with pickup and hazard), `scene-thumb-forest-vignette` (dark frame, bright corridor). Full rules and templates: rules://91-composition-and-scenes
+
 ## Rules
 
 1. **One sentence of purpose first.** "This image makes the viewer feel X / learn Y." Any cluster that does not serve it gets deleted. Then classify: a *gameplay* scene (platformer, shmup) wants a muted, simple background so sprites read; an *RPG / adventure* scene can afford rich scenery.

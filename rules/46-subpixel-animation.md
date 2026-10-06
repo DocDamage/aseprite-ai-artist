@@ -5,6 +5,25 @@ moves *tone* instead: the neighbour that gains value and the neighbour that lose
 than one pixel. It is the only way to ease a 1 px move, keep an idle alive, or wobble something without changing its
 silhouette. Done everywhere, it melts the sprite. Stills use the same trick: `rules://12-anti-aliasing`.
 
+## Essentials
+
+- Use it only for motion under 1 px: easing in-betweens, breathing/idle, vibration, wind on cloth. Large moves stay on whole pixels.
+- Test: hide the colour and keep the line art; if the motion vanishes it was sub-pixel. The silhouette may stay frozen while tones swim inside.
+- It needs shades to trade: ≥ 3 per material at 16 px, 4–5 at 64 px. At 8 px or ≤ 5 colours use a 1 px bob instead.
+- Mid-tones come from the sprite's own ramp (`palette` to read it); 1–2 shades suffice; ask before widening the palette.
+- Split the pixel: a 1 px line shifted by half = two half-tone pixels; a 2 px block = half, full, half.
+- Shift one part at a time, interior before or after outline, never everything on one frame. A new edge row needs a run of 2–3 px.
+- One half-step per pixel of travel (A, ½, B), two at most; show it 50–83 ms, keys hold. Keep the face on whole pixels.
+
+Common mistakes:
+- Melting jelly → every boundary moves; freeze the outline, move one area.
+- Shimmer → new in-between colour each frame; reuse the same two half-tones.
+- Popping noise → single new 1 px row; make the run 2–3 px.
+- Lingering in-between → ≥ 3 ticks shows the blur; keep 50–83 ms.
+
+Templates: `subpx-line-shift` (1 px line half-step), `subpx-block-shift` (2 px block half, full, half), `subpx-blob-swim` (frozen outline, moving highlight), `subpx-head-ease` (idle head rise with 4 px run).
+Full rules and templates: rules://46-subpixel-animation
+
 ## Rules
 
 1. **Use it for motion under 1 px:** easing in-betweens, breathing and idle (`rules://41-idle-and-breathing`), vibration

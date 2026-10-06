@@ -7,6 +7,25 @@ size of the event. This file gives the stack, the numbers that shipped games use
 which parts an agent can draw. Pose timing is in `rules://44-attacks-and-impacts`,
 effect art in `rules://80-vfx-fire-smoke-magic`.
 
+## Essentials
+
+- Draw only pixels (contrast frame, smear, spark, debris, overshoot); hitstop, shake, knockback are engine-side: hand the user a numbers list.
+- Strike beats: stance → anticipation → smear → follow-through → recover + 1-frame overshoot. Impact is one frame; player attacks skip anticipation (strike on frame 2), enemies keep it.
+- Smear = one frame, 50 ms, opaque, the weapon's two brightest ramp colours; next frame a thin remnant.
+- Contrast frame first: one flat white/dark silhouette frame. One flash colour for the whole game.
+- Spark at contact, 3 frames: star → rays → dots. Same shape for all weapons, vary size only.
+- Hitstop at 60 fps: light 3 frames, strong 6, max 9 (shooters: 20–50 ms, kills 100–200 ms). Shake: 1 px ~4 frames light, 3 px ≤12 frames heavy, decaying; never shake the HUD.
+- Displace target: 1 px at 8 px, 2–3 at 16, 4–6 at 32 along the hit, then settle.
+- Dynamic range: biggest feedback for ~1 in 10 hits. Flash lands 1–2 frames before sound.
+
+Mistakes:
+- Hit feels weightless → add flat white frame, shift the target 2–4 px.
+- Attack feels laggy → remove player anticipation.
+- Smear looks like a ghost → opaque, two colours, one frame.
+- Every hit the same → scale spark, freeze, shake by damage tier.
+
+Templates: `impact-spark-1` (hit spark, 3 frames 9×9), `impact-muzzle-star` (7×7 muzzle flash), `impact-smear-1` (sword smear, 3 frames 18×18). Full rules and templates: rules://81-impacts-and-game-feel
+
 ## Rules
 
 1. **Split the work.** Pixels the agent can draw: contrast frame, white hit-flash frame,

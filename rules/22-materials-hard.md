@@ -4,6 +4,25 @@ Hard materials fail in two ways: everything gets the same grey-brown ramp, or ev
 *highlight behaviour* and *ramp contrast* — how many pixels shine, how hard the band edges are — not a special colour. Soft materials are in
 `rules://23-materials-soft`; light colour in `rules://24-lighting-scenarios`; ramp theory in `rules://20-color-for-pixel-art`.
 
+## Essentials
+
+- Order: silhouette → base light + shadow → backlight → highlight/specular → reflection → clean-up. No texture before the form works.
+- Gloss decides the highlight: matte (stone, wood, bone) none or very soft; glossy 1–3 px spec, no long ramp; metal hard-edged bands, high contrast; glass transparency plus sudden white specs.
+- Reflective ≤ 32 px: 3–4 hard bands in the scene's colours (sky, dark horizon, ground, one spec), never a smooth ramp.
+- Metal: lights cold, S 7–24; darks warmer (plum/violet) via a different dark entry, not by rotating hue (steel travel ≈ +3°). Add a strong rim.
+- Specular: 1–2 px at the ramp top, ≈ 70/30 light colour : local colour; `#ffffff` only for mirror or emitter.
+- Gold is not orange: darks orange-brown (H 22–27, S 75, V ≈ 44), body H 37–45, pale-yellow spec.
+- Glass: border only, 2–3 small curved highlights, one tint band, background visible; never opaque. Gems: one value per facet, 1 px point highlight, refraction step warmer/more saturated, not darker.
+- Stone: four planes (top, lit side, front half-tone, shadow), one ramp entry each; warm lit, cool shadow; texture only in the half-tone band. Wood: shadows toward crimson, grain broken, no pillow shading. Bone: cream (H 44–50, S ≤ 30), violet-brown shadow, no spec.
+
+Mistakes:
+- Chrome looks like a grey ball → smooth gradient; use 3–4 hard bands.
+- Steel like cardboard → add a plum-warm darkest entry, keep lights S ≤ 24.
+- Gem like a shiny pebble → flat facets, point highlight, refraction step.
+- Everything shiny → matte = no spec, gloss = 1–3 px, metal = bands.
+
+Templates: `mat-metal-sphere-12` (chrome bands), `mat-gold-sphere-12` (same bands, warm), `mat-glass-orb-12` (border-only glass), `mat-gem-cut-12` (ruby facets), `mat-stone-boulder-12`, `mat-wood-plank-14`. Full rules and templates: rules://22-materials-hard
+
 ## Rules
 
 1. **Order for any hard material** (every source agrees): silhouette → base light + base shadow → backlight / secondary shadow → highlight or specular → reflection / refraction → clean-up (orphans, cracks, scratches). No texture before the form works.

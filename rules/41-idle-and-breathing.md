@@ -4,6 +4,25 @@ An idle frame held still reads as a corpse; an idle drawn by shifting the whole 
 sells "alive" is small, lagging, feet-planted motion that loops without a seam and never changes the character's
 size. This file is the recipe, with the frames to copy. Timing vocabulary lives in `rules://40-timing-and-spacing`.
 
+## Essentials
+
+- No sprite sits identical > ~1 s. Minimum idle = 2 poses, feet planted; the ground contact never moves.
+- Move chunks in order: torso first, hands 1 frame later, head last or holds on some steps. Extremities travel 2–4× the core (core 1 px, fists 2–4 px at ~92 px tall).
+- Mass is constant: opaque pixels ±2 % between frames. Shorten legs when the body drops; never grow the character.
+- Frames by size: 8 px = 2 (300–500 ms); 16 px = 2 or 4 (150–400); 32 px = 4–8 (100–125); 64+ = 8 (50–125). Ladder 2/4/6/8.
+- Hold the extremes ~2× the transitions; calm loop 400,150,400,150 ms; ready stance 100×4 then 50×4.
+- Blink on its own clock: every 2–4 s, 1–3 frames. Face pixels are identical across frames except the blink.
+- Secondary parts lag 1–2 frames, overshoot 1–4 px, loop at a different length than the body. Floaters: ±1–2 px sine, period 8–16 frames.
+
+Common mistakes:
+- Skating feet / slide → whole sprite shifted; anchor the foot row, move only above the ankle.
+- Stiff lift → uniform 1 px bob; offset parts, hands lag, head holds on 1–2 steps.
+- Hole between head and body → add a neck row, not a new head.
+- Inflating/deflating → count pixels per frame; shorten legs on the low frame.
+
+Templates: `idle-16-hero-a` / `idle-16-hero-m1` / `idle-16-hero-b` (16 px breath keys, head lag), `idle-16-hero-blink-head` (blink), `idle-32-hero-keys` (32 px 4-frame strip), `idle-8-slime-a` / `idle-8-slime-b` (8 px 2-frame squash).
+Full rules and templates: rules://41-idle-and-breathing
+
 ## Rules
 
 1. **No sprite sits identical for more than ~1 s.** Animators cap a held drawing near 2 s and add a drift, blink or

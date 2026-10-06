@@ -2,6 +2,27 @@
 
 Most direction failures are consistency failures: a head that grows between facings, a face drawn on the back of a skull, a sword hand that jumps sides when the sprite is mirrored, light that flips with it. A direction set is one character seen from several sides on a shared set of rows, not four separate drawings. Decide the set, fix the rows, then draw.
 
+## Essentials
+
+- Choose the set first: side-scroller E (W mirrors); 4-direction S, N, E (+W) = 3 drawings; 8-direction S, SE, E, NE, N (+ mirrors) = 5 drawings.
+- Order: profile for skeleton and timing, then the hero 3/4 or front (ship idle there), then back, then diagonals.
+- Shared rows: head top, chin, shoulder, belt, crotch, knee and sole on the same pixel rows in every view; same height, feet baseline and centre of mass. Only widths change.
+- Width by view (u = head height): front/back 2⅓u male, 2u female; 3/4 ≈ 1.7–2u; shift the centre line 1–2 px toward the turn.
+- Head turn moves the face block, not the outline: 3/4 shifts 2–3 px, profile 4–5 px on a 9-wide head; profile has one eye and a 1 px nose bump or none; N has no face.
+- Never draw a face on the back of a head: N view is hair, nape, shoulders, back gear.
+- Mirroring flips light and every asymmetric detail (scar, fringe, pouch, weapon hand). Re-shade the flipped copy or use symmetrical gear; plan a separate W set otherwise.
+- Side view is the weakest silhouette: push spine curve, nose/chin, hair; shade the far limb; leave 1 px between arm and torso.
+- Top-down: hair and shoulders dominate, head = ⅓–½ of sprite height; feet behind legs behind torso behind head.
+- One canvas for all frames: same scale, palette, outline, margin; one row per direction. You cannot rotate pixel art; redraw each facing.
+
+Mistakes:
+- Face on the back of the head → remove face, extend hair.
+- Character grows/shrinks or bobs between views → rows not shared → re-measure against guides, centre head over feet.
+- W light from the right looks sunk → raw flip → re-shade.
+- 3/4 looks like a front view with a nose → shift centre line, narrow shoulders.
+
+Templates: `views-char-turnaround-32` (front, 3/4, side, back at 32 px), `views-heads-8dir` (eight head facings), `views-chibi-16-8dir` (16 px chibi, 8 directions). Full rules and templates: rules://37-views-and-directions
+
 ## Rules
 
 1. **Choose the set first.** Side-scroller: E (W is its mirror). 4-direction: S, N, E (+ W mirror) = **3 drawings**. 8-direction: S, SE, E, NE, N (+ SW, W, NW mirrors) = **5 drawings**. Small detailed sprites can fake 8-direction movement with 4 drawings; diagonals only pay off on larger, more detailed sprites.

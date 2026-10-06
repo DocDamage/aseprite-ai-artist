@@ -2,6 +2,26 @@
 
 Head count is the first decision in a figure and the one most often made by accident. Seven heads on a 16 px canvas leaves a 2 px head with no face; two heads on a 64 px canvas reads as a toy even when the brief says "veteran". Heads-tall carries age and tone, and the canvas decides how many of them you can afford.
 
+## Essentials
+
+- Head px = canvas height ÷ heads; the head must be ≥ 4 px tall (Table A). If not, cut heads; never shrink the face.
+- Head count is tone: 1–3 toy/cute, 3–4 default game character, 5–6 teen/grounded, 7½–8 adult, 8½–9 heroic/noble. Under 7 heads reads young.
+- Hold the head near 6–8 px from 24 px up; spare height goes to torso and legs (4 heads at 32 px and 6 heads at 48 px both = 8 px head).
+- Crotch at the half-way row for ≥ 4 heads; 3 heads: legs ≈ 38 %; 2 heads ≈ 28 %.
+- Landmarks, fixed at every size: chin at 1 head; elbows at navel; wrists at crotch; fingertips mid-thigh; knees at ¾ height; ankle 1 px above the sole.
+- Female differs from male in shoulder, waist and hip, not height; shoulders 2⅓ heads male at 8 heads, 2 female; stylised 1.5–2.
+- Cute levers (use ≥ 3): head 40–60 % of height, no neck, eyes below the head mid-line, short torso, limbs tapering 3 → 2 px.
+- At ≤ 24 px outline only the silhouette; at 16 px the arm is 2 px including its outline column.
+- A child is the adult's head px with fewer body rows, never a rescaled adult. One pixel scale for the whole cast.
+
+Mistakes:
+- Face is a smear → head under 4 px → cut heads or enlarge canvas.
+- 48 px sprite with 14 px head "looks small" → head scaled with canvas → hold 6–8 px.
+- Stubby 24 px figure → outline on every part → outline silhouette only.
+- Adult reads as child → under 6 heads or legs under half → add leg rows, shrink head share.
+
+Templates: `proportions-mannequins-16-32-48` (colour-coded dummies on one baseline), `proportions-ladder-32` (same body at 2–6 heads), `proportions-ages-32` (toddler to adult, shared baseline). Full rules and templates: rules://30-proportions-by-size
+
 ## Rules
 
 1. **Head px = canvas height ÷ heads. The head must be ≥ 4 px tall.** Eyes plus a mouth need 3–4 rows. If the sum comes out below 4, cut the head count; never shrink the face to fit. Table A marks the dead cells.

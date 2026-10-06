@@ -5,6 +5,25 @@ just a costume — a NES sprite with eight colours, a Game Boy sprite with a fif
 the budget per sprite size, how to cut a palette without losing the read, and ready-to-load hex lists.
 Era *style* (outlines, dither habits, tile conventions) is in `rules://90-platform-styles`; ramp theory in `rules://20-color-for-pixel-art`.
 
+## Essentials
+
+- State palette and per-sprite budget before the first pixel; counts include transparency (16-colour = 15 + transparent).
+- "8-bit"/"16-bit" name the CPU, not the palette. Defaults: "retro" → PICO-8; "Game Boy" → 4 shades; "NES-like" → 3 colours + transparent per sprite; "SNES/GBA/Genesis-like" → 15 per sprite.
+- The per-tile/per-sprite limit binds harder than the total: NES and GB sprites 3 + transparent, SNES/GBA/Genesis 15 + transparent, even inside every 8×8 block.
+- Colours per sprite incl. outline at 8/16/32/64 px: Game Boy 3; NES 3; PICO-8 2–3 / 4–5 / ≤ 7; SNES/GBA/Genesis 4–6 / 9–12 / 10–15 / 15; hi-bit 4–6 / 4–8 / 8–16 / 16–24. Hi-bit: impose a limit anyway.
+- Load the palette first (`palette` op `preset`/`set`/`load`); keep ramps adjacent, slot 0 transparent, unused slots magenta; leave `paletteLock` on. ΔE > 12 on snap means pick another colour, do not unlock.
+- 4 shades: value only; keep darkest and lightest far apart, the two mids shade, no 1 px mid-to-mid border. NES: outline = shadow = one colour.
+- Dither: hand-placed 2×2 checker only, between adjacent ramp entries, never 2×1 pairs. Heavy dither means a missing colour — try another swatch first.
+- Over budget → cut one colour at a time (merge skin/brown, share highlights, fuse darkest shades), `look` after each cut.
+
+Mistakes:
+- Fifth shade on a Game Boy sprite → `recolor` op `snap` to the 4 entries.
+- NES sprite with 6 colours → outline counted separately; outline = darkest of the 3.
+- Wrong retro hues → hex eyeballed; load the real palette (NES: exact `.pal`).
+- Photo-converter confetti on PICO-8 → rebuild by hand, 2–3 entries per material.
+
+Templates: `pal-orb-gb4-12` (Game Boy 4 shades), `pal-orb-nes3-12` (NES 3 colours), `pal-orb-pico8-12` (PICO-8 chain), `pal-orb-1bit-12` (1-bit). Full rules and templates: rules://21-limited-and-platform-palettes
+
 ## Rules
 
 1. **Choose palette and budget before the first pixel, and say them back.** Counts include transparency: a "16-colour" sprite is 15 + transparent.

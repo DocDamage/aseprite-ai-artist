@@ -6,6 +6,27 @@ and quiet interiors, and conifers, palms and background trees each obey a differ
 covers the crown, trunk and tree types; ground cover and rocks are `rules://65-ground-rocks-grass`,
 leaves in the wind `rules://45-secondary-motion`, falling leaves `rules://82-particles-and-weather`.
 
+## Essentials
+
+- Order: silhouette → light → detail. The silhouette must read as a tree filled flat black.
+- A crown is a few glued bundles. Shade each once (rim, body, shade) from the upper left; no concentric rings, no dark outline ring, no smooth dome gradient.
+- About half the crown is the light green. Highlights = 8–10 blob patches 3–6 px wide on the upper half; darkest entry only along the bottom edge.
+- Warm light, cold shadow: ramp runs violet-blue → yellow-green, a crown uses the last 4–5. Shadows blue-green or purple-green, never yellow.
+- Edges: ragged 1–3 px notches. Detail the borders, keep the interior clean, one leaf unit per tree, no orphan pixels.
+- Stack bundles as light / mid / dark by shifting every colour one ramp notch; light top-left, dark bottom-right.
+- Conifer: unique tiers drawn top to bottom, each casting a shadow on the next, ragged hems. Palm: ringed curved trunk (ring every 2–3 rows), 5–7 drooping fronds.
+- Background trees are blobs; the farthest are 1–2 light blue-green entries.
+
+Common mistakes:
+
+- Round ball with rings → bundles with rim / body / shade.
+- Crown is noise → one leaf pattern, interior flat.
+- Conifer looks like shiny paper → flat tiers, no gradient cone.
+- Tree floats → ground shadow or dark base row.
+
+Templates: `trees-canopy-stack-30` (bundle stack, bush), `trees-deciduous-16` and `trees-deciduous-32`, `trees-pine-16` and `trees-pine-32`, `trees-palm-32`.
+Full rules and templates: rules://63-trees-and-foliage
+
 ## Rules
 
 **Shape and light**

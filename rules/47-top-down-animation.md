@@ -11,6 +11,25 @@ theory and proportions are `rules://37-views-and-directions` and
 attacks are `rules://44-attacks-and-impacts` (a top-down sword strike is
 `topdown-e-attack` below).
 
+## Essentials
+
+- Fix the direction budget first: 4 facings symmetric = 3 drawings (S, N, E; W = flip); 8 facings symmetric = 5 (S, N, E, SE, NE); asymmetric gear = no flips. 8-way movement with 4 facings is far cheaper.
+- One canvas, one foot row, one height and centre of mass for every direction, or the sprite bobs when turning. Cells 16×16, 16×32, 32×32.
+- N view has no face (hair and shoulders; no eyes). E: one eye hugging the front edge; NE: a sliver of cheek only.
+- Walk = step A, stand, step B, stand, 100–200 ms/frame. Step frames: head/torso 1 px lower, trailing foot lifted 1 px, hands ±1 px opposite. Bob 1 px at 16, 1–2 at 32.
+- Run: 6 frames × 100 ms; head bob −1, −1, +2 px (bounce, not sine). Idle: 200,200,400,200,200,400 ms (2 frames suffice at 16 px).
+- Planted-foot speed MUST match movement speed (rule 7 of rules://42-walk-and-run); never retime to hide a mismatch.
+- Layers: feet < legs < torso < head, far limbs one shade darker, shadow on its own layer, weapon on its own layer. Hands differ from sleeve by ≥ 2 ramp steps.
+
+Common mistakes:
+- Back view has a face → N is hair only.
+- Sprite bobs when turning → same height and foot row in all directions.
+- Diagonal looks like a rotated side view → redraw: turn torso, shift eyes, keep legs.
+- Sword hand changes on flip → gear on its own layer, same hand.
+
+Templates: `topdown-sn-walk` (S/N walk), `topdown-e-walk` (side walk), `topdown-diag-walk` (diagonal walk), `topdown-e-attack` (sword strike).
+Full rules and templates: rules://47-top-down-animation
+
 ## Rules
 
 1. **Fix the direction budget first.**

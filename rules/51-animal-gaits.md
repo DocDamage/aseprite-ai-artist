@@ -8,6 +8,26 @@ and the gallop as frame tables and key poses, with joint behaviour, bob, timing 
 looping. Anatomy and proportions are `rules://50-quadrupeds`; the two-legged version
 is `rules://42-walk-and-run`; general timing is `rules://40-timing-and-spacing`.
 
+## Essentials
+
+- Pick the gait first. Walk: 4 beats, lateral order near hind → near fore → far hind → far fore, 2–3 feet always down.
+- Trot: diagonal pairs (near fore + far hind, then near hind + far fore) with a 1-frame flight; none at 16 px. Pairs are for trots only.
+- Gallop: alternate an extended pose (spine flat, legs reaching) and a gathered pose (arched, feet bunched); add a contact frame with a hind foot down.
+- Model as two bipeds offset a quarter cycle: draw the near leg through the cycle, copy to the far leg shifted half a cycle. Leg cycle: contact → drag → rise → swing (arc, lift 25–30 % of leg).
+- Planted paw moves back at ground speed: advance per cycle = sweep × frames ÷ stance frames (sweep ≈ 0.5 H). Front and hind strides equal.
+- Stifle and hock fold together; segment lengths stay fixed ±1 px.
+- Bob 1 px up to 24 px wide, 2 at 32, 3 at 64. Head 1 frame late; tail and ears lag 1–2 frames (swing 3, 2, 1 px) on own layers.
+- Frames: 16 px walk 4; 32 px walk 6–8, trot 8, gallop 8–11. Walk 100–170 ms, trot 80–100, gallop 50–70; hold contacts 20–40 ms longer, never uniform.
+
+Mistakes:
+- Sliding → paw does not match ground speed → fix sweep/stance or engine speed.
+- Rowing → legs in pairs on a walk → use lateral order.
+- Gallop that only stretches → no gathered frame → alternate extend and gather.
+- Hovering walk → fewer than 2 feet down → check stance windows.
+
+Templates: `gait-walk-1` to `gait-walk-4` (dog walk contacts: near hind, near fore, far hind, far fore), `gait-trot-contact` / `gait-trot-flight`, `gait-gallop-extend` / `gait-gallop-gather`.
+Full rules and templates: rules://51-animal-gaits
+
 ## Rules
 
 1. **A gait is a footfall order plus a flight phase.** Walk: four beats in lateral

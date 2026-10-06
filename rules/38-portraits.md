@@ -7,6 +7,26 @@ sprite head made big: 2×2 eyes, no planes, hair as a helmet. Head geometry:
 `rules://32-heads-and-faces`; eyes, mouths and expression recipes:
 `rules://33-eyes-and-expressions`.
 
+## Essentials
+
+- Size by use: 32 px HUD/status (face only), 48 px dialogue on ~320×180 screens, 64 px+ key portraits.
+- Frame: face-only or bust, front or slightly turned; head (hair top to chin) 60–75 % of canvas height, 1–2 px air above the hair, shoulders cut by the edge.
+- Decide face shape, brow shape, eye shape before shading; exaggerate one defining feature and break symmetry (parting, one brow a row higher).
+- Build order: sketch → one flat shape for face/neck/shoulders → hair masses → base colours → 2–3 skin planes → eyes last → highlights. Fix a wrong head shape at step one.
+- Landmarks (% of H): hairline 22–28, brow 40–42, eye line 52–56, nose base ≈ 72, mouth seam 80–83, chin 100.
+- Eyes: 3×3–5×4 at 32 px, 7×5 at 48, 11×6 at 64; draw at final size. One eye dominant from 48 px.
+- Light: one source, upper left. Three skin tones plus one dark accent; shadow 10–22° toward red. Hair 3–4 tones, strands ≥ 2 px, hairline a colour edge.
+- Outline the outer silhouette only; interior shapes by value. Backdrop calmer and lower contrast than the face.
+- Emotion = one base face with swappable brow, eye, mouth layers; idle = blink + 1 px shift (2 frames); talk ≤ 3 mouths. Check at 1× and on a flipped, desaturated copy.
+
+Mistakes:
+- Looks like a sprite head enlarged → 2×2 eyes, no planes → eyes ≥ 7×5 at 48 px, three skin tones, planes.
+- Hair is a helmet → one flat mass → part, strands ≥ 2 px, highlight band, 3–4 tones.
+- Dark lines inside the face → interior outlines → split by value.
+- Expression sheet shows different people → features redrawn per frame → swap brows, eyes, mouth only.
+
+Templates: `portrait-48` (finished bust), `portrait-48-blockin` (flat block-in stage), `portrait-48-eyes` (eye variants), `portrait-48-mouths` (mouth set). Full rules and templates: rules://38-portraits
+
 ## Rules
 
 1. **Size by use.** 32 px for HUD and status (face only), 48 px for dialogue on ~320×180

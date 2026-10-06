@@ -2,6 +2,24 @@
 
 Machine-made pixel art is a picture *of* pixel art, not pixels on a grid. Image models work in a continuous space with no notion of a hard edge, a fixed palette or a grid, so their output has soft blocks of uneven size, hundreds of near-identical colours, speckle used as texture, shading that follows the outline, and the same density everywhere. Naive downscaling of a large drawing produces a second family: mush, lost features, extra colours. An agent that draws natively at 1× cannot make mixels, but every route by which foreign or filtered pixels enter its canvas can reintroduce a tell. This file is the catalogue, how to detect each with `look`, `validate`, `palette` and `read_pixels`, and how to fix it.
 
+## Essentials
+
+1. Audit before "done": `sprite_info`, `validate` with `checks` palette, strays, outline, banding, antialiasing, animation and `strict: true`, `palette` op `analyze`, `look` op `preview` with `scale: 1`. `validate` alone is never the verdict.
+2. Run test on incoming images: `read_pixels` one row (height 1). All runs multiples of one k>1 = clean pre-scaled file, recoverable; runs spread (e.g. 8–14) with no common divisor = mixels, redraw.
+3. Generated or messy input is a concept, not an asset: `reference` import, draw over it at target size, `look` op `compare`.
+4. Fix at native scale. Integer nearest-neighbour is the only legal resize. Never blur, smooth or filter. Keep `paletteLock` on; refuse `allowLossy` unless asked.
+5. Fix order: pitch/scale → palette → silhouette and light → clusters and banding → edges → details. Re-run the detector after each fix and quote before/after counts.
+6. Thresholds (sprite ≤32 px): colours ≤16 (≤32 at 64 px), off-palette 0, near-duplicates (ΔE<3) 0, semi-transparent 0, isolated pixels 0 (one justified eye/highlight), no banding note, outline ≥60% one colour or deliberately none.
+7. One tell proves nothing; three independent tells mean machine-made. Report counts neutrally.
+
+Mistakes:
+- Colour bloat → `palette` op `extract` with `maxColors` 12–16, `recolor` op `snap`, rebuild ramps.
+- Brightness-only ramps → `palette` op `ramp` (shadows to blue/violet, lights to orange).
+- Pillow shading, ring-shaped value → offset highlight toward the light, crescent shadow far side.
+- Banding or equal detail everywhere → stagger band ends, delete detail until the 1× test passes.
+
+Templates: `tells-sphere-lit` (fix for pillow shading), `tells-confetti-after` (confetti gathered into light clusters), `tells-ramps-flat-vs-shifted` (flat vs hue-shifted ramp), `tells-band-broken` (banding fix). Full rules and templates: rules://92-generated-art-tells
+
 ## Rules
 
 1. **Audit before "done" and before handing over anything derived from an image.** Order: `sprite_info` (size, mode), `validate` with `checks` naming all of `palette`, `strays`, `outline`, `banding`, `antialiasing`, `animation` (the bundled extension does not run `antialiasing` by default) and `strict: true`, `palette` op `analyze`, `look` op `preview` with `scale: 1`, then the by-eye items in Review. `validate` alone is never the verdict (see "What validate cannot see").

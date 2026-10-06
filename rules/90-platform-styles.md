@@ -2,6 +2,25 @@
 
 An era look is not a filter. NES, Game Boy, SNES, Genesis and PICO-8 look the way they do because of a few hardware numbers: screen size, visible colours per sprite, tile grid and sprite-per-line limits. Without them an agent writes "8-bit" on a 40-colour smooth-shaded sprite, dithers where the hardware never would, and outlines what the era left bare. This file turns each platform into numbers and policies that `palette`, `validate` and `read_pixels` can check.
 
+## Essentials
+
+1. State the contract in one line before drawing: INSPIRED (default: era colour count and shading, ignore tile clash) or STRICT (only on "authentic"/"hardware-accurate"). Never blend them.
+2. Write the seven numbers first: canvas, visible colours per sprite, tile grid (8×8), sprite-per-line cap, plus outline, dither and AA policy.
+3. Visible colours = slots − 1 (index 0 is transparent). NES/GB/GBC sprite = 3 visible; SNES/Genesis ≤15; GBA ≤15; PICO-8 2–3 per material.
+4. Load the palette first: `palette` op `preset` (`pico8`, `gameboy`, `gameboy-pocket`, `cga`, `1bit`) or `set`/`load`. Keep `paletteLock` on.
+5. Sprite sizes are multiples of 8 (16/24/32 tall); pad with transparency.
+6. NES: flat fills, no AA, no dither; outline costs one of the 3 slots, so choose outline + 2 fills or 3 fills and no outline. BG palette is per 16×16 cell (≤4 colours incl. shared backdrop).
+7. Game Boy: keep darkest and lightest far apart, mid-tones do the shading; dither only as sparse hand-placed checker.
+8. SNES/Genesis: 2–3 tone hue-shifted ramp per material (cool shadow, warm light), dark outline; Genesis adds visible checker dither for water/smoke/shadow. One era, one pixel pitch, one outline policy per image.
+
+Mistakes:
+- "NES" sprite with 8 colours and a gradient → cut to 3 visible, shade by value steps.
+- GB sprite muddy → dark/mid/light only, no mid-to-mid borders, dither sparingly.
+- SNES hero flat → add a 2–3 tone hue-shifted ramp per material and a coloured outline.
+- Genesis water a smooth blend → two-row checker transitions between flat bands.
+
+Templates: `platform-nes-hero-16` (3-colour NES sprite), `platform-snes-hero-16` (same figure, 9 colours), `platform-gb-mage-16` (GB 3-shade sprite), `platform-nes-brick-cell-16` (one 16×16 BG attribute cell). Full rules and templates: rules://90-platform-styles
+
 ## Rules
 
 1. **Declare the contract in one line before drawing.** STRICT = obey the real palette, tile and colour-clash rules. INSPIRED = use the era's colour count and shading vocabulary, ignore tile/attribute clash. Default INSPIRED; STRICT only when the user says "authentic", "hardware-accurate" or names an engine limit. State which, in the reply. Never blend them silently.

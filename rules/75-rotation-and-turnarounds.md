@@ -7,6 +7,26 @@ covers direction sets, objects that spin, and the pseudo-3D tricks (stacking, 3D
 render) that avoid hand redrawing. Walk/run sets in `rules://42-walk-and-run` and
 `rules://47-top-down-animation`; character views in `rules://37-views-and-directions`.
 
+## Essentials
+
+- Never rotate by algorithm: only 90° steps and flips; `transform` `rotate` refuses other angles, `scale` is integer-only. Redraw each angle.
+- Clean hand-redraw angles: 0°, 26.6° (1:2), 45° (1:1), 63.4° (2:1), 90°.
+- Lock the four cardinal views first: same height, shoulder width, head size, feet row, palette. Note handedness.
+- 8 directions = draw 5 (S, SE, E, NE, N), mirror 3 (SW, W, NW). Draw all 8 if handedness matters. Diagonals are real 3/4 turns.
+- Same cell size, feet row, palette and rhythm in every direction; one centre of mass.
+- Spinning object: colour first. 12–16 swatch ramp; key frames at 45° and face-on; 6 frames per quarter turn, eased corner; 12 frames at 100 ms is smooth. Face widths S·cosφ and S·sinφ.
+- Coin: loop f1 f2 f3 f4 f3 f2, edge-on frame shows rim colour. Rotor: 4 frames at 22.5° steps, 50 ms; 2 blades need 8 frames.
+- Sprite stacking: slices 1 px higher each, odd X and Y, up to ~20×20×20. 3D pipeline: fixed orthographic camera, no AA, nearest-neighbour only.
+
+Mistakes:
+- Smeared, diamond-edged sprite → redraw the angle; `rotate` only at 90°.
+- Sword switches hands when turning → draw all 8 directions.
+- Character bobs on turning → one baseline and one centre of mass.
+- Spinning cube slides like a box → move each face along the ramp; ease the corner.
+
+Templates: `rot-cube-turn-6` (cube spin, 6 frames), `rot-coin-turn` (coin spin widths), `rot-rotor-4` (four-blade rotor), `rot-arrow-8dir` (projectile in 8 directions), `rot-stack-slices-7` (sprite-stacking slices).
+Full rules and templates: rules://75-rotation-and-turnarounds
+
 ## Rules
 
 1. **Never rotate pixel art by algorithm.** 90° steps and flips are safe. `transform` op

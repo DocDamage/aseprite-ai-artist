@@ -4,6 +4,25 @@ Readability is how fast a stranger understands what you pixelled, at the size it
 at 800% can vanish in the build; detail the scale cannot hold becomes blobs, and more pixels never fix a shape
 problem. This file is the test battery and the detail budget; silhouette design is `rules://03-silhouette-and-form`.
 
+## Essentials
+
+- Read before you refine: the subject must be obvious as a flat one-colour silhouette at 1× (`look` op `preview`, `scale: 1`) before any shading. Test the worst pose, not idle.
+- Battery: 1× test, silhouette, greyscale/squint, three backgrounds (dark, light, scene), motion at game speed.
+- Value before hue: touching colours must be distinguishable at 1×; ≥ 2 ramp steps between body and background.
+- Features under 2 px are noise unless eye, highlight, spark. Limbs ≥ 2 px; 1 px limbs cannot be shaded.
+- Separate parts by a 1 px gap or a clear overlap; no tangents (outlines just touching fuse).
+- Exaggerate by numbers: width change ≥ 2 px or value change ≥ 2 ramp steps at cuffs, boots, neck; 1 px / 1 step vanishes. Push 1–2 charm features.
+- Never resize to make a new size: redraw from the masses; delete the least important detail first (face goes first). Display scaling only by integer ×2…×4.
+- Budgets: 8 px silhouette + 1 accent, no outline; 16 px 4–8 colours, head 4–6 px, body 6–8 px, 1 focal detail; 32 px ~10–15 colours, 2–3 details, ≤ ~12 interior face px; 64 px 4–6 secondary details.
+
+Mistakes:
+- "What is that?" at 1× → detail the scale can't hold; delete interior detail until test 1 passes.
+- Arm and torso fuse → no gap; 1 px gap or clear overlap.
+- Sprite lost on a dark scene → dark outline on dark background; use a rim or coloured outline.
+- Flat mush → near-identical shades; fewer colours, more contrast, one light direction.
+
+Templates: `read-skull-16` (the same skull at 8/16/32), `read-contrast-ladder` (value steps 0–4), `read-knight-strong` (silhouette that reads), `read-limbs-fused-vs-gap` (fused vs separated arms), `read-limb-width` (1–3 px limbs). Full rules and templates: rules://14-readability-and-scale
+
 ## Rules
 
 1. **Read before you refine.** If the subject is not obvious as a flat one-colour silhouette at 1×, no shading will

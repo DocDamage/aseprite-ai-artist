@@ -6,6 +6,26 @@ perspective on purpose. This file is how to pick one parallel projection, hold i
 and where real vanishing points are still worth drawing. Isometric specifics are
 in `rules://71-isometric`, shaded forms in `rules://72-3d-forms`.
 
+## Essentials
+
+- One projection per scene, named before the first pixel. Sprites use parallel projection; real vanishing points only for whole-frame art (corridors, roads).
+- Default 3/4 top-down on 16 px tiles: 8–9 px front under a 3–4 px top band; wall cut to ~½, roof pitch kept (1:1 or 2:1).
+- Fix the horizon on a guide layer first, near ⅓ or ⅔ of the height, never ½.
+- Clean slopes only: 0, 1:4, 1:3, 1:2, 1:1, 2:1, 3:1, 4:1, vertical. No 3:2 or 5:3 unless the run repeats exactly.
+- Receding repeats shrink: mild gaps 8,7,6,5; strong ×0.8 per item. Tops and bottoms meet at one vanishing point.
+- Long lens by default: far wheel ≥ 0.75 of near width. Wide lens: far ≈ 0.5 of near.
+- Corner view: near wall ~½ frontal width, second wall a clearly different value, roof at 45°.
+- Size 8: no perspective, commit to side or plan. Size 16: top band 3–4 px, no receding lines.
+
+Mistakes:
+- Fence flat, house tilted, tree from above → pick one projection, redraw outliers.
+- Receding windows evenly spaced → shrink gaps 8,7,6,5.
+- Mirrored car or 3/4 object looks skewed → redraw the far half narrower, never mirror it.
+- Enemy "facing down" looks wrong → 3/4 sprites are not flipped vertically; redraw.
+
+Templates: `persp-projections-cube` (one cube in every projection), `persp-house-34-20x19` (3/4 top-down house), `persp-corridor-1pt-24` (one-point corridor), `persp-wall-receding-36x18` (receding wall, shrinking gaps).
+Full rules and templates: rules://70-perspective
+
 ## Rules
 
 1. **One projection per scene; name it before the first pixel.** Houses, trees,

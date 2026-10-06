@@ -7,6 +7,26 @@ before the shape that holds them. This file fixes the geometry — where each fe
 `rules://33-eyes-and-expressions`. Bust portraits from 48 px: `rules://38-portraits`. Head
 size against the body: `rules://30-proportions-by-size`.
 
+## Essentials
+
+- Shape first: one filled egg/rounded square, centre axis and eye line on a guide layer, then features, hair, shade, outline.
+- H = hair top to chin, outline included. Eye line at 50–56 % of H (cute heads 56–65 %).
+- Front landmarks as % of H: hairline 25–33, brow 38–42, nose base 63–74, mouth 77–83, chin 100.
+- Decide odd/even width first: odd has a centre column (1-px nose, 1- or 3-px mouth); even has none (2-px mouth, no nose).
+- Features never touch: ≥ 1 px skin between mouth/nose/chin, brow/eye, eye/contour; ≥ 2 px between eyes.
+- No nose at ≤ 16 px; 1 px one skin step darker at 24 px; never outline-dark. Mouth 2 px at 16, 3–4 at 24, 5–9 at 32.
+- 3/4: shift axis 1–2 px (16) or 2–3 px (32) toward the turn; far eye one notch narrower (16: 2→1, 24: 3→2, 32: 5→3); nose breaks far contour; far ear hidden.
+- Profile needs ≥ 3 bumps on the front contour (forehead, nose, lips, chin); eye is a wedge 1–3 px behind it.
+- At ≤ 16 px hair is the face: ≥ 2 px at the sides, hairline 1–2 px above eyes, split from skin by colour. Skin has three tones. Cut order: ears → nose → brow → mouth → jaw → hair; never eyes or hair.
+
+Mistakes:
+- Old/"all forehead" → eye line above 50 % → eyes to 52–56 %.
+- Eyes read as one brow → 1 px gap → ≥ 2 px gap.
+- 3/4 head = front head plus a nose → equal eyes → narrow far eye, shift axis.
+- Black line across forehead → outline between hair and skin → split by colour.
+
+Templates: `heads-front-small` (8/12/16 px front), `heads-front-large` (24/32 px front), `heads-tq-small` / `heads-tq-large` (3/4 view), `heads-side-small` / `heads-side-large` (profile). Full rules and templates: rules://32-heads-and-faces
+
 ## Rules
 
 1. **Shape before features.** Block one filled egg or rounded square, then a centre axis and

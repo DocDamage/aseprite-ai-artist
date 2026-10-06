@@ -8,6 +8,26 @@ templates for horse, dog, cat, deer and cow. Movement is `rules://51-animal-gait
 fur and coat texture is `rules://23-materials-soft`; the silhouette test itself is
 `rules://03-silhouette-and-form`.
 
+## Essentials
+
+- Build three masses (forequarters, barrel, hindquarters) on a 1 px spine guide, then four leg chains. Never start from the outline.
+- Fix H (withers height) first; every joint is a fraction of H. Write joint rows down, round to whole px.
+- Place six anchors before filling: shoulder, elbow, hip, buttock, stifle, hock. Legs are straight segments between them.
+- Front leg = near-vertical column; hind leg = zig-zag (hip high, stifle forward and hidden, hock back 1 px sharp, foot forward).
+- Species flips with 1–2 ratios: pick the oversize feature (horse head 0.4 H, cow body, cat head and tail, dog snout, deer legs).
+- Prey eye: side, high, back third of head. Predator eye: forward, low. One bright eye pixel (or 2×1) at ≤ 32 px.
+- Far legs one ramp step darker, on own layers, 1 px gap from near leg and tail. Light upper left; belly band 2 rows at ≥ 24 px, 1 at 16.
+- Size: H 4–5 at 8 px (no hock); 9–12 at 16 (1 px hock, no elbow); 18–22 at 32 (hock, carpus, hoof 3×2).
+
+Mistakes:
+- Table legs → no hock, no elbow offset → front straight, hind zig-zag.
+- Fused legs → outlines touch → 1 px gap, far leg darker.
+- Plank body → straight back, flat belly → 1 px topline curve, tuck the belly at the groin.
+- Cat claws in a walk → none while walking; one claw pixel only on a swat or climb frame.
+
+Templates: `quad-horse-35` (32-class horse), `quad-dog-29` (sloped topline, hock anatomy), `quad-cat-28` (horizontal log, round head), `quad-deer-37`, `quad-cow-31`.
+Full rules and templates: rules://50-quadrupeds
+
 ## Rules
 
 1. **Three masses, four chains.** Every quadruped is forequarters + barrel +

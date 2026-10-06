@@ -8,6 +8,25 @@ direction. This file covers frames, bars, buttons and icon design; the text insi
 in `rules://84-bitmap-fonts`, items as props in `rules://73-props-and-items`, bust portraits
 in `rules://38-portraits`.
 
+## Essentials
+
+- One kit, one language: shared outline weight, corners, top-left light, 3–4 neutral frame values + one accent; frames stay neutral so hearts, gems and text carry colour.
+- 9-slice every box: corners never stretched (3×3 in a 12×12 panel, 4×4 from 16×16 up), edges tile, middle flat. Bars are 3-slices.
+- Bevel: 1 px dark outline, light top/left, shadow bottom/right. Button states share one silhouette: hover +1 value step, pressed = inverted bevel + label 1 px down-right, disabled = desaturated.
+- Bar: 5 px tall at 16 px games (7–9 at 32), 3 fill rows (highlight/base/shade); hearts 7×7 (5×5 floor); colour green → yellow → red as it drains.
+- HUD never competes with the sprite: strong feedback (flash, shake) goes on the world; only a shine sweep merits 4 frames.
+- Icons: native size, integer scaling only, 8–10 % margin (1 px at 16, 2 px at 24–32), no text, ≤ 6 colours at 16 px. Flat-fill silhouette must still read; one focal feature; at 8 px keep one feature.
+- Sets: same outline, light, palette, margin; rarity via frame/background colour, never art style.
+- UI text: 1 px dark outline or 1–2 px shadow, ≥ 3 value steps from the panel.
+
+Mistakes:
+- Smeared panel corners → 9-slice; never stretch corners.
+- Icon is a miniature painting → fewer colours, one feature, test flat fill.
+- Set looks mismatched → audit as a grid for outline, light, palette, margin.
+- Health bar colour clashes with frame → keep frames neutral.
+
+Templates: `ui-9slice-panel` (12×12 panel), `ui-button-up` (button; `ui-button-down` pressed), `ui-bar-hp` (21×5 health bar), `ui-heart-full` (7×7 heart). Full rules and templates: rules://83-ui-and-icons
+
 ## Rules
 
 1. **One kit, one language.** Panel, button, bar and icon share outline weight, corner

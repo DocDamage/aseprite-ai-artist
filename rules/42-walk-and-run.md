@@ -8,6 +8,25 @@ poses, the pixel offsets per frame, the timings and the checks for side-view
 humanoids. Quadrupeds are `rules://51-animal-gaits`; top-down is
 `rules://47-top-down-animation`; timing theory is `rules://40-timing-and-spacing`.
 
+## Essentials
+
+- A step = contact, down, pass, up; 8 frames is the fluid optimum (walk 8 → 6 drop `up` → 4 drop `down`). Frames 5–8 are 1–4 with limbs swapped, not flipped.
+- Contact is the widest pose; stride ≈ ⅓ figure height (10 px at 30 px). `down` carries weight (hip lowest); never replace `pass` with "legs together".
+- Hip bob walk: 1 px at 16, 2 px at 24–32, 3 px at 64, triangle not sine; run 3–4 px at 30 px. Head lands one frame after the hip.
+- Arms oppose legs: walk ±25–30°, run ±50° with 90° elbows and closed fists. Run = 25–40 % flight, 2 of 8 frames with no foot down, 10–15° lean.
+- Planted foot moves at engine speed (walk ≈ 2.5 px/frame ≈ 21 px/s at 115–120 ms; run 4 px/80 ms = 50 px/s). Keep each ms within ±25 of the mean; tell the user the speed.
+- Timing: walk 100–140 ms/frame (cycle 0.8–1 s); run 70–100 ms (0.55–0.8 s). 16 px walk = step, stand, step, stand; 8 px = 2 frames.
+- Limb segments constant in every frame; limbs < 2 px wide flicker. Max three personality tweaks.
+
+Common mistakes:
+- Skating → recompute foot x per frame from engine speed.
+- Floats, no weight → add `down`, hip −1 more after contact.
+- Run reads as fast walk → 2 flight frames, 12° lean, 90° elbows.
+- Cycle pops at loop → onion frame 8 over 1; fix head and hip x.
+
+Templates: `walk-30-keys` (contact/down/pass/up at 30 px), `run-30-keys` (contact/down/push/flight), `walk-24-keys`, `run-24-keys` (24 px versions).
+Full rules and templates: rules://42-walk-and-run
+
 ## Rules
 
 1. **A step is four poses: contact, down, pass, up.** Two steps (near leg, then

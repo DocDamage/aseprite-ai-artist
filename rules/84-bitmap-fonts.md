@@ -7,6 +7,25 @@ for characters it does not have. This file gives the metrics of the shipped font
 3×5 font to stamp from, and the rules for spacing, contrast and titles. Text on panels is
 in `rules://83-ui-and-icons`, lettering as an effect in `rules://81-impacts-and-game-feel`.
 
+## Essentials
+
+- Pick the grid by job: 3×5 (cell 4×6, caps and numerals only) for scores/timers; 5×7 for menus and dialogue; 8×8+ for titles.
+- Use the shipped `pixel5x7` via `draw` op `text`; never hand-draw letters. For 3×5, stamp glyphs from the sheets with `draw` op `grid`/`blit`; never improvise a glyph.
+- 1 px uniform strokes, no anti-aliasing, no italics. One baseline and one cap height; judge at 1× only.
+- Spacing: 1 px between glyphs (`letterSpacing` 1); digits are all 5 wide so counters don't jitter. 3×5 string: glyphs 1 px apart, space 2 px.
+- `pixel5x7` metrics: caps/digits rows 0–5, baseline row 5, x-height 5, descenders on row 6, space 4 px, line pitch 7 + `lineSpacing`.
+- Chars missing from the font render as blank 4 px gaps (no accents/Cyrillic): report it, don't fake letters.
+- Contrast ≥ 3 value steps; fill + one outline or shadow colour. Never outline 3×5 (use shadow or box). Shadow `shadowOffset` ≥ outline + 1. `bold` needs `letterSpacing` ≥ 1 + `bold`.
+- Titles: integer `scale` (≤ 8), 1 px outline, 1–2 px shadow, counters open. Centre via `measureOnly` ink bounds.
+
+Mistakes:
+- Letters jitter → a glyph is off the baseline by 1 px; realign.
+- `O` reads as `0` → diamond/boxed forms (3×5), inner diagonal `0` (5×7).
+- Outlined text is a blob → outline only at 5×7+; shadow or panel on small text.
+- Shadow missing → offset 1 under an outline; use ≥ 2.
+
+Templates: `font-3x5-digits` (3×5 digits), `font-3x5-a-m` (3×5 sheet; `font-3x5-n-z`, `font-3x5-punct`), `font-3x5-score` (3×5 line pattern), `font-5x7-hud` (HUD line). Full rules and templates: rules://84-bitmap-fonts
+
 ## Rules
 
 1. **Pick the grid by the job.** 3×5 (cell 4×6) for score, timers and tiny labels — the

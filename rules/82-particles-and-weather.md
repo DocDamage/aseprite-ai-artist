@@ -7,6 +7,25 @@ weather tile, and the drop/flake/leaf/dust frames. Big effects are in
 `rules://80-vfx-fire-smoke-magic`, water in `rules://64-water`, wind-moved foliage in
 `rules://63-trees-and-foliage` and `rules://45-secondary-motion`.
 
+## Essentials
+
+- Three layers far/mid/near: size ×2, speed ×2, value +2 steps toward near.
+- Loops are arithmetic: tile `H` px, `F` frames, shift `k·H/F` per frame with wrap. Rain `H`=16, `F`=4: far 4 px, near 8 px. Snow `H`=16, `F`=8: far 1 px, near 2 px.
+- No grids: same-layer particles never share a column within 4 px; hand-place, check with `look` op `ascii`.
+- Rain: streak head brighter than tail, 2–3 px at 16 px; 3–4 frame splash on landing; 50–60 ms per frame. Wind slants 1 px x per 2–3 px y.
+- Snow: 1 px far, 1 px mid, 2×2 near, S-curve drift (near x-offsets `0 +1 +1 0 −1 −1 0 +1`); 100–120 ms.
+- Leaves: 4 tumble frames at 125 ms, fall 1 px/frame on a sine path; near ≈ 6×5, far ≈ 3×3.
+- Dust is born on the ground and takes the ground's colour; sparks ≤ ~8 live per 32×32.
+- Overlay stays within 3 value steps of the background so sprites stay readable.
+
+Mistakes:
+- Rain looks like a grid → irregular columns, ≥ 4 px apart.
+- Loop pops at the seam → shift must be `k·H/F`; blit the bottom strip to the top before translating.
+- Snow falls like rain → add S-curve offsets and a slower far layer.
+- Weather hides the player → thin the near layer, lower its value, darken the background.
+
+Templates: `particles-rain-tile` (16×16 seamless rain), `particles-snow-tile` (16×16 seamless snow), `particles-leaf-1` (4-frame leaf tumble), `particles-dust-1` (3-frame landing dust). Full rules and templates: rules://82-particles-and-weather
+
 ## Rules
 
 1. **Animate one particle at a time**, then the next. Each keeps its shape until it

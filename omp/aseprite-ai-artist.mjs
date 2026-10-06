@@ -8,6 +8,8 @@
  *
  * - SessionStart → a hidden note on the first prompt saying whether the bridge
  *   is reachable.
+ * - UserPromptSubmit → the craft briefing: the `## Essentials` of every rule
+ *   file the request's subject calls for, hidden, ahead of the agent's turn.
  * - PostToolUse on draw/recolor/transform → the "look at it" nudge, appended to
  *   the first successful mutating result of the session.
  *
@@ -18,7 +20,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { bridgeStatusMessage, LOOK_NUDGE } from "../hooks/shared.mjs";
+import { bridgeStatusMessage, craftBriefing, LOOK_NUDGE } from "../hooks/shared.mjs";
 
 const SKILLS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "skills");
 
@@ -73,15 +75,24 @@ export default function asepriteAiArtist(pi) {
   let status = null;
   let statusSent = false;
   let nudged = false;
+  let briefed = new Set();
+  // The raw submission, captured before omp expands `/skill:…` into the skill
+  // body: the body names every subject in the rulebook and would match them all.
+  let submitted = null;
 
   const reset = () => {
     // Probe at session start so the first prompt never waits on it.
     status = bridgeStatusMessage();
     statusSent = false;
     nudged = false;
+    briefed = new Set();
   };
   pi.on("session_start", reset);
   pi.on("session_switch", reset);
+
+  pi.on("input", (event) => {
+    submitted = typeof event?.text === "string" ? event.text : null;
+  });
 
   for (const command of loadSkillCommands()) {
     pi.registerCommand(command.name, {
@@ -94,13 +105,26 @@ export default function asepriteAiArtist(pi) {
     });
   }
 
-  pi.on("before_agent_start", async () => {
-    if (statusSent) return;
-    statusSent = true;
+  // omp keeps only the first message returned from this event, so the status
+  // and the briefing travel as one.
+  pi.on("before_agent_start", async (event) => {
+    const request = submitted ?? event?.prompt ?? "";
+    submitted = null;
+    const parts = [];
+    if (!statusSent) {
+      statusSent = true;
+      parts.push(await (status ?? bridgeStatusMessage()));
+    }
+    const briefing = craftBriefing(request, undefined, briefed);
+    if (briefing) {
+      parts.push(briefing.text);
+      for (const code of briefing.codes) briefed.add(code);
+    }
+    if (parts.length === 0) return;
     return {
       message: {
         customType: "aseprite-ai-artist/status",
-        content: await (status ?? bridgeStatusMessage()),
+        content: parts.join("\n\n"),
         display: false,
         attribution: "agent",
       },

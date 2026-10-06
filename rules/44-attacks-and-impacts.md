@@ -8,6 +8,25 @@ body attacks, hit reactions, death and block, side view; top-down variants are i
 `rules://47-top-down-animation`, flashes and screen shake in
 `rules://81-impacts-and-game-feel`.
 
+## Essentials
+
+- Phase order: anticipation → smear → hit (held) → follow-through → recover → overshoot. Drop from the front (anticipation) first, never the hit.
+- Player attacks: no wind-up or one frame ≤ 50 ms. Enemies telegraph 150–400 ms with a held readable silhouette.
+- Timing: long start, 50 ms smear, medium settle (150/40/40/170/75 ms). Recovery is longer than the strike.
+- Anticipation goes opposite by ≥ 2–3 px at 32 px; weapon in the clear, not behind the head.
+- Smear: 1 frame at 16–24 px, 2–3 at 32 px+, 50 ms each; first is biggest, later shrink. Two brightest ramp colours, opaque, no dither.
+- Hit frame: target already displaced; hold 100 ms (light) to 150 ms (heavy). Hitstop 3/6/9–12 frames at 60 fps, never > 12.
+- Overshoot: guard pose as idle copy shifted 1 px back for 50 ms. Hit reaction: knockback 2–4 px, flash 1–2 frames, recover over 3–5 frames.
+
+Common mistakes:
+- Weightless hit → hold HIT 100 ms, add 1 px snap-back.
+- Laggy controls → anticipation on a player attack; cut to ≤ 50 ms.
+- Blurry hit → dithered/semi-transparent smear; use two opaque bright colours.
+- Death looks like a pose swap → add partial recover, lag, 1 px overshoot.
+
+Templates: `attacks-sword-keys` (anticipation/smear/hit/recover), `attacks-smear-fade` (shrinking smear frames), `attacks-hit-spark`, `attacks-hit-react` (victim reaction).
+Full rules and templates: rules://44-attacks-and-impacts
+
 ## Rules
 
 1. **Phase order:** anticipation → smear → hit (held) → follow-through →

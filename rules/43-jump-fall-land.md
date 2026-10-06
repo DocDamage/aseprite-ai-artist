@@ -4,6 +4,25 @@ A jump is a position curve plus three squashes. Without the curve the character 
 is no weight; without a fall pose the player cannot read which way they are moving. The poses below are 16 px side
 views facing right; mirror for left. Easing and frame-rate vocabulary: `rules://40-timing-and-spacing`.
 
+## Essentials
+
+- Choose the mode first: gameplay (engine owns the arc; poses by vertical speed + landing one-shot) vs timed strip (you draw every frame). Never time a gameplay air phase.
+- Space the arc by gravity: heights 0, ½, ⅘, 1, 1, ⅘, ½, 0 × H (12 px → 0,6,10,12,12,10,6,0). Widest at launch/landing, tightest at apex; hold apex 1.5–2×.
+- Player jump: no crouch, rise next frame. Enemies/cutscenes: 2 frames at 100–120 ms. Fighters keep 3–5 frame pre-jump.
+- Squash goes on the landing, not launch: one drawing, held 1–2 frames, 60–120 ms; contact → one squash → stretch. Stretch where fast, area ±2 %.
+- Keep the ground pivot pixel on one coordinate; launch keeps the rear toe down.
+- Different poses for up and down (rising = limbs trailing, falling = arms up, legs reaching) plus a 1-frame bridge at the apex.
+- Cure floatiness with two sub-motions in the air: arms 1 frame late, back leg 1 behind, cloth trailing. Dust 4 frames, 60 ms.
+
+Common mistakes:
+- Floaty → use 6-4-2-0 gaps, apex hold, two sub-motions.
+- Frog hop / no weight → one squash drawing, on contact only.
+- Late control → anticipation on a player jump; cut it or ≤ 50 ms.
+- Reads as standing → up and down share a pose; draw different ones.
+
+Templates: `jump-16-crouch`, `jump-16-launch`, `jump-16-apex`, `jump-16-fall`, `jump-16-land` (the five 16 px poses), `jump-arc-8f` (spacing chart), `jump-8-slime-stretch` (8 px stretch).
+Full rules and templates: rules://43-jump-fall-land
+
 ## Rules
 
 1. **Choose the mode first.** *Gameplay*: the engine owns the arc, the sprite is a set of poses picked by vertical

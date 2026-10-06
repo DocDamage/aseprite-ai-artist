@@ -9,6 +9,25 @@ carried items and weapon tips. Primary cycles are `rules://42-walk-and-run` and
 `rules://44-attacks-and-impacts`; motion below one pixel is
 `rules://46-subpixel-animation`; wind particles are `rules://82-particles-and-weather`.
 
+## Essentials
+
+- Leader first: each loose part lags 1–2 frames behind what it hangs from; lags add up, the free tip is last.
+- The root pixels at the attachment stay identical frame to frame; amplitude grows toward the free end.
+- Overshoot then settle: 3, 2, 1, 0 px over 2–4 frames, 250–400 ms total. Never a single frozen frame.
+- Counteract the bob: body drops on `down`, hair/cape lift one frame later. Cape walk = 1 px sway; run = near horizontal, 2–3 px bob; sudden stop = swing to vertical, rebound, hang.
+- Edge is one continuous curve (run lengths like 4-2-1-1-2-4). Few folds: 2–3 value bands, one fold line at 16 px; no cloth highlights.
+- Each loose part gets its own layer and loop length (cape 8, hair 6, orbiting item 5); flat-fill test with the cape on, 1 px gap from legs/back arm.
+- Size: 8 px fixed or 1 px flick; 16 px 1–2 px strand, cape 2 px wide; 24–32 px locks 2–3 px, cape 3–4 × 12–17; tails lag the spine ~2 frames.
+
+Common mistakes:
+- Cape glued on → shift the tip 1–2 frames later.
+- Cape flaps wildly → fix the root, amplitude grows to the tip.
+- Stops dead → add 2–4 decaying settle frames.
+- Cloth jitters → 2–3 bands, one fold line, merge clusters.
+
+Templates: `secondary-cape-stop` (5-frame stop/swing/rebound), `secondary-run-cape-hair` (run with cape and ponytail), `secondary-flag-wave-6` (6-frame wave loop).
+Full rules and templates: rules://45-secondary-motion
+
 ## Rules
 
 1. **Leader first, followers later.** Draw the body's motion, then each loose
