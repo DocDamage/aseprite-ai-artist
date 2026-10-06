@@ -4,26 +4,6 @@ Manual anti-aliasing (AA) puts a pixel of in-between colour where a step turns, 
 Too little leaves a curve jagged; too much turns it into a blur, a halo on the wrong background, or a second thick
 line. This file decides *whether*, *where* and *how much*. Filters, resampling and soft brushes are not AA.
 
-## Essentials
-
-- Decide first: no AA for sprites ≤ 12 px, 1-bit/4-colour palettes, crisp styles, low-contrast edges. AA suits soft round styles at ≥ 24 px.
-- Fix jaggies first (`rules://10-lines-and-curves`); AA on a lumpy curve makes a smooth-looking lump.
-- Never AA a 1:1 diagonal or a straight line. AA only steps of 3+ px at 16 px; 2 px steps only from ~32 px.
-- Strip length: one shade ≈ 1/3 of the step; two shades up to 2/3; never ≥ 3/4 (reads as a second line). Step 2 → 1 px; 3 → 1; 4 → 1 or 1+1; 6 → 2+2; 9 → 3+3.
-- Place in the inner corner of each step, darker shade next to the outline, lighter beyond.
-- Colour lies between the two neighbours in value and hue; reuse existing palette colours.
-- Shades per size: 8 px none; 16 px 0–1; 32 px 1–2; 64 px up to 3.
-- Unknown background: AA inside the outline only, never the exterior (halo).
-- No filter AA: no bilinear resize, non-90° rotation or soft brushes; `transform` scale stays integer, `allowLossy` off. `validate` antialiasing only counts semi-transparent pixels; judge manual AA by eye.
-
-Mistakes:
-- Blurry curve → strips too long or too many shades; shorten to 1/3, one shade.
-- Thick doubled outline → AA ring parallel to the whole line; keep strips to inner corners.
-- Light halo on a dark scene → exterior AA pixels; delete them, AA inside.
-- Smudged 45° edge → AA on 1:1 steps; remove it.
-
-Templates: `aa-step-ladder` (right vs wrong strip length), `aa-step-lengths` (AA by step size), `aa-circle-modes` (internal AA on a Ø16 disc). Full rules and templates: rules://12-anti-aliasing
-
 ## Rules
 
 1. **The mental model.** The sprite is a low-res rendering of an intended line. For each pixel the line barely

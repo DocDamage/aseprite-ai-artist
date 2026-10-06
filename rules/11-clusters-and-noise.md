@@ -4,25 +4,6 @@ A sprite is read as shapes of colour, not as pixels. Speckle, orphan pixels, fat
 add information nobody asked for, and at 1× the viewer reads them as dirt or as a ruler laid along the outline.
 Without this file an agent shades by "darker near the edge" and sprinkles detail dots; both are generated-art tells.
 
-## Essentials
-
-- Design with few, large, clean clusters; squint and a few big masses of light and dark must survive. Clean shapes in 5 colours beat noisy texture in 5.
-- Orphans: delete, merge, or grow into a 2–3 px shape. Allowed: specular highlight, eye of a tiny sprite, star/spark, AA pixel. At most one per object at 16–32 px; never near the face.
-- `validate` strays only flags pixels with no opaque 4-neighbour (error above 3); hunt dark specks inside fills by eye.
-- Banding cures in order: stagger breaks 1 px; compress bands; dither the join; split into small clumps. Never let outline and first shade run the same length.
-- Pick a light direction; end shade abruptly at a terminator, never rings that hug the outline (pillow shading).
-- Big shapes first: large light and shadow planes, then secondary shadows. Straight-edged clusters for flat planes, curved for round forms.
-- Scatter: uniform density, no two accents sharing a row or column, none touching; tile 3×3 and check for lattices.
-- Budgets: 8 px = 2–3 colours, no shade clusters; 16 px = 3 tones per material, clusters ≥ 2 px; 32 px = 2–3 shade clusters per part; > ~3 clusters per tone per part = noise.
-
-Mistakes:
-- Gritty sprite → many 1 px accents; merge into 2–3 px shapes or delete.
-- Onion look / flat plastic ball → concentric shade rings; one lit cluster plus abrupt shadow cluster.
-- Chunky diagonal → bands end where the stair steps (super pixel); shift each break 1 px.
-- Hair or cape flickers in animation → clusters re-form per frame; keep layout, move it whole.
-
-Templates: `clusters-orphans-fixed` (orphans merged), `clusters-bands-staggered` (banding cure), `clusters-sphere-lit` (lit vs pillow sphere), `clusters-scatter-staggered` (scatter tile), `clusters-rock-clean` (planes vs noise). Full rules and templates: rules://11-clusters-and-noise
-
 ## Rules
 
 A **cluster** is touching pixels of one colour. Orthogonal contact joins pixels; diagonal contact is weak.

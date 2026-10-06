@@ -8,25 +8,6 @@ spiders, frogs and snakes, and the cheapest animation that sells each. Blob mons
 (slimes) and big creatures are `rules://54-monster-design`; wings are
 `rules://52-birds-and-flight`; quadrupeds are `rules://50-quadrupeds`.
 
-## Essentials
-
-- Count parts before drawing. Fish: body, tail, dorsal, belly and pectoral fins, gill arc, eye. Insect: 3 segments, 6 legs from the thorax, 2 antennae. Spider: 2 segments, 8 legs, no antennae. Frog: raised eyes, 2 big folded hind legs, no tail. Snake: tube, wedge head, no limbs.
-- At 8 px one idea plus an eye or colour dot; 12–16 px use 2–3 colours, a body colour plus one contrasting accent. Colour, not outlines, separates fins from body.
-- Fish: tail fan ¼–⅓ of body length, eye in the front third, dorsal on the top third, dark back and light belly, stripes follow the body curve.
-- Swim by an S wave: 4 frames, tail up 1 px, centre, down 1 px, centre; body tilts 1 px opposite; fins flutter on a different period.
-- Insects: tripod legs, 2 segments each, knees out and up. Wings pale blue-white with 1–2 vein pixels, drawn behind the thorax. Antennae 2–3 px, unoutlined.
-- Frog hop is a bouncing ball: coil, full stretch, landing squash. Snake: body follows the head's track, constant wave, shift about a quarter wave per frame.
-- Small things move in jerks: 4-frame walk at 80 / 80 / 120 / 80 ms; squash ≤ 1 px at 16 px.
-
-Mistakes:
-- Fish with shoulders → no taper → one smooth oval into the tail.
-- Insect with four legs → three pairs from the thorax.
-- Outlines on 1 px legs and antennae → draw them after the outline pass.
-- Snake as a rigid tube → add wave, narrowing tail, per-frame wave shift.
-
-Templates: `fish-19` (minnow base), `fish-37`, `bug-bee-22`, `bug-beetle-23`, `bug-spider-24`, `frog-sit-24`, `frog-leap-32`, `reptile-snake-37`.
-Full rules and templates: rules://53-small-creatures
-
 ## Rules
 
 1. **Count the parts before you draw.** Fish: body, tail, dorsal fin, belly fin, pectoral

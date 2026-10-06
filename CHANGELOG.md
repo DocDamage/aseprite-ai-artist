@@ -6,19 +6,6 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
-### Added
-
-- **Craft briefing.** The 0.7.0 benchmark runs showed agents opening 0–2 of
-  the 62 rule files per step, and none for the isometric house or the
-  landscape. Now every subject file starts with a `## Essentials` digest
-  (≤ 40 lines: the decisive numbers, the usual mistakes, the templates worth
-  opening), and a hook matches the request's subject words — English and
-  Russian, most-mentioned subject first — and puts up to six of those digests
-  into context before the agent's turn: `UserPromptSubmit` in Claude Code,
-  `before_agent_start` in omp, which reads the submission before `/skill:`
-  expansion so the skill body's own subject table cannot match itself.
-  `studio` now ends every report with a `Rules used:` line.
-
 ## [0.7.0] — 2026-10-06
 
 ### Added

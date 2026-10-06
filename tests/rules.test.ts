@@ -1,9 +1,6 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-// @ts-ignore — plain .mjs on purpose: the hooks run from a git clone with no build step.
-import { essentialsOf } from "../hooks/shared.mjs";
 import { compileGrid } from "../dist/lib/grid.js";
 import { loadRuleTemplates, templateProblems } from "../scripts/rule-templates.ts";
 
@@ -35,26 +32,4 @@ test("template names are unique, so a rule can point at one unambiguously", () =
     seen.set(t.name, `${t.file}:${t.line}`);
   }
   assert.deepEqual(clashes, []);
-});
-
-test("every subject rule has a short Essentials digest whose template names exist", () => {
-  // The craft briefing hook injects these verbatim; an over-long digest costs
-  // context on every matching request, and a template it names but the file
-  // lacks sends the agent hunting for nothing.
-  const names = new Set(loadRuleTemplates(rulesDir).map((t) => t.name));
-  const problems: string[] = [];
-  for (const file of readdirSync(rulesDir).filter((f) => /^[1-9]\d-.*\.md$/.test(f))) {
-    const essentials = essentialsOf(readFileSync(path.join(rulesDir, file), "utf8"));
-    if (essentials === null) {
-      problems.push(`${file}: no ## Essentials section`);
-      continue;
-    }
-    const lines = essentials.split("\n").length;
-    if (lines > 40) problems.push(`${file}: Essentials is ${lines} lines (max 40)`);
-    const templatesLine = essentials.split("\n").find((l) => /^\W*Templates:/.test(l)) ?? "";
-    for (const [, name] of templatesLine.matchAll(/`([a-z0-9][a-z0-9-]+)`/g)) {
-      if (!names.has(name!)) problems.push(`${file}: Essentials names template '${name}', which no grid block defines`);
-    }
-  }
-  assert.deepEqual(problems, []);
 });

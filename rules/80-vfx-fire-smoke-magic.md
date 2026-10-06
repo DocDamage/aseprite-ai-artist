@@ -6,25 +6,6 @@ layer order, colour order and frame skeleton; this file gives them. Hit timing a
 are in `rules://81-impacts-and-game-feel`, falling things in `rules://82-particles-and-weather`,
 light cast on the scene in `rules://24-lighting-scenarios`.
 
-## Essentials
-
-- One `layer` per element (flash, blast, fire, smoke, debris); animate each, then judge the stack.
-- No black outline on light sources: outer ring is darkest fire colour. Ramp `#ac3232` → `#df7126` → `#fbf236` → `#ffffff`; white is 1–3 px at the root, never a fill.
-- Fire loops 6–8 frames (≤16 px: 4) at 80–120 ms, uneven (100/80/120/100); last frame leads into first.
-- Flame = one connected body + 1 px embers. 32 px torch: 9–12 wide, 15–20 tall, tip ±3–4 px per frame. Wind leans the tip (top 2–3 rows), not the base.
-- Smoke rises 2–3 px/frame, widens, lightens (3 → 2 colours), breaks into 2–4 clusters late. Violet-grey, never neutral.
-- Explosion ≥4 frames: dark disc → white flash → sharp blast → fade (fire leaves fast, smoke slow). 32 px radius gains ~+4, +3, +2, +1, +1 px.
-- Glow = concentric rings 1–2 px each, outer ring dithered; no alpha. Beams: white core, 1 px coloured fringe, pulse 1→3→5→3→1 px.
-- Debris obeys gravity and rests on the last frame.
-
-Mistakes:
-- Flame looks like a sticker → remove the outline; put a dark disc behind on frame 1.
-- Effect strobes → vary frame durations and shapes; start a new wave every 2–3 frames.
-- Smoke reads as noise or grey ball → shrink and break up late; lobed discs with one dark lower-right crescent.
-- Explosion is one orange frame → draw the 4-beat sequence, each pass on its own layer.
-
-Templates: `vfx-flame-1` (torch flame, 3 frames 9×12), `vfx-smoke-1` (smoke puff cycle), `vfx-explosion-1` (flash→fade, 4 frames 13×13), `vfx-orb-glow` (ring glow orb). Full rules and templates: rules://80-vfx-fire-smoke-magic
-
 ## Rules
 
 1. **One layer at a time.** An explosion is flash, blast, fire, smoke, debris: draw and

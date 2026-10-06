@@ -7,26 +7,6 @@ shapes and seven expressions at 16 and 32 px heads. Where features sit on the he
 `rules://32-heads-and-faces`. Bust portraits: `rules://38-portraits`. Idle and blink timing:
 `rules://41-idle-and-breathing`, `rules://40-timing-and-spacing`.
 
-## Essentials
-
-- Eyes get their pixels first and are never cut (cut brows, nose, ears). Ladder by head height: 8 px 1×1 or none; 12 px 1×2; 16 px 2×2; 24 px 3×3; 32 px 5×4; 48 px 7×5; 64 px 11×6.
-- Emotion = three channels: brows, lower lid/cheek, pupils. Change only these on one base face; keep eye spacing constant.
-- Brows: inner end down = angry, inner end up = sad/worried, raised + wide eyes = surprise, one brow 1 px higher = puzzled. Keep a 1-px gap to the eye except anger/determination.
-- One catch-light: single white pixel upper-left of the pupil, same spot on both eyes. Villains and blank stares get none.
-- Pupil 1 px off centre, never dead centre; in 3/4 both pupils look the same way. Skip whites unless each eye ≥ 3 px wide.
-- Break symmetry by 1 px (one brow a row higher) except surprise and squeezed hurt eye.
-- Mouth: 3 shapes at 16 px, 5–9 at 32 px; swap on beats, hold each ≥ 2 frames (≥ 80–100 ms); M B P need a closed frame. Drop the whole jaw, not just the lip.
-- Blink: ≤ 16 px open → closed, 1 frame, 80–100 ms; ≥ 24 px half → closed → half, 50/80/50 ms. Every 2–4 s, off the breathing period. Closed lid darker than skin.
-- Eyes never jitter: swap whole eyes on fixed rows. Eye strip is the highest-contrast part of the head.
-
-Mistakes:
-- Surprise reads as fear/anger → brows level → brows 1 row up, white all round, O mouth.
-- Anger reads sleepy → brow slope reversed → inner end down, touching the lid.
-- Dead stare → centred pupil, no highlight → pupil 1 px off, add catch-light.
-- Mask-like face → perfect symmetry → lift one brow 1 px.
-
-Templates: `eyes-ladder-small` / `eyes-ladder-mid` / `eyes-ladder-large` (eye sizes per head), `expr-16-a` / `expr-16-b` and `expr-32-a` / `expr-32-b` (seven expressions), `mouths-16` / `mouths-32` (speech shapes), `blink-16` / `blink-32`, `eyes-gaze-32`. Full rules and templates: rules://33-eyes-and-expressions
-
 ## Rules
 
 1. **Eyes get their pixels first** and are never the thing you cut — cut brows, nose, ears.

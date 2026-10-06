@@ -7,27 +7,6 @@ the authoring contract for a layer: how many, how fast, how wide, how it loops, 
 relative to its neighbours. Distance colour rules are `rules://60-skies-and-atmosphere`, silhouettes
 `rules://61-landscapes-and-terrain`.
 
-## Essentials
-
-- Three layers is the sweet spot, five the max, two a valid start.
-- Speed is a camera ratio: `render_x = (x − camera_x) × factor + offset_x`. Sky 0–0.2, far 0.2–0.4, middle 0.4–0.6, near background 0.6–0.8, gameplay 1.0, foreground 1.1–1.5.
-- Whole pixels only. In a loop, the rate must divide the layer width (192 px: 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64). Slower than 1 px/frame jitters.
-- Every layer has the same canvas size, 1× scale, nearest-neighbour. Never scale a layer to fake distance.
-- Every non-sky layer fills solid to the canvas bottom.
-- Seam: left edge equals right edge pixel for pixel; an object crossing it is drawn twice. Test with three copies side by side.
-- Slower = paler, less saturated (−20–40 % per receding layer), simpler. Sun and moon are separate fixed sprites, not baked into a loop.
-- Foreground is narrow, dark, hugs the edges, never hides the play area. Canvas for 16 px sprites: 320×180 or 384×216.
-
-Common mistakes:
-
-- Pop every loop → match edge columns, draw crossing objects twice.
-- Layer hovers when the camera rises → fill to the bottom.
-- Edges shimmer → round the offset, use a divisor rate.
-- Far hills move faster than near trees → factors reversed.
-
-Templates: `parallax-far-loop-40` (far mountains), `parallax-treeline-loop-32` (tree line with ground fill), `parallax-city-loop-32` (two-layer city), `parallax-wrap-bush-24` (object crossing the seam).
-Full rules and templates: rules://62-parallax-backgrounds
-
 ## Rules
 
 **Layers and speed**

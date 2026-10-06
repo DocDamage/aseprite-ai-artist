@@ -2,27 +2,6 @@
 
 Everybody knows what a wall, a door and a window look like, so errors show at once: bricks like plastic sheets, windows that are holes, a door the size of a shutter, a roof with no overhang or eave shadow, rooms with no wall at all. This file is how to build facades, brickwork, openings, roofs and rooms on a tile grid. Seams and edges: `rules://66-tiles-and-autotiling`; ground: `rules://65-ground-rocks-grass`; true perspective and iso: `rules://70-perspective`, `rules://71-isometric`.
 
-## Essentials
-
-- Volumes first, texture last: the building must read in flat colour (box → roof slightly larger → openings → base light/shadow → texture).
-- One view, one roof pitch (1:1 or 2:1) on every building. Sizes are multiples of 16×16 cells; the foundation stays inside them, only the top may exceed.
-- Brick pitch must divide the tile: at 16 px use 7×3 bricks, pitch 8×4, alternate courses shifted 4 px. Mortar first, then bricks, light, damage.
-- Imply bricks: lit top row, mid face, dark mortar; two face tones, 2–4 chipped bricks. Never outline every brick.
-- Door opening ≥¾ of the tallest character's height. Window = frame, panes, 2 px mullion at 16 px, sill, shadow row; glass is the darkest value by day, never a black hole.
-- Roof = flat plane in two-colour shingles offset by half, 1 px overhang per side, 2-row eave shadow on the wall; roof colour is the accent.
-- Room = floor, wall, baseboard strip; walls 2–3 tiles high; furniture stands in front of the wall.
-- Far buildings: rectangles with window dots and a roofline, fewer colours with distance.
-
-Common mistakes:
-
-- Half brick at the wrap → pitch 8×4 at 16 px, offset 4.
-- Window reads as a hole → frame + panes + mullion + sill + glint.
-- Roof is one flat colour → staggered shingles and an eave shadow row.
-- Building floats → plinth or step, drop shadow, stay on 16 px cells.
-
-Templates: `arch-brick-16` (running-bond brick), `arch-window-16` (four-pane window), `arch-door-16x32` (double door in stone frame), `arch-house-front-32` (assembled facade).
-Full rules and templates: rules://67-architecture-and-interiors
-
 ## Rules
 
 **Structure**

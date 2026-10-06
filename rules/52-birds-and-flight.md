@@ -8,25 +8,6 @@ timing, and the small cases (hover, glide, perch). Quadruped anatomy is
 `rules://50-quadrupeds`; follow-through in general is `rules://45-secondary-motion`;
 sub-pixel hover is `rules://46-subpixel-animation`.
 
-## Essentials
-
-- Build from an egg body (breast forward/down, tail up/back), ball head, cone beak, thin legs; draw only 2–3 px of neck at rest.
-- One leg kink only: the ankle, pointing back. Knee hidden. Toes 3 forward + 1 back (parrots and woodpeckers 2 + 2).
-- A wing is an arm; folded it is a Z, open it is nearly straight. Three bands: coverts 2–3 px light, large coverts 2 px darker, flight feathers 1–2 px stripes. At ≤ 16 px two tones.
-- Flap in four poses: up (body +1), mid-down (0), down (body highest, −2), mid-up (−1). Wing = two segments (7 + 8 px); tip trails 20–35°. Upstroke fast, downstroke is the power stroke.
-- Beak and eye are 1 px (beak 2×1 at 16–20 px); beak gets its own tone, not reused on the bird.
-- Light breast, darker back, dark wingtips and tail end. Soaring = held flat pose, 1 px bob, no flap.
-- Frames: 8 px 2 frames; 16 px 2–4; 32 px 4–6. Sparrow 40–50 ms, crow/pigeon 60–80, gull/hawk 100–140; hold wings-up about 1.5×.
-
-Mistakes:
-- Bird with a knee → kink points forward → ankle kink points back.
-- Windmill flap → one rigid blade → two-segment wing, trailing tip, body bob.
-- Mushy wing → one flat colour → three bands, darker primaries.
-- Tiny bird with an 8-frame flap at 100 ms → 4 frames at 40–50 ms.
-
-Templates: `bird-perch-20` (songbird at rest), `bird-hen-27` (leg kink and toes), `bird-owl-22`, `bird-flap-1` to `bird-flap-4` (flap cycle), `bird-soar-28`, `bat-wings-up` / `bat-wings-down`.
-Full rules and templates: rules://52-birds-and-flight
-
 ## Rules
 
 1. **Build a bird from an egg, a ball and a cone.** Body = egg with the breast (keel)

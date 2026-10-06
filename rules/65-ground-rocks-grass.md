@@ -2,27 +2,6 @@
 
 Ground is most of the screen, so it is where generated scenes fail first: grass with a blade on every pixel, "dirt" in nine near-identical browns, a lone rock that becomes a visible grid the moment the tile repeats, rocks shaded like pillows. This file builds ground that stays quiet behind the characters and still reads as grass, dirt or stone. Seams, edges and autotile sets live in `rules://66-tiles-and-autotiling`; walls and floors made of bricks in `rules://67-architecture-and-interiors`.
 
-## Essentials
-
-- Ground is background: lower contrast and saturation than the sprites. If the ground wins the squint test, cut contrast before detail.
-- 3 colours per surface (dark/mid/light), mid dominant (75 % in grass, 87 % in dirt); a 4th only for sand or cracked earth.
-- Texture = clusters of 2+ same-colour px; no isolated pixels. 3–5 key clusters per material; clusters never touch (≥1 px of base between).
-- Dark = roots and valleys, light = blade tips. Never draw every blade; clusters cross the tile edge.
-- Busy tile ≈13 clusters per 16×16, quiet 4–6; mix busy in at roughly 1 : 3.
-- Unique features (rock, puddle, flower) go on an overlay, never in the repeating tile. Flowers: 3×3 plus, ≤3 per 16×16.
-- Rock = three planes (lit top with upper-left rim, mid front, shaded right/underside), hard straight boundaries. Groups of 1, 3 or 5 in different sizes; ≥7 px wide gets a 1 px contact shadow row.
-- One rock family per area, hue related to the dirt.
-
-Common mistakes:
-
-- Metal plate with dots → 2–3 px strokes, dark under light.
-- Grid visible when tiled → spread clusters, cut contrast.
-- Rock looks like a potato → three flat planes, no concentric shading.
-- Rock floats → 1 px dark shadow row, same direction everywhere.
-
-Templates: `ground-grass-16` (busy grass), `ground-grass-flowers-16` (quiet grass with flowers), `ground-dirt-16`, `ground-stone-16`; rock size ladder `ground-rock-4x3` … `ground-rock-20x14`.
-Full rules and templates: rules://65-ground-rocks-grass
-
 ## Rules
 
 1. **Ground is background.** Same hues as the sprites, lower contrast and lower saturation, so characters pop. Readability beats texture: if the ground wins the squint test, cut contrast before cutting detail.

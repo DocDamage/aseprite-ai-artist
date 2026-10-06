@@ -6,26 +6,6 @@ far layers painted with near-layer contrast, so the world looks like a collage. 
 of day and the *distance rules* that every background layer obeys live here. Mountains are in
 `rules://61-landscapes-and-terrain`, layer scrolling in `rules://62-parallax-backgrounds`.
 
-## Essentials
-
-- Sky = ramp of ≥4 entries rotating hue and value, lightest and least saturated at the horizon (day). Never one flat fill, never value-only.
-- Cut it into uneven hard bands, thinner toward the top. Dither only the band joins (2–4 row checker). ≤32 px of sky: 3–4 bands, no dither; ≤48 px: 2 dithered joins; 64–96 px: 3.
-- Sun halo = ≤3 dither rings, never a soft alpha glow. Time of day = palette swap on the same index map, not a repaint.
-- Cloud = overlapping lobes on one flat base, bumpy top. Light each lobe once from the upper left: 1–2 px rim arc, flat body, shade.
-- Build clouds from sky tints: shade bluer and within one ramp step of the sky. No outline, no concentric rings.
-- Distance: blend layers toward the sky colour at ~0/25/50/75/90 %, in ramp space. Saturation −20–40 % per step; farthest layer = 1–2 flat entries.
-- Night = indigo, never `#000000`. Stars: 1-px dot, 3-px plus, 2-px pair, uneven spacing.
-
-Common mistakes:
-
-- Cloud is a dirty grey ball → shade = bluer tint within one step of the sky.
-- Sky reads as stripes → uneven band heights, checker on the joins.
-- Far hills as crisp as near ones → distance ramp, ~25 % toward the sky colour per layer.
-- Sun repeats on a looping sky → separate fixed sprite.
-
-Templates: `sky-cloud-cumulus-36` (3-lobe cloud, 64 px+), `sky-bands-day-8` (day band column), `sky-sunset-24` (sunset, sun, ground silhouette), `sky-night-32` (night with stars).
-Full rules and templates: rules://60-skies-and-atmosphere
-
 ## Rules
 
 **Sky**

@@ -5,26 +5,6 @@ neighbours shows at 1× as a bump (a "jaggy"); a 2×2 lump on a 1 px line shows 
 line too, so this covers outlines, shading edges and outline-free art. Outline *style* is
 `rules://04-outlines-and-edges`; this file is about the pixels.
 
-## Essentials
-
-- One line weight per sprite, 1 px. A 2 px outline eats ~12% of a 16 px canvas; large sprites only.
-- Straight lines use a clean ratio with exactly one run length: 1:1 (run 1), 2:1 (run 2, isometric), 3:1, 4:1; steep 1:2, 1:3, 1:4.
-- Off-ratio angles alternate exactly two adjacent run lengths in a fixed period: 2,1 · 3,2 · 2,2,1 · 3,2,2. Never three lengths or a random mix. At 8–16 px, snap to the nearest clean ratio.
-- No elbows: if deleting a pixel leaves the line connected corner to corner, delete it.
-- Curves: run lengths shrink then grow monotonically (`6,2,1,2,6`). Any up–down–up (2,1,2) is a jaggy; fix by moving one end pixel of a run.
-- Never patch one step; redraw the whole segment at its ratio. A lone pixel off the curve: delete 1–2 pixels, don't re-stroke.
-- Colour boundaries are lines too; rules above apply to cel-shading edges.
-- Tips: single 45° pixel tip; both sides on the same `1:N` ratio.
-- Size limits: 8 px = only 1:1 and 2:1, curve ≤ 4 runs, no AA; 16 px = clean ratios, arc ≤ 6 runs; 32 px = periodic lines fine; 64 px = long arcs.
-
-Mistakes:
-- Bump in a line at 1× → a 1-run inside 2-runs; redraw the segment at one ratio.
-- Thick spot on a diagonal → elbow pixel; delete it, then recheck curves (two passes).
-- Lumpy arc → run list is not monotone; read it from `look` op `ascii`, move one end pixel.
-- Hand-placed `pixels` break runs; prefer `draw` op `line` / `ellipse`, then check the ends.
-
-Templates: `lines-slopes-shallow` (1:1–4:1 ladder), `lines-slopes-periodic` (acceptable off-ratio lines), `lines-circles-small` (discs Ø3–8), `lines-arc-good` (clean quarter arc). Full rules and templates: rules://10-lines-and-curves
-
 ## Rules
 
 A **run** is consecutive pixels in one row (shallow part of a line) or one column (steep part). `N:1` means N pixels

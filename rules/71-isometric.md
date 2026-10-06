@@ -5,27 +5,6 @@ the whole scene looks hand-wobbled. Everything below follows from one fact, pixe
 isometric is a 2:1 dimetric grid, and from one habit, never eyeball a cube, a circle
 or a roof. For the choice between projections see `rules://70-perspective`.
 
-## Essentials
-
-- The edge is 2:1: runs of exactly 2,2,2. A 4,4,4 run is worse; 2,3,2 is a bug. Draw with `draw` op `line` at dx = 2·dy, verify with `look` op `ascii`.
-- Tiles are even-sized diamonds twice as wide as tall: 16×8, 24×12, 32×16 (default), 48×24, 64×32. One size and one apex width per set.
-- Cube W×W: row width = `min(W, 4·(row+1), 4·(W−row))`, side height W/2.
-- Three values, one light for the whole scene (upper left): top = base, left −15%, right −25% brightness, convex edge +10%.
-- Verticals stay vertical, 1 px per px. Draw back to front: ascending x+y, then height.
-- Floor circles are 2:1 ellipses (`draw` op `ellipse` with that box); wall circles are sheared 1 px per 2 px, never stretched.
-- Cylinder = two ellipses on the vertical, shaded in columns. Ground every object with a flat 2:1 shadow lower right.
-- Do not convert flat art with `transform`; map by arithmetic: screen ((x−y)·W/2, (x+y)·W/4 − z).
-- Size 8: skip iso. 16: tile 16×8, props ≤ 16 px, 3 values. 32: character 24–32 px.
-
-Mistakes:
-- Jagged, wobbly edges → redraw with `line` at dx = 2·dy.
-- Faces read as one blob → left −15%, right −25%.
-- Object looks pasted on → add a flat 2:1 ground shadow.
-- Light flips between blocks → one light for the scene.
-
-Templates: `iso-lines-2to1` (legal edge runs), `iso-tile-32` (ground tile), `iso-cube-16` (plain cube), `iso-cube-16-outlined` (outlined cube with edge light), `iso-cylinder-16` (barrel, pillar).
-Full rules and templates: rules://71-isometric
-
 ## Rules
 
 1. **The edge is 2:1.** Two pixels across per one pixel up or down (26.57°). Allowed

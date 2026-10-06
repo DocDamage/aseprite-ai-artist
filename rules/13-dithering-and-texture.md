@@ -4,25 +4,6 @@ Dithering fakes a colour you do not have by mixing two you do; texture suggests 
 are not silhouette or light, so at small sizes they read as noise, and in animation they flicker. Without this file
 an agent reaches for noise dither or a smooth gradient tool and produces grain, wobble, or plastic.
 
-## Essentials
-
-- Default: don't dither. First try one more palette colour or a flat step. Dither only if the palette is locked, the area is large and flat or rough, and it is static.
-- Never on faces, near a mouth, or on anything that moves (flickers); put it on a static background layer.
-- Cap it: if dither covers about half an object, add a colour instead. Taper at the ends and edges.
-- Dither only between adjacent ramp steps (close values); unrelated hues go muddy.
-- Use ordered levels: `draw` op `dither` pattern `checker` / `bayer4` (never `noise`). Bayer 4×4 levels: 25% = dots every 2nd px, 50% = checker; above 50% invert roles.
-- Build from the middle: 50% checker at the centre, then 25/75 outwards, then flat; 3–5 levels are plenty.
-- Cheapest at 32 px: bridge a hard edge with one or two crenellation rows (every other pixel, second row offset by 1).
-- Never a 2×1 wide pixel: keep one phase `(x+y) mod 2` across the area, or slide a block 1 px.
-- Budgets: 8 px none; 16 px no dither, one texture tile of 2–4 clusters; 32 px bridge only; 64+ px 2–3 level gradients.
-
-Mistakes:
-- Grain or noise → random/filter dither; use a repeating tile or add a colour.
-- Stray pairs at a seam → phase break; keep one phase or add/remove a pixel.
-- Wallpaper texture → global grid on a form; orient marks to the form, leave empty areas.
-
-Templates: `dither-transition-5band` (standard 5-step bridge), `dither-edge-bridge` (hard edge vs bridge), `dither-phase-fixed` (single-phase checker), `texture-brick-implied` (16×16 brick tile). Full rules and templates: rules://13-dithering-and-texture
-
 ## Rules
 
 1. **Default: don't.** First try one more palette colour or a flat step. Dither only when (a) the palette is

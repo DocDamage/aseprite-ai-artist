@@ -8,26 +8,6 @@ size between frames. This file is the ladder: what a hand and a foot are at each
 size, in each view, with the pose templates to copy. Proportions are
 `rules://30-proportions-by-size`; the walk itself is `rules://42-walk-and-run`.
 
-## Essentials
-
-- Hand size by figure height (inside outline, fist × open): 8 px 1×1; 16 px 3×3 × 4×4 (relaxed 2×2); 32 px 5×4 × 5×6 (relaxed 4×4); 48 px 7×6 × 7×8; 64 px 9×8 × 11×13. Never enlarge a hand to "make it read".
-- Mitten first, fingers last: palm mass, thumb bump, then split. Below 5 px no fingers. One notch at 32 px; three fingers + thumb at 48 px; four at 64 px.
-- Separate fingers with one skin-shadow pixel, not black. A cuff band at the wrist; never let hand and sleeve share a value.
-- At 16 px one corner pixel of the fist is the gesture (top-left = points at face, bottom-left = down, three corners = hamfist, all four = punch at viewer).
-- Grip: fist over handle, 1 px of handle showing at each end. Weapon stays in the same hand in every direction; redraw after a flip.
-- Build six hands per character (relaxed, fist, open, point, grip, reach) and reuse them.
-- Foot length ≈ head height: 8 px 1–2; 16 px 3–4; 32 px 5–6; 48 px 8–10. Lowest foot pixel on the same row every frame.
-- Boot = shaft + foot + sole line (16 px: 2 px shaft, 3–4 px foot). Divide boot from trouser by colour, not outline.
-- Four foot poses carry a walk: heel strike, flat, toe-off, swing. No toes below 48 px; a heel adds ~4 px of height.
-
-Mistakes:
-- Hand is a rake of 1 px stripes → four equal fingers → mitten + thumb, one notch at most.
-- Hands vanish into the sleeve → same value, no cuff → cuff band, skin against dark sleeve.
-- Feet hover or slide → lowest foot pixel changes row → lock it to one row (check with onion).
-- Boots all identical wedges → one template for every pose → vary heel strike, flat, toe-off, swing.
-
-Templates: `hands-16-front` / `hands-16-side` (mittens per pose), `hands-16-corners` (corner-pixel gestures), `hands-32-front` / `hands-32-side`, `feet-16-side`, `feet-32-side`. Also `hands-8-arms`, `hands-48-*`, `hands-64-front`, `feet-*-views`. Full rules and templates: rules://34-hands-and-feet
-
 ## Rules
 
 **Hands**

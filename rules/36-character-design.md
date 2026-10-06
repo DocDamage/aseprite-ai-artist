@@ -2,26 +2,6 @@
 
 A character that is only a correct figure is a mannequin in a costume. At 16–32 px identity comes from three things the viewer takes in before any face: the silhouette, how the head / torso / legs masses compare, and one or two strong elements. Decide those first; detail only decorates what the shape already says, and a generic outline cannot be rescued by shading.
 
-## Essentials
-
-- Write the brief first: role, personality, one strong element. From it pick the dominant shape and head count.
-- Shape language: circle = friendly/young/cute; square = sturdy/heavy; triangle = aggressive/fast/dangerous. Apply to the whole silhouette, then echo in hair, costume, props.
-- Silhouette test before shading: flat one-colour fill at 1× must be nameable; for a cast, fill all black and line them up. Shading never repairs a generic outline.
-- Three different masses for head, torso, legs (32 px: head 12, torso 8, legs 10). Never three equal steps.
-- One straight edge of 3+ px against an opposite stepped curve; design 1–3 px negative spaces of different sizes; never fuse arm and torso.
-- Differentiate a 16 px cast by height ±2 px, head share, a silhouette accessory, one saturated hue each. Change ≤ 3 axes between two characters.
-- Head count as character: child/imp 3–4; kid 5–6; commoner 6–7; adult 7½; hero/knight 8; elf/noble/villain 8½–9; brute 7–8 with shoulders 3 heads wide.
-- 2–3 colours per character, 6–12 total at 16–32 px; hair or one accessory is the saturated accent. One eye style and outline rule for the whole cast.
-- Keep an anchor feature (e.g. 3×2 hat) fixed across palette swaps; split independent parts (weapon, cape, hair) onto layers.
-
-Mistakes:
-- Everyone has the same silhouette → only colour differs → change height, head share, silhouette accessory.
-- Three equal chunks (snowman) → make one mass dominant.
-- Arms glued to torso → no negative space → open a 1 px gap.
-- Sword hand flips when mirrored → asymmetric prop → mirror the design or draw W separately.
-
-Templates: `design-shape-trio-24` (circle / square / triangle), `design-archetypes-24` (cute, heavy, tall-thin), `design-cast-lineup-16` (five-character cast), `design-face-variation-12` (generic vs personality face). Full rules and templates: rules://36-character-design
-
 ## Rules
 
 1. **Write the brief before the first pixel.** One line: role, personality, one strong element ("lazy, kind cowboy with a huge hat"). From it choose the dominant shape (rule 2) and a head count (`rules://30-proportions-by-size`).

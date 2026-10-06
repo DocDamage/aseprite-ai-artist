@@ -2,27 +2,6 @@
 
 A tile is drawn once and shown a thousand times, so every flaw is multiplied: a lone rock becomes wallpaper, a seam becomes a grid, an edge set without inner corners breaks on the first L-shaped patch. And an autotile set authored in the wrong order exports a wangset that picks the wrong tile everywhere. This file is the method for seamless tiles, terrain transitions and the standard autotile layouts, and what each means for the `tileset` tool. Ground textures: `rules://65-ground-rocks-grass`; brick, doors, windows: `rules://67-architecture-and-interiors`.
 
-## Essentials
-
-- Tile size belongs to the game: ask. 16 is the default; never mix sizes in one set.
-- Draw a master tile that wraps on every edge: offset by half on both axes, rework the middle, offset back. Always judge a tile repeated 3×3.
-- A grid shows from one distinct element, a gradient, a strong shadow or pixels piled on the edge. Let clusters cross the border.
-- Variants change only the centre; keep the outer 1–2 px identical to the master. Make 3–4 variants of heavily used tiles.
-- Transitions: cut them from the two full tiles through a mask. At 16 px the boundary sits 5 px in, wobbles ±1 px in runs of 2+, both ends equal.
-- Boundary pass, light upper-left: 1 px dark outline, light rim on N/W edges, 1 px shadow on S/E. After a flip, re-run the pass.
-- A diagonal neighbour counts only when both adjacent cardinals are present → 47 shapes. Bits: N=1, NE=2, E=4, SE=8, S=16, SW=32, W=64, NW=128.
-- `tileset` needs the 47 masks in ascending order at indices 1–47 (0 = empty), all pixel-distinct. Draw the body tile (mask 255) first.
-
-Common mistakes:
-
-- Thin line between tiles → compare border columns, copy one.
-- Wrong tile chosen everywhere → reorder by ascending mask, pack again.
-- Export rejected, needs 48 tiles → draw all 47, make them distinct.
-- Light rim on the south side → flipped a lit edge; re-run the pass.
-
-Templates: `tiles-edge-n-16` (straight edge), `tiles-corner-nw-16` (outer corner), `tiles-inner-nw-16` (inner corner), `tiles-platform-top-16` (side-view ground top). The file also holds the blob47, 16-tile and RPG Maker A2 layouts.
-Full rules and templates: rules://66-tiles-and-autotiling
-
 ## Rules
 
 **Seamless tiles**

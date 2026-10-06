@@ -6,27 +6,6 @@ flat faces, and circles that are "about round". This file gives the exact circle
 and ellipses, and how each primitive is lit. Isometric placement is in
 `rules://71-isometric`; materials in `rules://22-materials-hard`.
 
-## Essentials
-
-- Reduce everything to box, sphere, cylinder, cone first; shade second.
-- State the light once (upper left) and keep it in every frame.
-- Flat faces are one flat colour: a cube has exactly three (top, side A, side B). Gradients on planes and outline-inward darkening are errors.
-- Curved forms get a ramp along the curve only: sphere radially from the light point, cylinder by column, cone along its slope.
-- Keep the terminator hard: 3–5 crisp bands, no dither inside a 16 px form, vary band width.
-- Highlight is a cluster of ≥ 2 px, never an orphan pixel; specular only on glossy things; reflected light only from D ≥ 12.
-- Cylinder columns (3 light, H highlight, 2 mid, 1 shade, 0 core): W=8 `3HH33210`, W=12 `3HHH33322110`, W=16 `3HHHHH3332221100`.
-- `draw` op `ellipse` is exact for D=4–16 and 2:1 ellipses; D=3 comes out a 3×3 square, stamp the plus template. Below ~6 px wide an ellipse is a line.
-- Ellipse minor/major = sin(angle): 20° → 0.34, 30° → 0.5 (iso 2:1), 90° → circle. Wheel rows: flattest at view centre, rounder outward.
-
-Mistakes:
-- Ball looks like a target → equal-width rings; vary band width.
-- Cylinder banded like a coil → bands are columns, not rings.
-- Circle looks square or lumpy → use the table; no run of 1 beside 3.
-- Cube faces fade smoothly → one flat colour per face.
-
-Templates: `forms-circles-3-8` / `-9-12` / `-13-16` (filled circles), `forms-ellipses-2to1` (iso floor ellipses), `forms-spheres-8-12-16` (shaded spheres), `forms-cylinder-side-12` (side-on pillar), `forms-cube-oblique-10` (3-value box).
-Full rules and templates: rules://72-3d-forms
-
 ## Rules
 
 1. **Everything is box, sphere, cylinder, cone.** Reduce an object to these first,

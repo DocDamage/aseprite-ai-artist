@@ -7,26 +7,6 @@ reflections and animated tiles. Particle foam and rain are `rules://82-particles
 connection logic is `rules://66-tiles-and-autotiling`; ice and slime are `rules://22-materials-hard`
 and `rules://23-materials-soft`.
 
-## Essentials
-
-- Water is a vertical gradient: dark near (tinted by the bed) → sky-coloured far, as hard bands joined with a dithered checker row.
-- Low-contrast base plus a small overlay: overlay ≤30 % of pixels, 1–2 px wavy dashes 4–7 px long. Sea and grass must not share one noise structure.
-- Surface: each ripple is one chunk moving ≤1 px per frame in a small closed loop; base tile scrolls 0.5 px/frame. 2–4 frames for a tile, 8 frames at ~8 fps for ocean waves.
-- Shore from land: sand → wet sand → thin foam line → light shallows → mid → deep, with a 1-px darker separation line. Foam sweeps along one diagonal.
-- Reflect only upright objects: mirror at the contact line, shorten ~25 %, darken one step, cut into 1-px strips shifted ±1 px, fade the lowest third.
-- Waterfall = mouth + flow + splash. Loop shift must divide the pattern period (period 8, shift 2 → 4 frames); streaks ~3 px at the lip, 5–10 px below; bridge seams with margin bands.
-- Depth ramp: warm bed → olive-green → teal → blue-green → indigo.
-
-Common mistakes:
-
-- Rug of white dashes → depth bands, overlay ≤30 %.
-- Ripples jump or twinkle → one chunk each, ≤1 px per frame.
-- Reflection is a perfect mirror → darken, shorten, strip ±1 px, fade.
-- Waterfall looks static → short streaks at the lip, long below.
-
-Templates: `water-tile-16-x4` (animated surface tile), `water-shore-16-x2` (shore), `water-waterfall-12-x4` (waterfall loop), `water-reflection-20-x2` (broken reflection).
-Full rules and templates: rules://64-water
-
 ## Rules
 
 **Colour and depth**

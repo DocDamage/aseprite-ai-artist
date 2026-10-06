@@ -2,26 +2,6 @@
 
 A sprite with head, chest and hips stacked on one vertical and both arms hanging parallel reads as a mannequin, however well it is shaded. At 16–32 px the pose is nearly the only thing the player reads, and the pose comes from three things: a line of action, where the weight sits, and which way the ribcage and pelvis tilt against each other. Anatomy detail is the last 10 %; it only matters up to the few landmarks that survive at your size.
 
-## Essentials
-
-- Draw the line of action first, on its own layer: C = effort/recoil, S = relaxed/cocky, straight diagonal = reach/dash. Head, spine and leading limb sit on it; it ends on the support foot.
-- Three hard masses (head, ribcage, pelvis) and three soft links (neck, waist, hip). Slope the shoulder line 1–2 px one way and the hip line 1–2 px the other at 32 px.
-- Pick the weight foot first. If head, chest, hip centres all sit within 1 px of the gravity line the pose is static; shift each 1–3 px, alternating sides.
-- Loaded flank pinches (2–3 px shorter, one notch pixel at 32 px+); free flank is one long diagonal.
-- Motion leans: head ahead of the planted foot (walk ≈ 1–3 px per 28 px of height, run far more); push foot stays behind the line.
-- Profile spine is an S: head forward, chest back, pelvis forward. A vertical stack is a mannequin.
-- Limbs taper 3 → 2 px, never parallel, never a right angle. Keep ≥ 1 px between an arm and the torso it crosses; outlines never cross.
-- Volume is constant: stretch 10–20 % longer and thinner, crouch shorter and thicker; same body pixel count.
-- Size budget: 16 px = 1 px head offset/tilt; 24 px = 1-px contrapposto; 32 px = full contrapposto, notch, chest/hip twist; 48–64 px = 3–4 muscle shapes.
-
-Mistakes:
-- Stiff statue → centres on one vertical, parallel shoulder/hip lines → tilt and shift.
-- Limbs like pipes → constant width → taper, 1 px of bend.
-- Leaning figure falls over → narrow base, no counterweight → plant push foot behind, extend rear leg.
-- Muscle noise at 32 px → every group drawn → keep four shapes, shade the rest.
-
-Templates: `anatomy-loa-guides-32` (bare C / S / diagonal curves), `anatomy-loa-poses-32` (curves on dummies), `anatomy-poses-balance-32` (contrapposto, side stand, heroic stance), `anatomy-poses-motion-32` (brace, dash, hunch). Full rules and templates: rules://31-anatomy-and-pose
-
 ## Rules
 
 1. **Draw the line of action first.** One 1-px curve on its own layer, before any mass: **C** for effort, recoil, bracing; **S** for relaxed, cocky, contrapposto; **straight diagonal** for reach, dash, lunge. Head, spine and the leading limb sit on it; the curve ends on the support foot. At 16–32 px it is often all the player reads. Templates `anatomy-loa-guides-32` (the bare curves) and `anatomy-loa-poses-32` (the same curves on dummies).

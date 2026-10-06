@@ -4,25 +4,6 @@ Soft materials fail by being drawn like metal: sharp bands, a highlight on every
 not at all, and are told mostly by their *edge* and by where the darks sit. Hard materials are in `rules://22-materials-hard`; hair and clothing
 *shapes* in `rules://35-hair-and-clothing`; faces in `rules://32-heads-and-faces`; ramp numbers in `rules://20-color-for-pixel-art`.
 
-## Essentials
-
-- Soft = low contrast, gradual steps, little or no specular; bone landmarks (cheekbone, knuckle, kneecap) get abrupt steps. Texture goes in the half-tone band only, never as a gradient.
-- Silhouette says the material first: zig-zag = fur, scallop = cloth hem, smooth round = slime/skin, repeated arcs = scales.
-- Cloth: 3 tones (lit, shadow, fold crease), cool-shifted (H 262 → 250 → 238), no highlight; 2–3 folds at 16 px, radiating from compression points.
-- Skin shadow is redder first (first step 10–22° toward red, S +19…+26), cooler/violet-brown second. 3–4 skin colours, 15–25 % V gap base→shadow. Deep skin: V 10 → 86, hue travel only ≈ +18°. Eye whites never `#ffffff`.
-- 16–24 px heads: two skin bands (warm top, rosy-cool bottom); add a 1–2 px red accent on nose/ear/cheek.
-- Hair is a mass: 3–4 entries, highlight band 1–2 px curved over the crown toward the light, not at the hairline. Hair ≥ 2 px wide; separate from skin by colour, not black line (except ≤ 16 px).
-- Fur: shade smooth first, carve tufts after; dither < 10 % of area. Leather: 1–2 px gloss on the lit edge, S ≈ 45–56. Scales: one entry per cell; below 32 px suggest them with dashes.
-- Slime: four swatches (small hard spec, base, reflected light opposite the spec, shadow) plus a darker coloured outline.
-
-Mistakes:
-- Cloth like plastic → remove highlights, use fold shadows only.
-- Skin dead/bruised → blue shadow; shift toward red, core violet-brown.
-- Hair like a helmet → highlight at hairline or even bands; put the band on the crown, notch the silhouette.
-- Scales like a checkerboard at 8–16 px → dashes, cells ≥ 4 px, pattern on part of the body.
-
-Templates: `mat-cloth-drape-12`, `mat-skin-light-sphere-12` (terminator band), `mat-skin-deep-sphere-12`, `mat-hair-cap-14`, `mat-slime-blob-14`, `mat-fur-pelt-14`. Full rules and templates: rules://23-materials-soft
-
 ## Rules
 
 1. **Soft = low contrast, gradual steps, little or no specular.** Soft flesh stretches over hard bone: soft forms get gradual steps, bone landmarks (cheekbone, knuckle, kneecap, collarbone) get abrupt light/shadow steps. Without landmarks a figure reads as a blob.

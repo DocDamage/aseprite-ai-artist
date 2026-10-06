@@ -5,26 +5,6 @@ pure black outlines, a rainbow where three hues would do. This file fixes ramp s
 in numbers. Palette *size* and hardware limits live in `rules://21-limited-and-platform-palettes`; per-material ramps in
 `rules://22-materials-hard` and `rules://23-materials-soft`; coloured light in `rules://24-lighting-scenarios`.
 
-## Essentials
-
-- Judge form in greys first (`recolor` op `desaturate` on a copy); value carries the read, hue carries mood.
-- Ramp length by size: 8 px 2–3 steps, 16 px 3–4, 32 px 4–5, 64 px 5–6 plus an accent ramp. Steps closer than ~10 V are one colour — delete one.
-- Hue-shift: lighten warm toward yellow (40–70°), darken toward crimson/magenta; darken green toward teal, blue toward indigo; cool ramps lighten toward cyan, not yellow.
-- Hue travel: 9–14° per step, cap 20° per step; total 30–50° for a 3-tone ramp, ≤ 100° for 7–9 steps.
-- Saturation is a hump: lowest at both ends, peak mid. Peak S 65–85 saturated materials, 45–60 skin, 7–24 steel. Never max S and max V on one swatch.
-- Ramp ends are tinted: darkest V 12–18 in the ramp's hue, lightest V 96–100 with S ≈ 15. No `#000000`/`#ffffff` except contact accents/speculars; outlines use the darkest ramp entry.
-- Chroma budget: ≤ 15 % of pixels above S 70; one accent hue, ≤ 5–8 % of pixels, on the focal feature. Neutrals S ≤ 12; at most one pure grey.
-- Light and shadow differ in temperature (≈ 20–40° apart in sun); foliage is never one green.
-- `palette` op `ramp` rotates hue the wrong way for red–orange–yellow bases: write warm ramps from the table and `palette` op `set` them.
-
-Mistakes:
-- Plastic, flat look → value-only ramp or same S everywhere; add hue travel and the S hump.
-- Muddy middles → ends built from pure black/white; use tinted dark and tinted light.
-- Frostbitten skin → blue shadow; shift shadow toward red/violet.
-- Shading vanishes when squinted → adjacent steps < 10 V apart; widen them.
-
-Templates: `color-sphere-16-zones` (full 16 px anatomy), `color-sphere-12-4tone` (12–16 px prop budget), `color-sphere-8-3tone` (8 px), `color-sphere-pair-flat-vs-shifted` (checklist image). Full rules and templates: rules://20-color-for-pixel-art
-
 ## Rules
 
 1. **Value first, hue second.** Block in and judge the form in greys (`recolor` op `desaturate` on a copy, or squint at

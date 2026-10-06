@@ -5,26 +5,6 @@ Equal durations and even spacing read as a slideshow of good poses; the same pos
 read as weight. This file maps the twelve principles onto pixels and milliseconds and holds the shared tables.
 Cycles live in `rules://42-walk-and-run`, `rules://41-idle-and-breathing`, `rules://43-jump-fall-land`.
 
-## Essentials
-
-- Pick one base tick (default 100 ms = twos; 42–50 ms only for smear/impact/snap); use multiples, and vary ≥ 2 durations in any loop of 4+ frames.
-- Fix the beat first, then spacing. Offsets MUST sum to the travel. Ease with gaps, not frame count: 1,2,3,3,2,1 in-out; 8,6,4,3,2,1 ease-out.
-- Weight = long start, very short action, medium settle (150/40/40/170/75 ms heavy swing); recovery length sells the hit.
-- A pose meant to be read holds ≥ 83 ms; read-hold ≈ 170 ms. Smear/snap = one drawing, 42–50 ms.
-- Anticipation: player 0 or one frame ≤ 50 ms; enemies/bosses/cutscenes 2–3 frames at 100–125 ms, 2–4 px opposite.
-- Squash/stretch conserves area (widen N, lower ~N); one squash drawing at contact. 8×8 ball ↔ 10×6 / 6×10; ≤ 16 px: 1–2 px.
-- Adjacent keys in a fast cycle differ ≥ 3 px in silhouette; followers trail 1–2 frames, decay 3 → 2 → 1 → 0 px.
-- Cut the contact frame on hits: show the fist past the target, target displaced 2–4 px, held 2–3 frames.
-
-Common mistakes:
-- Slideshow (even spacing, equal ms) → add holds and ease.
-- Floaty (no hold on apex/impact) → hold the extreme, add one settle frame.
-- Strobe/jitter (two clocks, near-identical neighbours) → one tick; differ ≥ 3 px.
-- Mushy hit (contact frame drawn) → skip it, show the displaced target.
-
-Templates: `timing-spacing-ladder` (linear / ease-in-out / ease-out marks), `timing-bounce-arc` (12 px drop, heights 12,11,9,5,0), `timing-overshoot-settle` (0,6,10,12,14,13,12), `timing-ball-8-rest` / `timing-ball-10-squash` / `timing-ball-6-stretch` (8×8 ball deformations).
-Full rules and templates: rules://40-timing-and-spacing
-
 ## Rules
 
 1. **Timing is when, spacing is how far.** Fix the beat first ("impact lands on frame 4 of 8"), then choose per-frame

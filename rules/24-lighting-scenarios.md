@@ -5,25 +5,6 @@ This file fixes the vocabulary of a lit form, then gives numbers for the common 
 two sources, light from below — and the shadow rules that go with them. General ramp theory is in `rules://20-color-for-pixel-art`, the
 basic shading order in `rules://02-shading-and-light`, flame and glow *effects* in `rules://80-vfx-fire-smoke-magic`.
 
-## Essentials
-
-- Fix the light before the first pixel and never move it: direction (default upper-left, ¾ top-side), hardness, colour, lighting ratio. Flipping reverses light — use top-centre light for mirrored sprites.
-- One key dominates: lit/shadow ≈ 60/40 to 70/30. Never 50/50, never two equal lights, never light from all sides.
-- Core sits 1–2 px inside the terminator and the shadow edge, not on the contour; last 1 px row steps one entry lighter (bounce). Keep the terminator sharp; vary band widths, narrowest at the terminator.
-- Sun: key hue −10° toward yellow; shadow +20…+40° toward blue-violet, S −10…−25, V −30…−45. Overcast: V 40 → 78, hue shift ±5–10°, no terminator. Shadows borrow the other lights' colour, never black.
-- Rim: 1 px at 16–32 px, 1–2 px at 64 px, lightest ramp entry or light colour (not `#ffffff`), on a darker background, broken where the surface faces the viewer.
-- Fire: 4–5 steps red-brown → pale yellow; falloff k → k−2 at 2r, k−3 at 3r; same warm hue family in shadow. Glow: ≤ 3 rings, 1 step each, outer ring dithered.
-- Night: shadows V 8–25 blue-violet; moonlit V 35–60 max ≈ 70; only warm lamps saturated (V 75–100). Light from below: invert the ramp.
-- Cast shadow: receiver's shadow entry, hard at contact; ≤ 16 px hard edges only. Occlusion pass last with the darkest ramp entry, not black.
-
-Mistakes:
-- Sphere like a target → equal-width bands; vary widths.
-- Muddy black shadows → hue-shift and borrow the other light's colour.
-- Form looks hollow → darkest entry on the contour; move the core in, add bounce row.
-- Fire-lit object with blue shadows → keep warm family unless a second source exists.
-
-Templates: `light-sphere-key-12` (key + cast shadow), `light-sphere-rim-12`, `light-sphere-contrejour-12`, `light-sphere-two-source-12`, `light-head-two-source-16` (head). Full rules and templates: rules://24-lighting-scenarios
-
 ## Rules
 
 1. **Fix the light before the first pixel and never move it.** Direction (default upper-left, from above and a little in front; ¾ top-side is the best single set-up), hardness (hard = 1-px terminator and a crisp cast shadow; soft = few bands, wide dither or a one-step-lighter shadow), colour, and the scene's lighting ratio. A flipped (`transform` op `flip`) sprite silently reverses its light: for sprites that will be mirrored, light from top-centre, nudged forward, or hand-fix the flip.

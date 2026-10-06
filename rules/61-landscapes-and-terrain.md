@@ -6,27 +6,6 @@ triangle. This file is the *placement and shape* of the big masses (sky line, ra
 bands, cliffs, dunes). Colour-with-distance is `rules://60-skies-and-atmosphere`, scrolling is
 `rules://62-parallax-backgrounds`, trees and water have their own files.
 
-## Essentials
-
-- Block in four flat masses first (sky, far range, mid ground, near ground). If they merge when squinting, detail will not save them. Darkest pixels last.
-- Three planes: far (sky-coloured, no detail), mid, near (darkest, narrow). Keep skylines ≥8 px apart.
-- Horizon never at 50 %: 35–45 % from the top for ground-heavy scenes, 55–65 % for sky-as-subject. Use one row for the whole picture.
-- Keep the player's strip calm; background contrast stays below the character's.
-- Ground bands narrow toward the horizon (valley: 2, 7, 12 rows, then a 60-row foreground). Blades only on the near plane; farther planes flat colour.
-- Foreground ≤12 % of canvas height, darkest entry, no detail wider than 3 px.
-- Ridge is never a symmetric triangle or sine: steps of 1–3 px, one step length per slope, varied peak height and width. Light upper-left: left faces lit, right shaded.
-- Far range = flat body in the second-lightest sky colour, one shade step, no pure darks.
-
-Common mistakes:
-
-- Mountains read as cones → vary height and width, odd peak counts.
-- Planes fuse → separate by value and hue, ≥8 px between skylines.
-- Layer floats when scrolling → fill every plane down to the canvas bottom.
-- Shading is vertical stripes → slant the shade edge down-right, jag ±1 px.
-
-Templates: `land-mountain-band-64` (snowcapped range with haze foot), `land-hills-48` (rolling hills), `land-scene-3plane-48` (whole scene, horizon at 43 %), `land-cliff-20` (cliff with grass overhang).
-Full rules and templates: rules://61-landscapes-and-terrain
-
 ## Rules
 
 **Plan**

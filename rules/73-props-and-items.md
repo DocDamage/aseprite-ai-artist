@@ -5,26 +5,6 @@ and body use two different cameras, a sword in white, a potion with no glass. It
 also read at a glance and at 1×, so silhouette and one clear material cue matter more
 than detail. Forms underneath: `rules://72-3d-forms`. Materials: `rules://22-materials-hard`.
 
-## Essentials
-
-- Silhouette first: fill with one flat colour; it must name itself at 1×. About six colours before detail.
-- Size comes from the tile: 16 px tile = 16×16 items. Colour budget: 8×8 → 3–4, 16×16 ≤ 6, 32×32 5–9.
-- One projection and one light across the whole set: side view or tilted 3/4, never both.
-- Long items tilt 30–45° to fill the square; 1 px margin at 16 px (art 14×14). No text.
-- Chibify: fat hilt, big bulb, oversized key bow; proportions that survive scaling beat real ones.
-- Ramps: 3 tones per material at 16 px, 5 by default, 7+ only on big surfaces.
-- Metal is grey or blue-grey, never white; two blade faces, one small specular pixel, cool lights, warm darks.
-- Potion = liquid, glass, plug, reflection; glass as border first, then short curved highlights. Gems: 16 px = outline + 3 facet bands + 1 white point.
-
-Mistakes:
-- Sword in white or flat → blue-grey, lit and dark blade faces, one specular pixel.
-- Set looks inconsistent (straight-on item among tilted) → one projection and light for all.
-- Item unreadable at 1× → redo the silhouette as one flat colour, cut detail.
-- Potion has no glass → border plus 2 px curved highlight.
-
-Templates: `props-sword-8x16` (upright sword, retint for axe/dagger/staff), `props-potion-12x13` (flask), `props-chest-16x13` (chest), `props-shield-14` (heater shield), `props-key-8x16` (key), `props-barrel-16` (barrel, keg, pot).
-Full rules and templates: rules://73-props-and-items
-
 ## Rules
 
 1. **Silhouette first.** Fill the item with one flat colour; it must still name itself at

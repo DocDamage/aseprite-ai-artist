@@ -6,26 +6,6 @@ ratio. Decide the type, place wheels (or the main masses) first, then wrap the b
 then spend your few remaining pixels on three to five details. Forms: `rules://72-3d-forms`;
 rotation sets: `rules://75-rotation-and-turnarounds`.
 
-## Essentials
-
-- Wheels (or main masses) first: footprint → wheels → body box → skin → 3–5 details. Wheels are circles from `rules://72-3d-forms`.
-- Car in wheel diameters D: wheelbase 3.5–4 D, body height 1.8–2.5 D, length 6–7 D. At 32 px wide: two wheels D 5–7, wheelbase ~20 px.
-- Wheel arch: outline ring 1 px larger than the tyre, then the tyre. Far wheel 1–2 px narrower (long lens ≥ 0.75 of near).
-- Side car in three blocks: lower body ⅔ of height, cabin trapezoid at ⅓, wheels biting into the body.
-- Only 3–5 details survive at 16–32 px; 5–7 colours per sprite.
-- Sheen: 1 px highlight along the shoulder, one dark band below it, windows darker than body with a 1 px lighter diagonal.
-- Top-down: nose up, draw half the hull and mirror. Plane wing taper ≈ 0.5, tailplane 0.4–0.5 of wing span; aircraft roll (5 orientations), never pitch.
-- Propeller/rotor: 4 frames at 50 ms. Mech: separate layer parts, 3 values, leg+foot one unit, tiny human for scale.
-
-Mistakes:
-- Car looks like a brick → wheel diameter first, body ≈ 2 D tall.
-- Wheels glued to the body edge → outline-ring arch.
-- Plane is a plain triangle → fuselage + tapered wing + tailplane.
-- Flat vehicle or detail noise → shoulder highlight + dark band; delete greebles, keep 3–5 named details.
-
-Templates: `veh-car-side-32` (side car), `veh-car-top-10x13` (top-down car), `veh-jet-top-17x20` (top-down fighter), `veh-wheels-5-7-9` (tyre/rim/hub wheels).
-Full rules and templates: rules://74-vehicles-and-machines
-
 ## Rules
 
 1. **Silhouette first, in three views.** Sketch side, front and top thumbnails before
