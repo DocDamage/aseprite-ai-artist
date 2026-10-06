@@ -482,3 +482,142 @@ test('a model cannot rate its own run, and an animation needs a motion score', (
     cleanup();
   }
 });
+
+function writePack(root: string, id: string, data: Record<string, unknown> | null, extraFiles: Record<string, string> = {}) {
+  const dir = join(root, 'packs', id);
+  mkdirSync(dir, { recursive: true });
+  if (data) writeFileSync(join(dir, 'pack.yaml'), stringify(data));
+  for (const [name, text] of Object.entries(extraFiles)) writeFileSync(join(dir, name), text);
+}
+
+const pack = (...generations: string[]) => ({ title: 'A pack', generations });
+
+test('without a packs folder there are no packs and no error', () => {
+  const { root, cleanup } = makeRepo({ '2026-09-29-a': generation() });
+  try {
+    const result = inspectGallery(root);
+    assert.deepEqual(errorsOf(result), []);
+    assert.deepEqual(result.gallery.packs, []);
+    assert.equal(result.gallery.generations[0]!.pack, null);
+  } finally {
+    cleanup();
+  }
+});
+
+test('a pack lists its members in file order, back-references them and sorts by newest member', () => {
+  const { root, cleanup } = makeRepo({
+    '2026-09-29-a': generation(),
+    '2026-09-30-b': generation({ date: '2026-09-30' }),
+    '2026-09-30-c': generation({ date: '2026-09-30' }),
+    '2026-09-29-d': generation(),
+    '2026-10-01-e': generation({ date: '2026-10-01' }),
+    '2026-09-29-f': generation(),
+    '2026-09-29-loose': generation(),
+  });
+  try {
+    writePack(root, 'zz', { title: 'Zed', description: 'Oldest listed first.', generations: ['2026-09-29-a', '2026-09-30-b'] }, { '.DS_Store': '' });
+    writePack(root, 'aa', pack('2026-09-30-c', '2026-09-29-d'));
+    writePack(root, 'mid', pack('2026-10-01-e', '2026-09-29-f'));
+    const result = inspectGallery(root);
+    assert.deepEqual(errorsOf(result), []);
+    const { packs, generations } = result.gallery;
+    assert.deepEqual(packs.map((p) => p.id), ['mid', 'zz', 'aa'], 'newest member first, ties by id descending like generations');
+    assert.deepEqual(packs.map((p) => p.date), ['2026-10-01', '2026-09-30', '2026-09-30'], "a pack's date is its newest member's");
+    const zz = packs.find((p) => p.id === 'zz')!;
+    assert.deepEqual(zz.generations.map((g) => g.id), ['2026-09-29-a', '2026-09-30-b'], 'pack.yaml order, not date order');
+    assert.equal(zz.title, 'Zed');
+    assert.equal(zz.description, 'Oldest listed first.');
+    const packOf = Object.fromEntries(generations.map((g) => [g.id, g.pack]));
+    assert.equal(packOf['2026-09-29-a'], 'zz');
+    assert.equal(packOf['2026-09-30-b'], 'zz');
+    assert.equal(packOf['2026-09-30-c'], 'aa');
+    assert.equal(packOf['2026-10-01-e'], 'mid');
+    assert.equal(packOf['2026-09-29-loose'], null);
+    assert.equal(zz.generations[0], generations.find((g) => g.id === '2026-09-29-a'), 'members are the loaded generations');
+  } finally {
+    cleanup();
+  }
+});
+
+test('a pack needs two members, a title and no unknown fields', () => {
+  const { root, cleanup } = makeRepo({ '2026-09-29-a': generation(), '2026-09-29-b': generation() });
+  try {
+    writePack(root, 'one', pack('2026-09-29-a'));
+    writePack(root, 'untitled', { generations: ['2026-09-29-a', '2026-09-29-b'] });
+    writePack(root, 'typo', { ...pack('2026-09-29-a', '2026-09-29-b'), descripton: 'x' });
+    writePack(root, 'badid', pack('2026-09-29-a', 'not-a-generation-folder'));
+    const result = inspectGallery(root);
+    const where = (id: string) => result.problems.filter((p) => p.where === `gallery/packs/${id}/pack.yaml`).map((p) => p.message);
+    assert.ok(where('one').some((m) => /generations/.test(m)));
+    assert.ok(where('untitled').some((m) => /title/.test(m)));
+    assert.ok(where('typo').some((m) => /descripton/.test(m)));
+    assert.ok(where('badid').some((m) => /generation folder name/.test(m)));
+    assert.deepEqual(result.gallery.packs, []);
+    assert.ok(result.gallery.generations.every((g) => g.pack === null));
+  } finally {
+    cleanup();
+  }
+});
+
+test('a pack folder must be a slug and hold pack.yaml', () => {
+  const { root, cleanup } = makeRepo({ '2026-09-29-a': generation(), '2026-09-29-b': generation() });
+  try {
+    writePack(root, 'Bad_Name', pack('2026-09-29-a', '2026-09-29-b'));
+    writePack(root, 'empty', null);
+    const result = inspectGallery(root);
+    const problems = result.problems.map((p) => `${p.where}: ${p.message}`);
+    assert.ok(problems.some((p) => /gallery\/packs\/Bad_Name\/pack\.yaml: pack folder must be a lowercase slug/.test(p)));
+    assert.ok(problems.some((p) => /gallery\/packs\/empty\/pack\.yaml: file is missing/.test(p)));
+    assert.deepEqual(result.gallery.packs, []);
+  } finally {
+    cleanup();
+  }
+});
+
+test('a pack member must be a valid generation — unknown and rejected are told apart', () => {
+  const { root, cleanup } = makeRepo({
+    '2026-09-29-a': generation(),
+    '2026-09-29-bad': generation({ plugin: '9.9.9' }),
+  });
+  try {
+    writePack(root, 'ghost', pack('2026-09-29-a', '2026-09-29-nope'));
+    writePack(root, 'broken', pack('2026-09-29-a', '2026-09-29-bad'));
+    const result = inspectGallery(root);
+    const messages = (id: string) => result.problems.filter((p) => p.where === `gallery/packs/${id}/pack.yaml`).map((p) => p.message);
+    assert.ok(messages('ghost').some((m) => /"2026-09-29-nope" does not exist/.test(m)));
+    assert.ok(messages('broken').some((m) => /"2026-09-29-bad" was rejected by validation/.test(m)));
+    assert.deepEqual(result.gallery.packs, [], 'a pack with a bad member is skipped whole');
+    assert.equal(result.gallery.generations.find((g) => g.id === '2026-09-29-a')!.pack, null);
+  } finally {
+    cleanup();
+  }
+});
+
+test('a generation cannot be listed twice in a pack or in two packs', () => {
+  const { root, cleanup } = makeRepo({ '2026-09-29-a': generation(), '2026-09-29-b': generation(), '2026-09-29-c': generation() });
+  try {
+    writePack(root, 'twice', pack('2026-09-29-a', '2026-09-29-a', '2026-09-29-b'));
+    writePack(root, 'first', pack('2026-09-29-c', '2026-09-29-b'));
+    const result = inspectGallery(root);
+    const messages = (id: string) => result.problems.filter((p) => p.where === `gallery/packs/${id}/pack.yaml`).map((p) => p.message);
+    assert.ok(messages('twice').some((m) => /"2026-09-29-a" is listed twice/.test(m)));
+    assert.ok(messages('twice').some((m) => /"2026-09-29-b" is also listed in pack "first"/.test(m)));
+    assert.ok(messages('first').some((m) => /"2026-09-29-b" is also listed in pack "twice"/.test(m)));
+    assert.deepEqual(result.gallery.packs, []);
+    assert.ok(result.gallery.generations.every((g) => g.pack === null));
+  } finally {
+    cleanup();
+  }
+});
+
+test('a pack folder holds only pack.yaml', () => {
+  const { root, cleanup } = makeRepo({ '2026-09-29-a': generation(), '2026-09-29-b': generation() });
+  try {
+    writePack(root, 'cluttered', pack('2026-09-29-a', '2026-09-29-b'), { 'cover.png': 'x' });
+    const result = inspectGallery(root);
+    assert.ok(result.problems.some((p) => p.where === 'gallery/packs/cluttered/pack.yaml' && /unexpected "cover\.png"/.test(p.message)));
+    assert.deepEqual(result.gallery.packs, []);
+  } finally {
+    cleanup();
+  }
+});

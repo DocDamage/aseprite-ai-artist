@@ -17,7 +17,7 @@ const NS = 'http://www.sitemaps.org/schemas/sitemap/0.9';
  * routes, the 404) simply is not here. A new top-level page is added to `pages` by hand.
  */
 function sections(): Record<string, Entry[]> {
-	const { generations, prompts } = gallery();
+	const { generations, packs, prompts } = gallery();
 	const newest = generations
 		.map((generation) => generation.date)
 		.sort()
@@ -35,10 +35,13 @@ function sections(): Record<string, Entry[]> {
 			{ path: `/benchmarks/${prompt.id}` },
 			{ path: `/benchmarks/${prompt.id}/compare` }
 		]),
-		gallery: generations.map((generation) => ({
-			path: `/g/${generation.id}`,
-			lastmod: generation.date
-		}))
+		gallery: [
+			...packs.map((pack) => ({ path: `/packs/${pack.id}`, lastmod: pack.date })),
+			...generations.map((generation) => ({
+				path: `/g/${generation.id}`,
+				lastmod: generation.date
+			}))
+		]
 	};
 }
 

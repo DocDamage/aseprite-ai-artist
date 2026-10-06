@@ -3,7 +3,8 @@
 	import { Seo } from '#shared/ui/seo/index.js';
 	import { resolve } from '$app/paths';
 	import PaletteIcon from '~icons/pixelarticons/colors-swatch';
-	import { GenerationCard, ScoreMeter } from '#entities/generation/index.js';
+	import { ScoreMeter } from '#entities/generation/index.js';
+	import { WallTileCard, wallTileKey } from '#entities/pack/index.js';
 	import { Masonry, WALL_COLUMNS } from '#shared/ui/masonry/index.js';
 	import { PixelAnimation } from '#shared/ui/pixel/index.js';
 	import {
@@ -33,8 +34,7 @@
 
 	let { data }: Props = $props();
 
-	const { counts, latest, teasers } = $derived(data);
-	const newest = $derived(latest[0]);
+	const { counts, newest, latest, teasers } = $derived(data);
 </script>
 
 <Seo
@@ -138,14 +138,9 @@
 		{/if}
 	</div>
 	{#if latest.length > 0}
-		<Masonry
-			items={latest}
-			key={(generation) => generation.id}
-			breakpoints={WALL_COLUMNS}
-			class="mt-10 px-1.5"
-		>
-			{#snippet item(generation, index)}
-				<GenerationCard {generation} eager={index < 4} />
+		<Masonry items={latest} key={wallTileKey} breakpoints={WALL_COLUMNS} class="mt-10 px-1.5">
+			{#snippet item(tile, index)}
+				<WallTileCard {tile} eager={index < 4} />
 			{/snippet}
 		</Masonry>
 	{:else}

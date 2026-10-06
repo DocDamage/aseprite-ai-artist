@@ -97,6 +97,8 @@ export interface GenerationDetail extends GenerationSummary {
 	/** The run's own generation.yaml, verbatim. */
 	yaml: string;
 	githubUrl: string;
+	/** The pack the run is filed under on the gallery wall; null when it hangs loose. */
+	pack: { id: string; title: string } | null;
 }
 
 /** What each facet filter offers. */

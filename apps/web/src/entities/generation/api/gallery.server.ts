@@ -151,8 +151,15 @@ export function detail(generation: Generation, prompts: Prompt[]): GenerationDet
 			join(gallery().root, 'generations', generation.id, 'generation.yaml'),
 			'utf8'
 		),
-		githubUrl: `${REPO_URL}/tree/main/gallery/generations/${generation.id}`
+		githubUrl: `${REPO_URL}/tree/main/gallery/generations/${generation.id}`,
+		pack: packOf(generation)
 	};
+}
+
+function packOf(generation: Generation): { id: string; title: string } | null {
+	if (generation.pack === null) return null;
+	const pack = gallery().packs.find((candidate) => candidate.id === generation.pack);
+	return pack ? { id: pack.id, title: pack.title } : null;
 }
 
 const sortedSet = (values: Iterable<string>) =>

@@ -69,11 +69,23 @@
 />
 
 <div class="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
-	<a
-		href={resolve('gallery')}
-		class="inline-flex h-10 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-		><ArrowLeftIcon aria-hidden="true" />Gallery</a
+	<nav
+		aria-label="Breadcrumb"
+		class="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground"
 	>
+		<a href={resolve('gallery')} class="inline-flex h-10 items-center gap-1.5 hover:text-foreground"
+			><ArrowLeftIcon aria-hidden="true" />Gallery</a
+		>
+		{#if g.pack}
+			<span aria-hidden="true">/</span>
+			<a
+				href={resolve('/packs/[id]', { id: g.pack.id })}
+				class="inline-flex h-10 items-center hover:text-foreground"
+				>Pack: <span class="ml-1 text-foreground underline underline-offset-4">{g.pack.title}</span
+				></a
+			>
+		{/if}
+	</nav>
 
 	<div
 		class="mt-4 grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14"

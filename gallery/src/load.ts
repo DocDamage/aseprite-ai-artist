@@ -6,10 +6,12 @@ import type { z } from 'zod';
 import {
   craftAxes,
   generationSchema,
+  packSchema,
   promptSchema,
   type CraftAxis,
   type GenerationFile,
   type GenerationFileEntry,
+  type PackFile,
   type PromptFile,
   type Rating,
 } from './schema.ts';
@@ -28,6 +30,8 @@ const PROMPT_DIR = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const UNLISTED_ALLOWED = new Set(['generation.yaml', '.DS_Store']);
 /** Non-folder entries tolerated beside the prompt and generation folders. */
 const STRAY_ALLOWED = new Set(['.gitkeep', '.DS_Store']);
+const PACK_DIR = PROMPT_DIR;
+const PACK_UNLISTED_ALLOWED = new Set(['pack.yaml', '.DS_Store']);
 
 export interface Problem {
   level: 'error' | 'warning';
@@ -80,6 +84,14 @@ export interface Craft {
   judges: number;
 }
 
+/** Members stay in the order pack.yaml lists them — that is the page's display order. */
+export interface Pack extends Omit<PackFile, 'generations'> {
+  id: string;
+  /** The newest member's date: where the pack sorts among loose generations. */
+  date: string;
+  generations: Generation[];
+}
+
 export interface Generation extends Omit<GenerationFile, 'files'> {
   id: string;
   files: StoredFile[];
@@ -99,6 +111,8 @@ export interface Generation extends Omit<GenerationFile, 'files'> {
   points: number | null;
   /** The parts points are made of; null exactly when `points` is. */
   components: ScoreComponents | null;
+  /** Id of the pack this run belongs to; packed runs are shown under their pack's tile, not loose. */
+  pack: string | null;
 }
 
 export interface BenchmarkCell {
@@ -132,6 +146,8 @@ export interface Gallery {
   prompts: Prompt[];
   /** Newest first. */
   generations: Generation[];
+  /** Newest member first. */
+  packs: Pack[];
   benchmarks: Benchmark[];
   /** Overall model ranking across every benchmark, best first. */
   leaderboard: LeaderboardEntry[];
@@ -222,7 +238,8 @@ export function inspectGallery(root: string = DEFAULT_GALLERY_ROOT): LoadResult 
 
   const generations: Generation[] = [];
   const generationsDir = join(galleryRoot, 'generations');
-  for (const id of listDirs(generationsDir, problems, rel)) {
+  const folders = listDirs(generationsDir, problems, rel);
+  for (const id of folders) {
     const dir = join(generationsDir, id);
     const where = rel(join(dir, 'generation.yaml'));
     const dirMatch = GENERATION_DIR.exec(id);
@@ -290,15 +307,24 @@ export function inspectGallery(root: string = DEFAULT_GALLERY_ROOT): LoadResult 
     // TODO(model judges paused): model-judge ratings stay valid in generation.yaml but are ignored
     // until they are re-evaluated; only human ratings reach the site and the score.
     const ratings = data.ratings.filter((rating) => rating.judge.startsWith('human:'));
-    generations.push({ ...data, ratings, id, files, cover, modelLabel, score, outdated, craft: craftOf(ratings), points: null, components: null });
+    generations.push({ ...data, ratings, id, files, cover, modelLabel, score, outdated, craft: craftOf(ratings), points: null, components: null, pack: null });
   }
 
   generations.sort((a, b) => (a.date === b.date ? b.id.localeCompare(a.id) : b.date.localeCompare(a.date)));
+  // A run can load and still carry an error (a date or plugin mismatch), and
+  // loadGallery refuses to build on it — so "valid" means no error under its folder.
+  const rejected = new Set(
+    folders.filter((id) => {
+      const folder = rel(join(generationsDir, id));
+      return problems.some((p) => p.level === 'error' && (p.where === folder || p.where.startsWith(`${folder}/`)));
+    }),
+  );
+  const packs = readPacks(join(galleryRoot, 'packs'), generations, new Set(folders), rejected, problems, rel);
 
   const benchmarks = prompts.map((prompt) => buildBenchmark(prompt, generations, releases));
   const leaderboard = buildLeaderboard(benchmarks);
 
-  return { gallery: { root: galleryRoot, releases, prompts, generations, benchmarks, leaderboard }, problems };
+  return { gallery: { root: galleryRoot, releases, prompts, generations, packs, benchmarks, leaderboard }, problems };
 }
 
 /** Loads the gallery for consumers that must not render bad data (the web build). */
@@ -307,6 +333,82 @@ export function loadGallery(root?: string): Gallery {
   const errors = problems.filter((problem) => problem.level === 'error');
   if (errors.length > 0) throw new GalleryError(errors);
   return gallery;
+}
+
+/**
+ * Reads gallery/packs and links each accepted pack to its members. A pack with
+ * any problem is reported and left out, and its members keep `pack: null`, so
+ * one bad pack does not cascade into errors about its members. The site build
+ * still refuses to run on any error (`loadGallery`).
+ */
+function readPacks(
+  dir: string,
+  generations: Generation[],
+  folders: Set<string>,
+  rejected: Set<string>,
+  problems: Problem[],
+  rel: (path: string) => string,
+): Pack[] {
+  const byId = new Map(generations.filter((generation) => !rejected.has(generation.id)).map((generation) => [generation.id, generation]));
+  const parsed: { id: string; where: string; data: PackFile; errors: string[] }[] = [];
+
+  for (const id of listDirs(dir, problems, rel)) {
+    const packDir = join(dir, id);
+    const where = rel(join(packDir, 'pack.yaml'));
+    if (!PACK_DIR.test(id)) {
+      problems.push({ level: 'error', where, message: 'pack folder must be a lowercase slug' });
+      continue;
+    }
+    const errors: string[] = [];
+    for (const entry of readdirSync(packDir)) {
+      if (!PACK_UNLISTED_ALLOWED.has(entry)) errors.push(`unexpected "${entry}" — a pack folder holds only pack.yaml`);
+    }
+    const data = readYaml(join(packDir, 'pack.yaml'), packSchema, where, problems);
+    if (!data) {
+      for (const message of errors) problems.push({ level: 'error', where, message });
+      continue;
+    }
+
+    const seen = new Set<string>();
+    for (const member of data.generations) {
+      if (seen.has(member)) errors.push(`generation "${member}" is listed twice`);
+      seen.add(member);
+      if (byId.has(member)) continue;
+      errors.push(
+        folders.has(member)
+          ? `generation "${member}" was rejected by validation — fix it or remove it from the pack`
+          : `generation "${member}" does not exist in gallery/generations`,
+      );
+    }
+    parsed.push({ id, where, data, errors });
+  }
+
+  // Membership is exclusive: the grid shows a generation under one tile only.
+  const owners = new Map<string, string[]>();
+  for (const pack of parsed) {
+    for (const member of new Set(pack.data.generations)) owners.set(member, [...(owners.get(member) ?? []), pack.id]);
+  }
+  for (const pack of parsed) {
+    for (const member of new Set(pack.data.generations)) {
+      const others = (owners.get(member) ?? []).filter((id) => id !== pack.id);
+      if (others.length > 0) pack.errors.push(`generation "${member}" is also listed in pack ${others.map((id) => `"${id}"`).join(', ')} — a generation belongs to one pack`);
+    }
+  }
+
+  const packs: Pack[] = [];
+  for (const { id, where, data, errors } of parsed) {
+    if (errors.length > 0) {
+      for (const message of errors) problems.push({ level: 'error', where, message });
+      continue;
+    }
+    const members = data.generations.map((member) => byId.get(member)!);
+    for (const member of members) member.pack = id;
+    const date = members.reduce((latest, member) => (member.date > latest ? member.date : latest), '');
+    packs.push({ ...data, id, date, generations: members });
+  }
+
+  // The same order as generations: newest first, then id descending.
+  return packs.sort((a, b) => (a.date === b.date ? b.id.localeCompare(a.id) : b.date.localeCompare(a.date)));
 }
 
 function readReleases(changelogPath: string, problems: Problem[]): PluginRelease[] {
@@ -675,7 +777,7 @@ function listDirs(dir: string, problems: Problem[], rel: (path: string) => strin
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory()) dirs.push(entry.name);
     else if (!STRAY_ALLOWED.has(entry.name)) {
-      problems.push({ level: 'error', where: rel(join(dir, entry.name)), message: 'only folders belong here — put files inside a generation or prompt folder' });
+      problems.push({ level: 'error', where: rel(join(dir, entry.name)), message: 'only folders belong here — put files inside a generation, prompt or pack folder' });
     }
   }
   return dirs.sort();

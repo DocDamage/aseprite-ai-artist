@@ -21,7 +21,7 @@
 
 	let { data }: Props = $props();
 
-	const { generations, facets } = $derived(data);
+	const { generations, packs, facets } = $derived(data);
 </script>
 
 <Seo
@@ -37,11 +37,11 @@ rather than wider margins. -->
 		<Button href={resolve('contribute')}>Add your art</Button>
 	</div>
 	<p class="mt-4 max-w-[62ch] text-lg text-muted-foreground">
-		Every piece submitted so far, newest first. Open one to see the prompts that made it and
-		download the source.
+		Every piece submitted so far, newest first. Runs that belong together, like one benchmark's,
+		come sealed in a pack. Open a piece to see the prompts that made it and download the source.
 	</p>
 
-	{#if generations.length === 0}
+	{#if generations.length === 0 && packs.length === 0}
 		<Empty
 			class="canvas-checker pixel-notch mt-10 border-6 border-dashed border-pixel [--notch:6px]"
 		>
@@ -58,7 +58,7 @@ rather than wider margins. -->
 		</Empty>
 	{:else}
 		<div class="mt-10">
-			<GalleryGrid {generations} {facets} path={resolve('gallery')} />
+			<GalleryGrid {generations} {packs} {facets} path={resolve('gallery')} />
 		</div>
 	{/if}
 </div>

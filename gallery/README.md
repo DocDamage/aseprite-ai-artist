@@ -23,6 +23,7 @@ There are two kinds, and they live in the same place:
 ```
 gallery/
   prompts/<slug>/prompt.yaml            benchmark prompts (maintainers + separate PRs)
+  packs/<slug>/pack.yaml                groups of generations shown as one tile (maintainers + separate PRs)
   generations/<yyyy-mm-dd>-<slug>/      one folder per run
     generation.yaml
     cover.png  mage.aseprite  attack.gif  …
@@ -193,8 +194,8 @@ GitHub logins in [`gallery/MAINTAINERS`](MAINTAINERS). Three layers enforce it:
 `pnpm gallery:check` refuses a `benchmark:` block whose `author.github` is not
 listed; CI compares the pull request's author (from GitHub, not the YAML)
 against the list on the base branch and fails on a `benchmark:` block or a
-change under `gallery/prompts/`; and CODEOWNERS makes changes to `gallery/src`,
-`gallery/prompts`, `MAINTAINERS` and `.github` need a maintainer's review
+change under `gallery/prompts/` or `gallery/packs/`; and CODEOWNERS makes changes to `gallery/src`,
+`gallery/prompts`, `gallery/packs`, `MAINTAINERS` and `.github` need a maintainer's review
 (requires branch protection "Require review from Code Owners" on `main`).
 Everyone else submits gallery generations. What follows is how maintainers
 record a run.
@@ -220,6 +221,41 @@ contract. In practice:
 
 If your run deviated from the setup in any way, submit it as a free gallery run
 (omit the `benchmark:` block). That is a perfectly good gallery entry.
+
+## Packs
+
+A **pack** groups several generations so the site shows them as one tile in the
+gallery grid and opens them on their own page. Today there is one pack per
+benchmark prompt, so the many model runs of one prompt do not crowd the grid.
+A generation never changes for being packed: its folder stays where it is and
+it is still scored; the pack only says how it is displayed.
+
+```yaml
+# gallery/packs/boombox-mage-benchmark/pack.yaml
+title: Boombox mage — character and anime sound-blast attack   # required
+description: Benchmark runs of the boombox-mage prompt.        # optional, one line
+generations:                                                   # required, ≥2, in display order
+  - 2026-10-06-boombox-mage-opus
+  - 2026-10-05-boombox-mage-sonnet
+```
+
+`generations` holds generation folder names; the pack's page shows them in
+exactly this order. The folder name of the pack is a lowercase slug
+(`<prompt>-benchmark` for the benchmark packs).
+
+Rules the checker enforces — each break is an error that fails the check and
+the site build:
+
+- The pack folder holds only `pack.yaml`; unknown fields are errors.
+- Every listed id is a generation that exists **and** passes validation; the
+  error says which of the two it was.
+- An id is listed once per pack, and a generation belongs to at most one pack.
+
+Packs are **maintainers only**, like prompts: a pack hides its members from the
+main grid, so CI and CODEOWNERS refuse changes under `gallery/packs/` from
+anyone else. A new benchmark run is not in any pack until a maintainer adds it
+to its prompt's pack — in a separate PR from the run — so until then the run
+shows loose in the grid.
 
 ## Files: size and format
 

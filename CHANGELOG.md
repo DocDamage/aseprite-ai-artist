@@ -6,6 +6,19 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Gallery: packs.** `gallery/packs/<slug>/pack.yaml` groups related
+  generations under one title ([ADR-0012](docs/adr/0012-gallery-packs.md)). On
+  the gallery and home walls a pack is one sealed booster tile in place of its
+  pieces, matched by a filter when any piece inside matches. `/packs/<slug>`
+  opens it: the pack shakes, the seal tears and the cards deal out into a fan,
+  with every card listed below; reduced motion shows the fan already open. Each
+  piece's page links back to its pack. `pnpm gallery:check` rejects a pack with
+  an unknown or invalid member or a piece in two packs, and packs are
+  maintainer-only like benchmark prompts. The benchmark runs now come in four
+  packs, one per prompt.
+
 ## [0.7.0] — 2026-10-06
 
 ### Added

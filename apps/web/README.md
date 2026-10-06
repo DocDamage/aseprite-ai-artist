@@ -59,7 +59,7 @@ A subpath import names the file, with the extension the compiled module will hav
 
 - **`src/routes`** is the router SvelteKit requires, not a layer; steiger does not treat it as one. It stays thin (above).
 - **`index.server.ts`** next to a slice's `index.ts` is the server-only barrel: the mappers that read `gallery/` from disk (`node:fs`). Steiger accepts it as the slice's public API. Only `*.server.ts` files may import it, so SvelteKit refuses to bundle it into the client. Each mapper lives in the slice's `api/*.server.ts`.
-- **`@x`**: `entities/generation/@x/{benchmark,prompt}.ts` and `entities/prompt/@x/benchmark.ts` are FSD's cross-import API. The chain is one-way: benchmark → prompt → generation.
+- **`@x`**: `entities/generation/@x/{benchmark,prompt,pack}.ts` and `entities/prompt/@x/benchmark.ts` are FSD's cross-import API. The chains are one-way: benchmark → prompt → generation, and pack → generation.
 - **`shared/ui/8bit/index.ts`** is the one entry to the 8bitcn ports. Primitives that export `Root`/`Content`/`Trigger` are namespaces there: `Select.Root`, `Table.Row`, `Collapsible.Content`.
 - **`src/app.html`** stays at the `src` root, where SvelteKit reads it.
 
@@ -74,6 +74,10 @@ These are the only pages that are not prerendered. They are Vercel ISR routes (`
 ## Sitemap
 
 `/sitemap.xml` is a sitemap index over `/sitemaps/{pages,benchmarks,gallery}.xml` (`pages/sitemap`). A new top-level page goes into the `pages` list by hand.
+
+## Packs
+
+A pack (`gallery/packs/<slug>/pack.yaml`, [ADR-0012](../../docs/adr/0012-gallery-packs.md)) stands in for its pieces on the gallery and home walls: `entities/pack/lib/wall.ts` merges loose pieces and packs into one newest-first wall, and `WallTileCard` draws either kind. `/packs/<slug>` (`pages/pack`) plays the opening as CSS animation whose resting style is the open fan, so reduced motion, a click to skip, and a page without JavaScript all show the same thing; the fan is `aria-hidden` and the card list under it is the way in for the keyboard and screen readers.
 
 ## llms.txt
 

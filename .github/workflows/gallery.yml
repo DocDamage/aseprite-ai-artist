@@ -77,11 +77,13 @@ jobs:
             exit 0
           fi
           failed=0
-          # Prompts, the allowlist itself and the code that enforces both: an
-          # outsider's PR may not touch any of them, or it could list itself.
-          prompts=$(git diff --no-renames --name-only "${base}...HEAD" -- gallery/prompts/ gallery/MAINTAINERS gallery/src/ .github/)
+          # Prompts, packs (a pack hides its members from the grid, so an outsider
+          # could bury someone else's work), the allowlist itself and the code that
+          # enforces all of it: an outsider's PR may not touch any of them, or it
+          # could list itself.
+          prompts=$(git diff --no-renames --name-only "${base}...HEAD" -- gallery/prompts/ gallery/packs/ gallery/MAINTAINERS gallery/src/ .github/)
           if [ -n "$prompts" ]; then
-            echo "::error::Benchmark prompts, gallery/MAINTAINERS, gallery/src and .github are maintained by the project. Changed:"
+            echo "::error::Benchmark prompts, gallery/packs, gallery/MAINTAINERS, gallery/src and .github are maintained by the project. Changed:"
             echo "$prompts"
             failed=1
           fi

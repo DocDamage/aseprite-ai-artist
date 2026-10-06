@@ -3,5 +3,6 @@
 # pull request can edit its own workflow, so CI alone is not the gate.
 /gallery/MAINTAINERS  @fedorovvvv
 /gallery/prompts/     @fedorovvvv
+/gallery/packs/       @fedorovvvv
 /gallery/src/         @fedorovvvv
 /.github/             @fedorovvvv

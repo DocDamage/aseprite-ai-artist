@@ -21,7 +21,7 @@ function header(): string {
 }
 
 export function llmsTxt(): string {
-	const { prompts } = gallery();
+	const { prompts, packs } = gallery();
 	const lines = [
 		header(),
 		'## Plugin',
@@ -43,6 +43,10 @@ export function llmsTxt(): string {
 		'## Gallery and benchmark',
 		'',
 		`- [Gallery](${SITE_URL}/gallery): every piece, with prompts, model, plugin version and source files`,
+		...packs.map(
+			(pack) =>
+				`- [Pack: ${pack.title}](${SITE_URL}/packs/${pack.id}): ${pack.description ?? `${pack.generations.length} pieces`}`
+		),
 		`- [Benchmarks](${SITE_URL}/benchmarks): fixed tasks, scored criterion by criterion`,
 		...prompts.map((prompt) => `- [${prompt.title}](${SITE_URL}/benchmarks/${prompt.id})`),
 		`- [Contribute](${SITE_URL}/contribute): add your own piece with \`/aseprite:submit\``,

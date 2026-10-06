@@ -17,7 +17,7 @@ for (const problem of [...errors, ...warnings]) {
 
 const ranked = gallery.benchmarks.reduce((sum, benchmark) => sum + benchmark.cells.length, 0);
 console.log(
-  `\n${gallery.prompts.length} prompt(s), ${gallery.generations.length} valid generation(s), ` +
+  `\n${gallery.prompts.length} prompt(s), ${gallery.generations.length} valid generation(s), ${gallery.packs.length} pack(s), ` +
     `${ranked} benchmark cell(s) — ${errors.length} error(s), ${warnings.length} warning(s)`,
 );
 

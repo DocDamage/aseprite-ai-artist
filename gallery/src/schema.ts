@@ -354,6 +354,26 @@ export const generationSchema = z
     });
   });
 
+// ---------------------------------------------------------------------------
+// Packs — several generations shown as one tile and opened on their own page.
+// gallery/packs/<id>/pack.yaml
+// ---------------------------------------------------------------------------
+
+/** The folder name of a generation: `<yyyy-mm-dd>-<slug>`. */
+const generationId = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$/, 'a generation folder name such as 2026-09-29-knight-slash');
+
+export const packSchema = z.strictObject({
+  title: line,
+  description: line.optional(),
+  /** Display order of the pack's page; a single member would be a tile with nothing to group. */
+  generations: z.array(generationId).min(2),
+});
+
+export type PackInput = z.input<typeof packSchema>;
+export type PackFile = z.output<typeof packSchema>;
+
 export type PromptInput = z.input<typeof promptSchema>;
 export type PromptFile = z.output<typeof promptSchema>;
 export type GenerationInput = z.input<typeof generationSchema>;

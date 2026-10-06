@@ -9,7 +9,7 @@
 	import CloseIcon from '~icons/pixelarticons/close';
 	import SearchIcon from '~icons/pixelarticons/search';
 	import { onMount } from 'svelte';
-	import { GenerationCard } from '#entities/generation/index.js';
+	import { WallTileCard, wallTileKey, wallTiles, type PackSummary } from '#entities/pack/index.js';
 	import { Masonry, WALL_COLUMNS } from '#shared/ui/masonry/index.js';
 	import {
 		Button,
@@ -25,7 +25,10 @@
 	import { plural } from '#shared/lib/format.js';
 
 	interface Props {
+		/** The loose pieces: everything not inside one of `packs`. */
 		generations: GenerationSummary[];
+		/** Each shown as one tile, matched by a filter when any piece inside it matches. */
+		packs?: PackSummary[];
 		facets: Facets;
 		/** Which filters this grid offers; a single-benchmark grid drops `prompt`. */
 		keys?: FilterKey[];
@@ -35,6 +38,7 @@
 
 	let {
 		generations,
+		packs = [],
 		facets,
 		keys = ['model', 'plugin', 'harness', 'prompt', 'tag'],
 		path
@@ -99,9 +103,11 @@
 	]);
 	const selects = $derived(allSelects.filter((select) => keys.includes(select.key)));
 
-	const matches = (generation: GenerationSummary): boolean => {
+	/** `extra` is searchable text the piece inherits from its container: a pack's title. */
+	const matches = (generation: GenerationSummary, extra = ''): boolean => {
 		const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-		if (!words.every((word) => generation.search.includes(word))) return false;
+		const text = extra ? `${generation.search}\n${extra}` : generation.search;
+		if (!words.every((word) => text.includes(word))) return false;
 		if (filters.model !== ALL && !generation.models.includes(filters.model)) return false;
 		if (filters.plugin !== ALL && generation.plugin !== filters.plugin) return false;
 		if (filters.harness !== ALL && generation.harness !== filters.harness) return false;
@@ -116,9 +122,31 @@
 		return true;
 	};
 
-	const matching = $derived(generations.filter(matches));
+	const matchesPack = (pack: PackSummary): boolean => {
+		const extra = `${pack.title}\n${pack.description ?? ''}`.toLowerCase();
+		return pack.generations.some((generation) => matches(generation, extra));
+	};
+
+	const tiles = $derived(wallTiles(generations, packs));
+	const pieceCount = $derived(
+		generations.length + packs.reduce((sum, pack) => sum + pack.generations.length, 0)
+	);
+
+	const matching = $derived(
+		tiles.filter((tile) =>
+			tile.kind === 'pack' ? matchesPack(tile.pack) : matches(tile.generation)
+		)
+	);
 	const visible = $derived(matching.slice(0, shownCount));
 	const active = $derived(query.trim() !== '' || keys.some((key) => filters[key] !== ALL));
+	// Matches are tiles (a pack is one match however many of its pieces fit); totals are pieces.
+	const countLine = $derived.by(() => {
+		const total = plural(pieceCount, 'piece');
+		if (active)
+			return `Showing ${visible.length} of ${plural(matching.length, 'match', 'matches')}, ${total} in all`;
+		if (packs.length === 0) return total;
+		return `${total}, ${pieceCount - generations.length} of them in ${plural(packs.length, 'pack')}`;
+	});
 
 	onMount(() => {
 		const params = new URLSearchParams(location.search);
@@ -214,10 +242,7 @@
 </form>
 
 <div class="mt-6 flex min-h-10 flex-wrap items-center justify-between gap-3">
-	<p class="text-sm text-muted-foreground" aria-live="polite">
-		{#if active}Showing {visible.length} of {plural(matching.length, 'match', 'matches')}, {generations.length}
-			in all{:else}{plural(generations.length, 'piece')}{/if}
-	</p>
+	<p class="text-sm text-muted-foreground" aria-live="polite">{countLine}</p>
 	{#if active}
 		<Button variant="ghost" size="sm" onclick={reset}>
 			<CloseIcon aria-hidden="true" />
@@ -227,14 +252,9 @@
 </div>
 
 {#if visible.length > 0}
-	<Masonry
-		items={visible}
-		key={(generation) => generation.id}
-		breakpoints={WALL_COLUMNS}
-		class="mt-6 px-1.5"
-	>
-		{#snippet item(generation, index)}
-			<GenerationCard {generation} eager={index < 4} />
+	<Masonry items={visible} key={wallTileKey} breakpoints={WALL_COLUMNS} class="mt-6 px-1.5">
+		{#snippet item(tile, index)}
+			<WallTileCard {tile} eager={index < 4} />
 		{/snippet}
 	</Masonry>
 	{#if visible.length < matching.length}
