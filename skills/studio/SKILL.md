@@ -68,14 +68,18 @@ workflow it names and follow that — do not do the step from memory.
    so you see it. Give it the document name and the brief, nothing about how
    it was made. Elsewhere, run `aseprite:review` and do its cold read first.
 
-   The critique decides whether you iterate at all. A draft whose critique has
-   **no BLOCKING finding ships as it is** — note its other findings in your
-   report and stop. Polishing a draft that already works is how a dense,
-   lively canopy gets rebuilt into a thinner one: a fresh critic always finds
-   something, and each one finds something different.
+   The critique decides whether you iterate at all. A draft ships as it is
+   when its critique has **no BLOCKING finding and scores 7/10 or more** —
+   note its other findings in your report and stop. Below that, or while any
+   BLOCKING finding remains, fix it — at most three fix rounds. In the
+   benchmark runs a first draft at 3/10 became 8/10 this way, and stopping a
+   weak draft for want of a blocker left it weak.
 
-   While a BLOCKING finding remains, loop — at most three fix rounds — with
-   three guards:
+   Each round fixes the BLOCKING findings, or when there are none the one
+   change the critic names as its first fix — never a general polish. A
+   fresh critic always finds something, and each finds something different;
+   polishing on that alone is how a dense, lively canopy got rebuilt into a
+   thinner one. The guards below are what keep a round from doing that:
 
    - **Snapshot before you touch it.** `export op="png"` the current frame (or
      `op="gif"` for an animation) to a scratch path, and keep an exact copy of
@@ -95,7 +99,8 @@ workflow it names and follow that — do not do the step from memory.
      snapshot, and give **one** critic call both images, in an order it cannot
      read anything into (`a.png`, `b.png`, coin-flipped), asking which is the
      better sprite for the brief and whether the BLOCKING finding is gone.
-     Keep the fix only if it picks the new one; otherwise restore.
+     Keep the fix only if it picks the new one; otherwise restore. Two
+     rounds in a row that the comparison rejects end the loop.
 
    Do not change pixels after the last critique; anything you edit afterwards
    goes back to the critic. A critique whose cold read did not name your
