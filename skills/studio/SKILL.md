@@ -68,32 +68,40 @@ workflow it names and follow that — do not do the step from memory.
    so you see it. Give it the document name and the brief, nothing about how
    it was made. Elsewhere, run `aseprite:review` and do its cold read first.
 
-   Then loop, with two guards — without them a critique loop redraws good art
-   into worse art:
+   The critique decides whether you iterate at all. A draft whose critique has
+   **no BLOCKING finding ships as it is** — note its other findings in your
+   report and stop. Polishing a draft that already works is how a dense,
+   lively canopy gets rebuilt into a thinner one: a fresh critic always finds
+   something, and each one finds something different.
 
-   - **Keep the best version.** Before each fix round, copy every layer the
-     round will touch into a scratch sprite (`sprite_manage op="new"` at the
-     same size once, then `layer op="duplicate" toSprite=<scratch>`). After the
-     critic rescores, keep the round only if the score went **up** and the cold
-     read still names the subject. Otherwise restore: delete the edited layer,
-     duplicate the saved one back (`toSprite=<document>`), `reorder` it into
-     place. What you hand over is the best-scoring version, not the last one.
-     Close the scratch sprite (`force=true`) before you report.
+   While a BLOCKING finding remains, loop — at most three fix rounds — with
+   three guards:
+
+   - **Snapshot before you touch it.** `export op="png"` the current frame (or
+     `op="gif"` for an animation) to a scratch path, and keep an exact copy of
+     every layer you will change — `export op="aseprite"` to a scratch path,
+     or the layer's rows from `look op="ascii"`. Restoring means writing those
+     rows back as a `grid` at the same x/y, or opening the copy and
+     `layer op="duplicate" toSprite=<document>`.
    - **Fix, don't redraw.** A fix changes the pixels the finding points at —
      read that region with `look op="ascii"`, change those rows, write them
-     back as a `grid` at the same x/y — or recolours a mass that is too dark
-     (`recolor`). It never repaints a part whose shape already reads, and never
-     touches pixels the brief says must stay as they are (a frame that must
-     match earlier art). "The canopy is banded" means retouch the bands, not
-     paint a new canopy.
+     back as a `grid` — or recolours a mass that is too dark (`recolor`). If
+     the round changed more than about a quarter of a layer's opaque pixels,
+     it was a redraw: restore the snapshot and make the smaller fix. Never
+     touch pixels the brief says must stay as they are.
+   - **Decide by comparison, not by score.** Scores from separate critic calls
+     are not on one scale — the same tree drew 5/10 from one critic and 4/10
+     from the next. After the fix, export the new version next to the
+     snapshot, and give **one** critic call both images, in an order it cannot
+     read anything into (`a.png`, `b.png`, coin-flipped), asking which is the
+     better sprite for the brief and whether the BLOCKING finding is gone.
+     Keep the fix only if it picks the new one; otherwise restore.
 
-   Fix the **BLOCKING** findings and the first fix it names, then send it
-   back. Stop when it scores **7/10 or more with no BLOCKING finding**, when a
-   round does not raise the score, or after three critiques — then tell the
-   user what it still objects to instead of looping on. A critique whose cold
-   read did not name your subject is the most important finding you will get:
-   the picture does not say what you think it says. Report each round's score
-   and whether you kept or reverted it.
+   Do not change pixels after the last critique; anything you edit afterwards
+   goes back to the critic. A critique whose cold read did not name your
+   subject is the most important finding you will get: the picture does not
+   say what you think it says. Report each round: the BLOCKING finding, what
+   you changed, and which version the comparison chose.
 
 9. **Report** in a few lines: what exists now (document, layers, tags, files
    written), what you decided on the user's behalf, what you compromised on and

@@ -104,6 +104,15 @@ the same value and then jump — a stutter, not a stumble. Prefer hand keys for
 primary motion (the walk, the strike); reach for `tween`/`oscillate` for
 motion nobody is meant to consciously notice.
 
+**Something that grows or shrinks on screen** — a wagon coming down a road,
+a bird flying away — is drawn at three or four sizes by hand (far, middle,
+near), each a complete little sprite with all its parts, and every frame uses
+the nearest one. Do not compute it from a formula and re-rasterise it at each
+size: below about 12 px a scaled shape loses or merges its parts (the wheels
+vanish, the cover becomes a blob), and it changes shape from frame to frame.
+Before you finish, `look op="preview" frame=<n>` on the frames where it is
+largest and smallest.
+
 ### 6. Set timing
 
 ```

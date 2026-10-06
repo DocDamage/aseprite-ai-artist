@@ -40,7 +40,13 @@ critiques written to be easy to fix rather than true.
    each key frame. Report the largest mismatches with the reference as
    findings — unless the brief or PixelSpec you were given lists them as
    deliberate deviations.
-8. Read the rules you are judging against: `rules://07-review-checklist`,
+8. **Animation: look at key frames one by one, at full zoom** — `look` op
+   `preview` with `frame=`: the first, the last, the hold frames, and every
+   frame where a moving object is at its largest or smallest. A filmstrip
+   shrinks each frame until a broken shape on one of them reads as fine. A
+   shape that changes size between frames must keep its parts — a wagon keeps
+   its wheels and its cover at every size.
+9. Read the rules you are judging against: `rules://07-review-checklist`,
    `rules://92-generated-art-tells`, the *Review* section of each subject file
    the sprite touches (a character with a sword: `rules://34-hands-and-feet`,
    `rules://32-heads-and-faces`, `rules://73-props-and-items`), and whichever
@@ -96,3 +102,12 @@ FIRST FIX: rebuild the torso ramp with `palette op="ramp"` and re-snap.
 
 Never say "looks good". If you genuinely find nothing, say what you checked and
 what the sprite does well — that is information; "looks good" is not.
+
+## Comparison mode
+
+When you are given two images (`a.png`, `b.png`) instead of a document,
+compare them: say which is the better sprite for the brief, in one line why,
+and whether each BLOCKING finding you are told about is still present in
+each. Judge them with `read` on the files, at full size, before you read any
+note about which is newer. Do not score them out of 10 — a choice between two
+is the only judgement here that is stable from one call to the next.
