@@ -189,13 +189,16 @@ In Claude Code and omp, four specialists take stages off the main agent:
 
 ## 🏆 Which model?
 
-| Model | Drew | How it went |
-|---|---|---|
-| **Claude Opus 5.5** | the rainy bookshop up top | Best so far — 72 frames, 20 layers, one session plus a few notes. |
-| **Codex CLI** `gpt-5.6-terra` | the mascot | Strong, after five rounds of critique. |
-| Others | — | Untested. [Send us a sprite!](gallery/README.md) |
+<a href="https://pixeli.pebbly.space/benchmarks">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://pixeli.pebbly.space/leaderboard/dark.svg">
+    <img alt="Benchmark leaderboard: every model's score out of 100, with compliance, craft, speed and coverage" src="https://pixeli.pebbly.space/leaderboard/light.svg">
+  </picture>
+</a>
 
-Scored, repeatable runs live on the [benchmark](https://pixeli.pebbly.space/benchmarks).
+Live from the [benchmark](https://pixeli.pebbly.space/benchmarks): every model
+draws the same fixed prompts and is scored against written criteria. Your
+model is not on it? [Send us a sprite!](gallery/README.md)
 
 ## 🗂️ Gallery and benchmark
 

@@ -27,7 +27,7 @@ pnpm --filter @pebbly/web run build               # prerenders every page + file
 
 ````
 app       layout shell (`layout/`), global CSS and theme tokens (`styles/`), ambient types
-pages     home, plugin, pluginInstall, gallery, benchmarks, benchmark, benchmarkCompare, generation, contribute, knowledge, knowledgeArticle, notFound: one slice per route; sitemap builds sitemap.xml
+pages     home, plugin, pluginInstall, gallery, benchmarks, benchmark, benchmarkCompare, generation, contribute, knowledge, knowledgeArticle, notFound: one slice per route; sitemap builds sitemap.xml, leaderboardImage the leaderboard SVG
 widgets   siteHeader (with the burger menu below lg), siteFooter, promptTimeline (used by two pages)
 features  copyPrompt, filterGenerations
 entities  generation (cards, score meter, gallery data), prompt, benchmark (ranking data), plugin (skills, agents, docs), knowledge (rulebook, palettes, markdown and ```grid renderer)
@@ -86,6 +86,10 @@ A pack (`gallery/packs/<slug>/pack.yaml`, [ADR-0012](../../docs/adr/0012-gallery
 ## llms.txt
 
 `/llms.txt` ([llmstxt.org](https://llmstxt.org)) is a markdown map of the site and the plugin for language models; `/llms-full.txt` inlines the README, `docs/INSTALL.md` and every skill and agent, so one fetch answers most questions. Both are prerendered from the same checkout (`pages/llms`, `entities/plugin`).
+
+## Leaderboard image
+
+`/leaderboard/light.svg` and `/leaderboard/dark.svg` are the `/benchmarks` leaderboard as a standalone image, for the repository README, which embeds both in a `<picture>` so GitHub picks the one matching the reader's theme (`pages/leaderboardImage`). They are prerendered, so they change with every deploy of `main`. The fonts are inlined as data URLs: an SVG shown through `<img>` may not load anything, and a fallback font would break the column layout, which relies on Press Start 2P's fixed 1em advance. The colours are copies of the site's tokens; change them together.
 
 ## Icons and share card
 

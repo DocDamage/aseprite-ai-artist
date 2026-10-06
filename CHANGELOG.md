@@ -39,6 +39,10 @@ All notable changes to this project are documented here. Format follows
   an unknown or invalid member or a piece in two packs, and packs are
   maintainer-only like benchmark prompts. The benchmark runs now come in four
   packs, one per prompt.
+- **README: a live leaderboard.** "Which model?" embeds
+  `/leaderboard/{light,dark}.svg` from the site instead of a hand-written
+  table — the same ranking as `/benchmarks`, redrawn on every deploy, in
+  GitHub's light or dark theme to match the reader.
 
 ### Changed
 
