@@ -8,6 +8,21 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Review by fresh eyes.** `studio` now hands everything it drew to the
+  `pixel-critic` agent, which runs on Opus and starts with a cold read — what
+  the picture shows to someone never told what it is — and checks for murky
+  value. A draft ships when the critique has no BLOCKING finding and scores
+  7/10 or more; below that, each round makes one named fix, at most three
+  rounds. A round snapshots what it touches, a fix that changes more than
+  about a quarter of a layer counts as a redraw and is restored, and a fix is
+  kept only if one critic call, shown the old and new versions blind, picks
+  the new one — scores from separate calls proved not to share a scale.
+  `animate` draws objects that grow on screen at three or four hand-made
+  sizes, and the critic inspects key frames at full zoom. Found over twelve
+  experiment runs, now in the gallery beside the benchmark rows: the best
+  house went from 3/10 to 8/10 under the loop, and a good tree draft got
+  worse before the blind-comparison guard.
+
 - **Site: a knowledge base.** `/knowledge` shows the pixel-art rulebook the
   agents follow — every rule, grouped by band, with its ` ```grid ` templates
   drawn as pixel pictures beside their legend and source — plus every skill,

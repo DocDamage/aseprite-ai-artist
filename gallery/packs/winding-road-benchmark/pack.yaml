@@ -1,6 +1,9 @@
 title: "Winding road — deep-perspective landscape and ambient loop"
-description: Benchmark runs of the winding-road prompt, one card per model run.
+description: Runs of the winding-road prompt, one card per run — benchmark rows and the experiment runs beside them.
 generations:
+  - 2026-10-07-winding-road-opus-critic3
+  - 2026-10-06-winding-road-opus-critic2
+  - 2026-10-06-winding-road-opus-briefing
   - 2026-10-06-winding-road-opus
   - 2026-10-05-winding-road-sonnet
   - 2026-10-05-winding-road-sol
