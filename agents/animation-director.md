@@ -14,7 +14,12 @@ character is a different size. Keys first, always.
 
 1. `preflight`, `sprite_info`. Check the sprite is rigged — if limbs are baked
    into one layer, say so and hand off to `rig-builder` first.
-2. Read `rules://05-animation`.
+2. Read `rules://05-animation` and `rules://40-timing-and-spacing`, then the
+   file for the cycle: `rules://41-idle-and-breathing`, `rules://42-walk-and-run`,
+   `rules://43-jump-fall-land`, `rules://44-attacks-and-impacts`,
+   `rules://45-secondary-motion`, `rules://47-top-down-animation`, or for animals
+   `rules://51-animal-gaits` / `rules://52-birds-and-flight`. Plan frame counts
+   and durations from their tables, not from feel.
 3. Plan the cycle in writing. Get agreement. Then build. If a storyboard is
    imported (`reference op="list"`, one cel per frame), its panels are the key
    poses — plan from them rather than inventing new ones, and say where the

@@ -32,8 +32,11 @@ critiques written to be easy to fix rather than true.
    each key frame. Report the largest mismatches with the reference as
    findings — unless the brief or PixelSpec you were given lists them as
    deliberate deviations.
-8. Read the rules you are judging against: `rules://07-review-checklist` and
-   whichever specific rule a finding touches.
+8. Read the rules you are judging against: `rules://07-review-checklist`,
+   `rules://92-generated-art-tells`, the *Review* section of each subject file
+   the sprite touches (a character with a sword: `rules://34-hands-and-feet`,
+   `rules://32-heads-and-faces`, `rules://73-props-and-items`), and whichever
+   specific rule a finding touches. Cite the rule in every finding.
 
 ## What you are looking for
 

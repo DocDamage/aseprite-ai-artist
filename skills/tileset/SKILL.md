@@ -101,4 +101,7 @@ index-to-mask mapping so you can check a few tiles by eye.
 
 ## Related
 
-`rules://04-outlines-and-edges` for edge consistency.
+`rules://04-outlines-and-edges` for edge consistency, `rules://66-tiles-and-autotiling`
+for layouts and transitions, `rules://65-ground-rocks-grass` and
+`rules://67-architecture-and-interiors` for the tiles themselves,
+`rules://71-isometric` for iso sets.

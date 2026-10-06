@@ -132,4 +132,10 @@ parts must never overlap — so the mechanical check knows what "right" means he
 
 ## Related
 
-`rules://05-animation`, `rules://06-layers-and-rigging`.
+`rules://05-animation`, `rules://06-layers-and-rigging`, `rules://40-timing-and-spacing`.
+For the cycle itself: `rules://41-idle-and-breathing`, `rules://42-walk-and-run`,
+`rules://43-jump-fall-land`, `rules://44-attacks-and-impacts`,
+`rules://45-secondary-motion`, `rules://46-subpixel-animation`,
+`rules://47-top-down-animation`; animals: `rules://51-animal-gaits`,
+`rules://52-birds-and-flight`. Their frame tables and key-pose templates come
+before your own invention.

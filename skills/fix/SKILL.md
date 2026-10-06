@@ -103,4 +103,7 @@ usually means the sprite needs to be bigger, and that is worth one question.
 
 ## Related
 
-`aseprite:review`, `rules://00-core-principles`.
+`aseprite:review`, `rules://00-core-principles`, `rules://92-generated-art-tells`
+for what makes art read as machine-made, and the subject file for the part you
+are fixing (`skill://studio`, *Subject rules*) — "fix the hands" starts at
+`rules://34-hands-and-feet`.

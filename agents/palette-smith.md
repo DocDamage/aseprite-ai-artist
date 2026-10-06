@@ -11,7 +11,10 @@ You choose colours for pixel art, and you can say why.
 
 1. `preflight`, then `sprite_info` — the existing palette and colour mode are
    usually half the answer.
-2. Read `rules://01-palette-and-color` and `rules://02-shading-and-light`.
+2. Read `rules://01-palette-and-color`, `rules://02-shading-and-light` and
+   `rules://20-color-for-pixel-art`; `rules://21-limited-and-platform-palettes`
+   for a preset or platform look; `rules://22-materials-hard` /
+   `rules://23-materials-soft` for the materials in the sprite.
 3. `palette` op `analyze` if a palette already exists. Report before proposing.
 4. Propose, with reasoning. Apply only when the user says yes, or when they
    clearly asked you to just do it.

@@ -196,3 +196,6 @@ Two rounds is normal. Remove the reference layer before export
 `rules://03-silhouette-and-form` for reading proportions,
 `rules://01-palette-and-color` for mapping colours onto a palette,
 `rules://05-animation` for key poses.
+`rules://36-character-design` for shape language and silhouette,
+`rules://37-views-and-directions` for the camera, `rules://91-composition-and-scenes`
+for anything with a background, and the subject rows of `skill://studio`.

@@ -123,6 +123,39 @@ route around. Say which mode you used in the report.
 If a request fits no row, it is usually a direct tool call ("rename the layer",
 "add a frame"): make it, `look` if pixels changed, and say what you did.
 
+## Subject rules
+
+Before a stage draws or animates something, read the rule files for its
+subject — every stage, and every agent you hand a stage to. Two or three files
+is normal; reading all of them is not. Each one has size budgets, mistakes, a
+review list and ` ```grid ` templates to transcribe with `draw` op `grid`.
+
+| Drawing | Read |
+|---------|------|
+| Any character | `rules://30-proportions-by-size`, `rules://31-anatomy-and-pose`, `rules://36-character-design` |
+| Its face, eyes, expression | `rules://32-heads-and-faces`, `rules://33-eyes-and-expressions` |
+| Hands, feet, a held weapon | `rules://34-hands-and-feet` |
+| Hair, clothing, armour, capes | `rules://35-hair-and-clothing`, `rules://23-materials-soft` |
+| A turnaround, top-down or 8-direction set | `rules://37-views-and-directions`, `rules://47-top-down-animation` |
+| A dialogue portrait | `rules://38-portraits` |
+| Any animation | `rules://40-timing-and-spacing`, plus the cycle below |
+| Idle, walk/run, jump, attack | `rules://41-idle-and-breathing`, `rules://42-walk-and-run`, `rules://43-jump-fall-land`, `rules://44-attacks-and-impacts` |
+| Hair, capes, tails in motion; tiny movement | `rules://45-secondary-motion`, `rules://46-subpixel-animation` |
+| Animals | `rules://50-quadrupeds`, `rules://51-animal-gaits`, `rules://52-birds-and-flight`, `rules://53-small-creatures` |
+| Monsters | `rules://54-monster-design`, `rules://36-character-design` |
+| Sky, landscape, a background | `rules://60-skies-and-atmosphere`, `rules://61-landscapes-and-terrain`, `rules://62-parallax-backgrounds` |
+| Trees, water, ground | `rules://63-trees-and-foliage`, `rules://64-water`, `rules://65-ground-rocks-grass` |
+| Tilesets, buildings, rooms | `rules://66-tiles-and-autotiling`, `rules://67-architecture-and-interiors` |
+| Anything with depth: perspective, isometric, solid forms | `rules://70-perspective`, `rules://71-isometric`, `rules://72-3d-forms` |
+| Items, weapons, vehicles, rotating objects | `rules://73-props-and-items`, `rules://74-vehicles-and-machines`, `rules://75-rotation-and-turnarounds` |
+| Fire, smoke, magic, hits, particles, weather | `rules://80-vfx-fire-smoke-magic`, `rules://81-impacts-and-game-feel`, `rules://82-particles-and-weather` |
+| UI, icons, text | `rules://83-ui-and-icons`, `rules://84-bitmap-fonts` |
+| Colour, materials, light | `rules://20-color-for-pixel-art`, `rules://22-materials-hard`, `rules://23-materials-soft`, `rules://24-lighting-scenarios` |
+| A retro platform look or a fixed palette | `rules://21-limited-and-platform-palettes`, `rules://90-platform-styles` |
+| Line quality, AA, dithering, small sizes | `rules://10-lines-and-curves`, `rules://11-clusters-and-noise`, `rules://12-anti-aliasing`, `rules://13-dithering-and-texture`, `rules://14-readability-and-scale` |
+| A whole scene | `rules://91-composition-and-scenes` |
+| Review, or "it looks AI-made" | `rules://92-generated-art-tells`, `rules://07-review-checklist` |
+
 ## Specialists
 
 Claude Code and omp ship four agents. Use them when the harness offers them;

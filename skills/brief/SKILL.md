@@ -66,3 +66,6 @@ the message above. Then `aseprite:new` to create the document, or
 
 `rules://00-core-principles` for what the sizes buy you.
 `rules://03-silhouette-and-form` for view and proportion.
+`rules://30-proportions-by-size` and `rules://14-readability-and-scale` for what
+each canvas size can hold; `rules://90-platform-styles` when the user names a
+console or era.

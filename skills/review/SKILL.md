@@ -103,4 +103,6 @@ shading, semi-transparent pixels, mushy silhouette, uniform animation timing.
 
 ## Related
 
-`rules://07-review-checklist`, and every other rule it points at.
+`rules://07-review-checklist`, and every other rule it points at;
+`rules://92-generated-art-tells`; and the *Review* section of the subject file
+for what was drawn (`skill://studio`, *Subject rules*).

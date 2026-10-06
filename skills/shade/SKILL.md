@@ -74,4 +74,6 @@ adjacent in a ramp, and stop if it reads as noise. See
 
 ## Related
 
-`rules://02-shading-and-light`, `rules://01-palette-and-color`.
+`rules://02-shading-and-light`, `rules://01-palette-and-color`,
+`rules://22-materials-hard`, `rules://23-materials-soft`,
+`rules://24-lighting-scenarios`, `rules://72-3d-forms`.

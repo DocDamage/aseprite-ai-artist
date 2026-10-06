@@ -82,4 +82,5 @@ the palette's values are too close, and no amount of hue will fix it.
 
 ## Related
 
-`rules://01-palette-and-color`, `rules://02-shading-and-light`.
+`rules://01-palette-and-color`, `rules://02-shading-and-light`,
+`rules://20-color-for-pixel-art`, `rules://21-limited-and-platform-palettes`.

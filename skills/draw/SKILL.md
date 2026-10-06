@@ -23,6 +23,13 @@ each mass gets, its deviations are what you leave out. When a reference layer
 exists (`reference op="list"`), you are drawing over it — the steps below are
 the same, and step 3 gains a comparison.
 
+Then read the subject rules for what you are drawing — the table in
+`skill://studio` under *Subject rules* names them. A hand, a face, a horse,
+an isometric crate or a waterfall each has its own file with size budgets
+and ` ```grid ` templates. A template is a starting point you transcribe with
+`draw` op `grid`, mapping each legend role onto the sprite's palette; adapt
+it to the pose rather than inventing the shape from nothing.
+
 ### 2. Block in the silhouette
 
 One flat colour, no detail. Target the `base` layer. Everything in one `draw`
@@ -146,4 +153,6 @@ Fix every error. Report warnings you chose not to fix, with the reason.
 ## Related
 
 `rules://00-core-principles`, `rules://02-shading-and-light`,
-`rules://03-silhouette-and-form`, `rules://04-outlines-and-edges`.
+`rules://03-silhouette-and-form`, `rules://04-outlines-and-edges`,
+`rules://10-lines-and-curves`, `rules://11-clusters-and-noise`, and the subject
+files listed in `skill://studio` under *Subject rules*.

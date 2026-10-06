@@ -77,4 +77,5 @@ moment it rotates. Copy generously and let the stacking order hide the excess.
 
 ## Related
 
-`rules://06-layers-and-rigging`, `rules://03-silhouette-and-form`.
+`rules://06-layers-and-rigging`, `rules://03-silhouette-and-form`,
+`rules://31-anatomy-and-pose` for where the joints really are.

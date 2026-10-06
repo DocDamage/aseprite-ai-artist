@@ -13,7 +13,7 @@ is to make sure that never becomes the user's problem.
 ## Procedure
 
 1. `preflight`, `sprite_info`, `look` op `preview`.
-2. Read `rules://06-layers-and-rigging`.
+2. Read `rules://06-layers-and-rigging` and `rules://31-anatomy-and-pose`.
 3. If the art is baked, `look` op `ascii` to find exact part boundaries. Guessing
    coordinates here clips limbs.
 4. Propose the rig. Build on confirmation.
