@@ -62,10 +62,19 @@ workflow it names and follow that — do not do the step from memory.
    reference. A stage is done when you have seen its result, not when its tool
    reported success.
 
-8. **Finish with `aseprite:review`** (or the `pixel-critic` agent) for anything you
-   drew or changed. Fix what it finds with `aseprite:fix`, then review again. Two
-   rounds is normal; if a third still finds the same problem, stop and tell the
-   user what you could not solve instead of looping.
+8. **Get judged by someone who did not draw it.** For anything you drew or
+   changed, hand the result to the `pixel-critic` agent where the harness has
+   one — never grade your own work in place of it; you know what you meant,
+   so you see it. Give it the document name and the brief, nothing about how
+   it was made. Elsewhere, run `aseprite:review` and do its cold read first.
+
+   Then loop: fix the **BLOCKING** findings and the first fix it names with
+   `aseprite:fix`, and send it back. Stop when it scores **7/10 or more with
+   no BLOCKING finding**, or after three critiques — then tell the user what
+   it still objects to and what you could not solve, instead of looping on.
+   A critique whose cold read did not name your subject is the most important
+   finding you will get: the picture does not say what you think it says.
+   Report each round's score.
 
 9. **Report** in a few lines: what exists now (document, layers, tags, files
    written), what you decided on the user's behalf, what you compromised on and

@@ -21,9 +21,17 @@ critiques written to be easy to fix rather than true.
 ## Procedure
 
 1. `preflight`. Stop if not ready.
-2. `sprite_info` — size, palette, layers, frames, tags.
-3. `validate` — the mechanical findings.
-4. `look` op `preview` — the overall read.
+2. **Cold read, before you use the brief.** `look` op `preview` and write down,
+   in one sentence, what the picture shows to someone who was never told what
+   it is, and the three things the eye lands on first. Do this before
+   `sprite_info` and before you weigh the brief you were handed: once you know
+   it is "a mage with a boombox" you will see one whether or not it is there.
+   The cold read goes at the top of your output, verbatim.
+3. Compare the cold read with the brief. If it did not name the subject, or
+   missed a part the brief makes central (the face, the boombox, the bridge),
+   that is a **BLOCKING read failure**, whatever `validate` says.
+4. `sprite_info` — size, palette, layers, frames, tags. Then `validate` — the
+   mechanical findings.
 5. `look` op `ascii` on anything that felt wrong but you could not name.
 6. `look` op `filmstrip` if there is more than one frame, then `look` op `onion`
    on any in-between that looked like it jumped — ghosted neighbours show a limb
@@ -42,22 +50,34 @@ critiques written to be easy to fix rather than true.
 
 In descending order of how much it costs the user:
 
-1. **Silhouette does not read.** Nothing else matters if this fails.
-2. **Value contrast too low.** Would it survive desaturation?
-3. **Flat shading.** Shadows that are the same hue, darker.
-4. **Palette sprawl.** Near-duplicate colours; off-palette pixels.
-5. **Semi-transparent pixels.** From soft brushes or non-integer resizes.
-6. **Strays and noise.** Isolated pixels, detail that is just dirt.
-7. **Inconsistent lines.** Uneven runs, doubled pixels, jaggies.
-8. **Inconsistent light.** Direction that moves across the sprite or frames.
-9. **Animation: volume drift, height drift, uniform timing, no anticipation.**
+1. **Silhouette does not read** — or the cold read named something else.
+   Nothing else matters if this fails.
+2. **Too dark or too flat.** Squint at the preview: the subject's lit side
+   should be among the lightest values in the picture and its core shadow
+   among the darkest. A subject whose surfaces all sit in the bottom third of
+   the value range reads as murk — common on limited palettes, where "shaded"
+   gets the darkest ramp step everywhere. Name the surfaces and the lighter
+   palette entries that would fix them.
+3. **Value contrast too low.** Would it survive desaturation?
+4. **Flat shading.** Shadows that are the same hue, darker.
+5. **Palette sprawl.** Near-duplicate colours; off-palette pixels.
+6. **Semi-transparent pixels.** From soft brushes or non-integer resizes.
+7. **Strays and noise.** Isolated pixels, detail that is just dirt.
+8. **Inconsistent lines.** Uneven runs, doubled pixels, jaggies.
+9. **Inconsistent light.** Direction that moves across the sprite or frames.
+10. **Animation: volume drift, height drift, uniform timing, no anticipation.**
 
 ## Output
 
-A score out of 10, then findings, then the single highest-value fix.
+A score out of 10, then the cold read, then findings, then the single
+highest-value fix. A score of 7 or more means you would ship it in a game as it
+is; do not round up a sprite that only meets the brief.
 
 ```
 7/10 — reads well at 1×, held back by flat shading.
+
+COLD READ: a red-haired figure in a long dark coat holding a grey box on his
+shoulder; eye goes to the hair, the pink speaker dots, the white shoes.
 
 BLOCKING
 · Shadow ramp is pure luminance: #c04030 → #802b20 has the same hue.

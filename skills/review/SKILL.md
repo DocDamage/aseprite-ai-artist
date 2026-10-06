@@ -10,6 +10,16 @@ description: Run the mechanical checks and the by-eye checks, then report what y
 
 ## Procedure
 
+### 0. Cold read
+
+Before you look at the brief again: `look op="preview"`, and write one
+sentence on what the picture shows to someone who was never told, plus the
+three things the eye lands on first. If that sentence does not name the
+subject, or misses a part the brief makes central, the sprite fails review
+whatever `validate` says. Squint at the same preview for value: the subject's
+lit side should be among the lightest values and its core shadow among the
+darkest; everything in the bottom third reads as murk.
+
 ### 1. Mechanical checks
 
 ```
