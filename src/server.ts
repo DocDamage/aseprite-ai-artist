@@ -229,7 +229,8 @@ function registerSkillSurface(
     "knowledge://palettes",
     {
       title: "Bundled palette presets",
-      description: "Named palettes available to the `palette` tool's 'preset' op, with notes on when each fits.",
+      description:
+        "Every palette the `palette` tool's 'preset' op can load — about 2000, roughly 1 MB of JSON. To find one, call `palette` op 'preset' with a word of its name instead of reading this.",
       mimeType: "application/json",
     },
     async () => ({

@@ -78,7 +78,7 @@ Endesga 32         be4a2f d77643 ead4aa e4a672 b86f50 733e39 3e2731 a22633 e43b4
 Game Boy (BGB)     081820 346856 88c070 e0f8d0
 ```
 
-Built-in presets for `palette` op `preset`: `pico8`, `gameboy`, `gameboy-pocket`, `cga`, `1bit`, `grayscale-8`. Larger sets (Resurrect 64, AAP-64, Endesga 64, Apollo 46, Sweetie, DB32) come from Lospec `.hex` through op `load`.
+Built-in presets for `palette` op `preset` — about 2000: the classics `pico8`, `gameboy`, `gameboy-pocket`, `cga`, `1bit`, `grayscale-8`, plus Lospec's most-downloaded, among them `resurrect-64`, `aap-64`, `endesga-32`, `endesga-64`, `apollo`, `sweetie-16`, `dawnbringer-16`, `dawnbringer-32`, `arq4`, `aap-micro12`, `nintendo-entertainment-system`. A name that is not a key (`preset: "endesga"`) answers with the matching keys. Anything else comes from a `.gpl/.hex/.pal/.png` through op `load`.
 Ramp chains that already work: PICO-8 hot `1D2B53 → 7E2553 → FF004D → FFA300 → FFEC27 → FFF1E8`, skin `AB5236 → FFCCAA` (+ `FF77A8` blush), cool `1D2B53 → 29ADFF → C2C3C7 → FFF1E8`;
 Endesga 32 skin `733e39 → b86f50 → c28569 → e4a672 → e8b796 → ead4aa`, blue-grey `181425 → 262b44 → 3a4466 → 5a6988 → 8b9bb4 → c0cbdc`, green `193c3e → 265c42 → 3e8948 → 63c74d`.
 Starters by task: 4 colours ARQ4 (first exercise), 12 AAP-Micro12 (small sprite), 32 DB32 (100×64 scene), 64 AAP-64 (48–64 px studies). PICO-8 has pure black but no pure white, 3 near-greys; DB16 has no pure black or white.

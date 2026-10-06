@@ -7,17 +7,20 @@ import type { AsepriteLink } from "../bridge/link.js";
 import { buildRamp, contrastRatio, parseHex, snapToPalette, toHex } from "../lib/color.js";
 import { fail, hexColor, ok, targetShape } from "./kit.js";
 
-interface Preset {
+export interface Preset {
   name: string;
   author: string;
   size: number;
   notes: string;
   colors: string[];
+  /** Where the palette is published (Lospec for most of the catalogue). */
+  source?: string;
+  tags?: string[];
 }
 
 let presetCache: Record<string, Preset> | null = null;
 
-function presets(): Record<string, Preset> {
+export function presets(): Record<string, Preset> {
   if (presetCache) return presetCache;
   const here = path.dirname(fileURLToPath(import.meta.url));
   // dist/tools/palette.js → package root
@@ -25,6 +28,27 @@ function presets(): Record<string, Preset> {
   const parsed = JSON.parse(readFileSync(file, "utf8")) as { presets: Record<string, Preset> };
   presetCache = parsed.presets;
   return presetCache;
+}
+
+/**
+ * The catalogue holds ~2000 palettes, so an unknown key cannot answer with the whole list. Every
+ * word of the query must appear in the key, name, author or tags; smaller palettes rank first
+ * among equals because a pixel-art request usually wants a tight one.
+ */
+export function searchPresets(query: string, limit = 20): { key: string; preset: Preset }[] {
+  const words = query.toLowerCase().split(/[\s_-]+/).filter(Boolean);
+  if (words.length === 0) return [];
+  return Object.entries(presets())
+    .map(([key, preset]) => {
+      const haystack = [key, preset.name, preset.author, ...(preset.tags ?? [])].join(" ").toLowerCase();
+      if (!words.every((word) => haystack.includes(word))) return null;
+      const exactName = preset.name.toLowerCase() === query.toLowerCase().trim();
+      return { key, preset, rank: exactName ? 0 : key.startsWith(words[0]!) ? 1 : 2 };
+    })
+    .filter((hit): hit is { key: string; preset: Preset; rank: number } => hit !== null)
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, limit)
+    .map(({ key, preset }) => ({ key, preset }));
 }
 
 export function registerPaletteTools(server: McpServer, live: AsepriteLink): void {
@@ -36,7 +60,7 @@ export function registerPaletteTools(server: McpServer, live: AsepriteLink): voi
         "Read and shape the sprite's palette. Ops:\n" +
         "• 'get' — current palette with per-colour usage counts.\n" +
         "• 'set' — write specific indices, or replace the palette wholesale.\n" +
-        "• 'preset' — load a bundled palette (pico8, gameboy, gameboy-pocket, cga, 1bit, grayscale-8).\n" +
+        "• 'preset' — load a bundled palette by key: ~2000 of them, the classics (pico8, gameboy, cga, nes…) and the most-downloaded on Lospec (sweetie-16, endesga-32, resurrect-64, aap-64…). An unknown key or a name answers with the matching keys, so 'preset: \"gameboy\"' or 'preset: \"endesga\"' is a search.\n" +
         "• 'load' — read a .gpl/.hex/.pal/.png palette file from disk.\n" +
         "• 'ramp' — generate a hue-shifted ramp from a base colour and append it. Shadows rotate toward blue, highlights toward orange; a ramp that only changes brightness is the clearest tell of machine-made pixel art.\n" +
         "• 'analyze' — report ramp structure, contrast, near-duplicate entries and colours used in the art that are not in the palette.\n" +
@@ -107,9 +131,19 @@ export function registerPaletteTools(server: McpServer, live: AsepriteLink): voi
             verdict: z.string(),
           })
           .optional(),
-        availablePresets: z
-          .array(z.object({ key: z.string(), name: z.string(), size: z.number().int(), notes: z.string() }))
-          .optional(),
+        total: z.number().int().optional().describe("Op 'preset' with no such key: presets bundled."),
+        matches: z
+          .array(
+            z.object({
+              key: z.string(),
+              name: z.string(),
+              author: z.string(),
+              size: z.number().int(),
+              notes: z.string().optional(),
+            }),
+          )
+          .optional()
+          .describe("Op 'preset' with no such key: presets whose key, name, author or tags match it."),
       },
       annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
     },
@@ -131,21 +165,31 @@ export function registerPaletteTools(server: McpServer, live: AsepriteLink): voi
           }
 
           case "preset": {
-            const key = (args.preset ?? "").toLowerCase();
+            const query = (args.preset ?? "").trim();
             const table = presets();
-            const chosen = table[key];
+            // Keys are Lospec-style slugs; "Sweetie 16" and "sweetie_16" mean sweetie-16. Lospec's
+            // all-digit slugs ("32") are stored as lospec-32, so the bare number still finds them.
+            const slug = query.toLowerCase().replace(/[\s_]+/g, "-");
+            // Own keys only: "constructor" or "toString" would otherwise resolve on the prototype.
+            const own = (key: string) => (Object.hasOwn(table, key) ? table[key] : undefined);
+            const chosen = own(slug) ?? own(`lospec-${slug}`);
             if (!chosen) {
+              const matches = searchPresets(query);
               return ok(
                 {
                   op: "preset",
-                  availablePresets: Object.entries(table).map(([k, p]) => ({
-                    key: k,
-                    name: p.name,
-                    size: p.size,
-                    notes: p.notes,
+                  total: Object.keys(table).length,
+                  matches: matches.map(({ key, preset }) => ({
+                    key,
+                    name: preset.name,
+                    author: preset.author,
+                    size: preset.size,
+                    ...(preset.notes ? { notes: preset.notes } : {}),
                   })),
                 },
-                `Unknown preset '${args.preset ?? ""}'. Available: ${Object.keys(table).join(", ")}. Any other palette can be loaded from a file with op 'load'.`,
+                matches.length > 0
+                  ? `No preset with the key '${query}'. ${matches.length} match: ${matches.map(({ key, preset }) => `${key} (${preset.size})`).join(", ")}. Call again with one of these keys.`
+                  : `No preset matches '${query}' among ${Object.keys(table).length}. Search by a word of the name or author (e.g. 'endesga', 'gameboy', 'nes'), or load a palette file with op 'load'.`,
               );
             }
             const data = await live.call<Record<string, unknown>>("palette.set", {
@@ -156,7 +200,7 @@ export function registerPaletteTools(server: McpServer, live: AsepriteLink): voi
             });
             return ok(
               { op: "preset", colors: chosen.colors, size: chosen.colors.length, ...data },
-              `Loaded ${chosen.name} (${chosen.colors.length} colours). ${chosen.notes}`,
+              `Loaded ${chosen.name} by ${chosen.author} (${chosen.colors.length} colours).${chosen.notes ? ` ${chosen.notes}` : ""}`,
             );
           }
 
