@@ -6,7 +6,7 @@ import { LiveClient } from "./bridge/client.js";
 import { HeadlessClient, editorGuard } from "./bridge/headless.js";
 import { LinkSelector } from "./bridge/selector.js";
 import { findAsepriteBinary } from "./extension.js";
-import { loadRules, loadSkills, serverInstructions } from "./lib/skills.js";
+import { loadRules, loadSkills, serverInstructions, type RuleDoc } from "./lib/skills.js";
 import { packageRoot, packageVersion } from "./lib/version.js";
 import { registerAssetTools } from "./tools/assets.js";
 import { registerCraftTools } from "./tools/craft.js";
@@ -118,7 +118,7 @@ function registerSkillSurface(
     {
       title: "Pixel-art rulebook — index",
       description:
-        "The craft rules this server encodes: palette, shading, silhouette, animation, layer rigging and the review checklist. Read this before your first sprite in a session.",
+        "The craft rules this server encodes, by subject: core discipline, technique, colour and materials, characters (faces, hands), animation (walks, attacks), creatures, environments, objects and isometric, effects and UI, style. Read this before your first sprite in a session.",
       mimeType: "text/markdown",
     },
     async () => ({
@@ -128,8 +128,10 @@ function registerSkillSurface(
           mimeType: "text/markdown",
           text:
             `# Pixel-art rulebook\n\n` +
-            rules.map((r) => `- \`rules://${r.name}\` — ${r.title}`).join("\n") +
-            `\n\nRead the rule that covers what you are about to do. These are the difference between a sprite that reads and one that looks generated.\n`,
+            `Read the core files once per session, then the two or three subject files that cover what you are about to draw. ` +
+            `Subject files carry \`grid\` templates you can transcribe with \`draw\` op \`grid\`.\n` +
+            rulesIndex(rules) +
+            `\nThese are the difference between a sprite that reads and one that looks generated.\n`,
         },
       ],
     }),
@@ -240,4 +242,32 @@ function registerSkillSurface(
       ],
     }),
   );
+}
+
+const RULE_BANDS: Record<string, string> = {
+  "0": "Core discipline",
+  "1": "Technique — lines, clusters, anti-aliasing, dithering, readability",
+  "2": "Colour, light and materials",
+  "3": "Characters — proportions, anatomy, faces, eyes, hands, clothing, views",
+  "4": "Animation — timing, idle, walk and run, jumps, attacks, secondary motion",
+  "5": "Animals and creatures",
+  "6": "Environments — skies, landscapes, parallax, foliage, water, tiles, buildings",
+  "7": "Objects and 3D — perspective, isometric, forms, props, vehicles, rotation",
+  "8": "Effects and interface — VFX, game feel, particles, UI, fonts",
+  "9": "Style — platform eras, composition, tells of generated art",
+};
+
+/** The index groups rules by the first digit of their number (ADR-0011's bands). */
+function rulesIndex(rules: readonly RuleDoc[]): string {
+  const out: string[] = [];
+  let band: string | undefined;
+  for (const r of rules) {
+    const digit = r.name[0] ?? "";
+    if (digit !== band) {
+      band = digit;
+      out.push(`\n## ${RULE_BANDS[digit] ?? "Other"}\n`);
+    }
+    out.push(`- \`rules://${r.name}\` — ${r.title}`);
+  }
+  return out.join("\n") + "\n";
 }

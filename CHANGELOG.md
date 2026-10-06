@@ -8,6 +8,25 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **A subject-by-subject pixel-art rulebook**
+  ([ADR-0011](docs/adr/0011-pixel-art-knowledge-base.md)). `rules/` grows from
+  eight general files to sixty-two, in numbered bands: technique (lines,
+  clusters, anti-aliasing, dithering, readability), colour and materials,
+  characters (proportions, anatomy, heads and faces, eyes and expressions,
+  hands and feet, hair and clothing, design, views, portraits), animation
+  (timing, idle, walk and run, jumps, attacks, secondary motion, subpixel,
+  top-down), creatures, environments, objects and isometric, effects and UI,
+  and style (platform eras, composition, tells of generated art). Each file
+  has size budgets, procedures, mistakes, a review list and ` ```grid `
+  templates in the exact shape `draw` op `grid` takes — hands at 8–64 px, eye
+  ladders, walk and run key poses, quadrupeds, circles and isometric cubes,
+  tiles, flames. Distilled from sixteen books and the major free tutorials, in
+  our own words. `rules://index` groups them by band, `studio` maps each
+  subject to its files, and the drawing skills and agents read them.
+  `tests/rules.test.ts` compiles every template through the grid compiler,
+  `scripts/rule-templates.ts` renders them to PNG for review, and a server
+  test fails on any `rules://` link that names no rule.
+
 - **Site: score charts.** Each benchmark page has a *Run by run* chart —
   every model's runs of that prompt, all models on one set of axes — and the
   benchmarks index has *Score over time* under the leaderboard: each model's
@@ -25,6 +44,23 @@ All notable changes to this project are documented here. Format follows
 
 - **Site: the benchmark hero is a podium.** It shows the top three models;
   the rest are in the full ranking below.
+
+### Fixed
+
+- **`palette` op `ramp` and `recolor` op `shade` shifted hue the wrong way
+  for half the wheel.** Shading rotated hue in a fixed direction, so a red
+  ramp's shadows went toward orange and its highlights toward magenta. Shadows
+  now rotate toward blue and highlights toward yellow along the shorter arc,
+  in both the server and the Lua extension.
+- **`validate` with no `checks` skipped `antialiasing`**, although the schema
+  says omitting runs everything. Its description also listed odd-pixel
+  asymmetry and cross-frame volume drift, which no check implements; it now
+  says to judge those with `look`.
+- **`draw` op `ellipse` drew even-sized boxes two pixels short** — a 4×4 box
+  gave a 2×2 square, 6×6 a 4×4 square — because the radius was measured to
+  pixel corners. It now samples pixel centres against half the box, which
+  reaches every edge of the box and matches the canonical small-circle and
+  2:1 floor-ellipse tables in `rules://72-3d-forms`.
 
 ## [0.6.0] — 2026-10-06
 

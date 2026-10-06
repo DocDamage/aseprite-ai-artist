@@ -1,6 +1,8 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer } from "../dist/server.js";
 
@@ -78,6 +80,29 @@ test("skills and rules are served as resources so non-plugin clients get them to
   assert.match(String(index.contents[0]?.text), /Pixel-art rulebook/);
 
   await close();
+});
+
+test("every rules:// reference in skills, agents, rules and hooks names a served rule", async () => {
+  // Skills point at rules by name instead of restating them; a renamed or
+  // never-written rule leaves an agent reading a resource that does not exist.
+  const { client, close } = await connected();
+  const { resources } = await client.listResources();
+  const served = new Set(resources.map((r) => r.uri).filter((u) => u.startsWith("rules://")));
+  await close();
+
+  const root = path.resolve(import.meta.dirname, "..");
+  const files = ["skills", "agents", "rules", "hooks"].flatMap((dir) =>
+    readdirSync(path.join(root, dir), { recursive: true, encoding: "utf8" })
+      .filter((f) => /\.(md|mjs)$/.test(f))
+      .map((f) => path.join(root, dir, f)),
+  );
+  const dangling: string[] = [];
+  for (const file of files) {
+    for (const [uri] of readFileSync(file, "utf8").matchAll(/rules:\/\/[0-9a-z-]+/g)) {
+      if (!served.has(uri)) dangling.push(`${path.relative(root, file)}: ${uri}`);
+    }
+  }
+  assert.deepEqual(dangling, []);
 });
 
 test("every skill is also reachable as a prompt", async () => {
