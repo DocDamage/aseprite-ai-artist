@@ -13,19 +13,38 @@
 
 	let { title, progress, modelOrder }: Props = $props();
 
+	/**
+	 * One marker per model per day: the day's best run. Several runs on one day otherwise
+	 * stack on one x and the line zig-zags vertically through them; the best is the run that
+	 * counts everywhere else on the page.
+	 */
 	const series = $derived(
-		progress.map((model, index): ChartSeries => ({
-			id: model.modelLabel,
-			label: model.modelLabel,
-			color: modelOrder.includes(model.modelLabel)
-				? modelOrder.indexOf(model.modelLabel)
-				: modelOrder.length + index,
-			points: model.runs.map((run) => ({
-				date: run.date,
-				y: run.points,
-				note: `plugin v${run.plugin}`
-			}))
-		}))
+		progress.map((model, index): ChartSeries => {
+			const byDay = new Map<string, { best: (typeof model.runs)[number]; count: number }>();
+			for (const run of model.runs) {
+				const day = byDay.get(run.date);
+				if (!day) byDay.set(run.date, { best: run, count: 1 });
+				else {
+					day.count += 1;
+					if (run.points > day.best.points) day.best = run;
+				}
+			}
+			return {
+				id: model.modelLabel,
+				label: model.modelLabel,
+				color: modelOrder.includes(model.modelLabel)
+					? modelOrder.indexOf(model.modelLabel)
+					: modelOrder.length + index,
+				points: [...byDay.entries()].map(([date, { best, count }]) => ({
+					date,
+					y: best.points,
+					note:
+						count > 1
+							? `best of ${count} runs that day · plugin v${best.plugin}`
+							: `plugin v${best.plugin}`
+				}))
+			};
+		})
 	);
 </script>
 
@@ -33,9 +52,9 @@
 	<h2 id="progress" class="section-title text-lg sm:text-2xl">Run by run</h2>
 	<p class="mt-4 max-w-[62ch] text-sm text-muted-foreground">
 		Every run of this prompt from the first one to today (a year at most), each model on its own
-		line. A marker is a run; the line is solid between runs and dashed where the model did not run,
-		carrying its nearest score. Point at a run to compare the models that day; pick a model below to
-		bring its line to the front.
+		line. A marker is a day's best run; the line is solid between runs and dashed where the model
+		did not run, carrying its nearest score. Point at a run to compare the models that day; pick a
+		model below to bring its line to the front.
 	</p>
 	<div class="mt-8 px-1.5">
 		<Card font="normal" class="gap-0 py-0">
