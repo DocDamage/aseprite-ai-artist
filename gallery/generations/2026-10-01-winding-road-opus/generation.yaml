@@ -152,14 +152,6 @@ benchmark:
     - criterion: loop-validate
       pass: true
 ratings:
-  - judge: human:fedorovvvv
-    scores:
-      read: 0
-      form: 0
-      motion: 0
-      cohesion: 0
-      appeal: 0
-    note: Overall 1/10, given as one number; each axis set to round(1/10 × 4) = 0.
   - judge: model:gpt-5.5
     scores:
       read: 2
@@ -168,3 +160,11 @@ ratings:
       cohesion: 3
       appeal: 2
     note: The scene and the road read, but the distant landmarks and the moving details are muddy, and the animation feels mechanical rather than atmospheric.
+  - judge: human:fedorovvvv
+    scores:
+      read: 0
+      form: 0
+      motion: 0
+      cohesion: 0
+      appeal: 0
+    note: Overall 1/10, given as one number on the rating page of 2026-10-07; each axis set to round(1/10 × 4) = 0.

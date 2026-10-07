@@ -160,3 +160,12 @@ benchmark:
     - criterion: attack-validate
       pass: true
       note: "validate passed, score 90, 0 errors, 2 outline warnings (one on mage frame 2, one on fx-particles); palette is still the 16 PICO-8 entries."
+ratings:
+  - judge: human:fedorovvvv
+    scores:
+      read: 1
+      form: 1
+      motion: 1
+      cohesion: 1
+      appeal: 1
+    note: Overall 3/10, given as one number on the rating page of 2026-10-07; each axis set to round(3/10 × 4) = 1.

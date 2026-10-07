@@ -107,7 +107,7 @@ ratings:
       motion: 0
       cohesion: 0
       appeal: 0
-    note: Overall 0/10, given as one number; each axis set to round(0/10 × 4) = 0.
+    note: Overall 0/10, given as one number on the rating page of 2026-10-07; each axis set to round(0/10 × 4) = 0.
 benchmark:
   prompt: boombox-mage
   revision: 1

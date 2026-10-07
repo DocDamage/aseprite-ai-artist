@@ -160,3 +160,12 @@ benchmark:
     - criterion: attack-validate
       pass: true
       note: "validate passed, score 85, 0 errors, 3 outline warnings on fx layers (deliberately outline-free); palette is still the 16 PICO-8 entries."
+ratings:
+  - judge: human:fedorovvvv
+    scores:
+      read: 0
+      form: 0
+      motion: 0
+      cohesion: 0
+      appeal: 0
+    note: Overall 1/10, given as one number on the rating page of 2026-10-07; each axis set to round(1/10 × 4) = 0.

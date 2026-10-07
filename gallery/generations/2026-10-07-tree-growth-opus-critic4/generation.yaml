@@ -152,3 +152,12 @@ benchmark:
     - criterion: grow-validate
       pass: true
       note: "validate passes, 0 errors, 9 outline warnings on partial-growth frames that the agent called a style quirk of tiny sprouts; palette is the 16 PICO-8 entries."
+ratings:
+  - judge: human:fedorovvvv
+    scores:
+      read: 2
+      form: 2
+      motion: 2
+      cohesion: 2
+      appeal: 2
+    note: Overall 4/10, given as one number on the rating page of 2026-10-07; each axis set to round(4/10 × 4) = 2.

@@ -157,14 +157,6 @@ benchmark:
       pass: true
       note: Passed with outline warnings on the effect layers only, which are drawn unoutlined on purpose; palette still 16 entries.
 ratings:
-  - judge: human:fedorovvvv
-    scores:
-      read: 1
-      form: 1
-      motion: 1
-      cohesion: 1
-      appeal: 1
-    note: Overall 3/10, given as one number; each axis set to round(3/10 × 4) = 1.
   - judge: model:gpt-5.5
     scores:
       read: 2
@@ -173,3 +165,11 @@ ratings:
       cohesion: 2
       appeal: 2
     note: The attack and the impact frame read, but at 1× the hands, the boombox and part of the effects merge, and the motion rests mostly on the FX while the character stays static and noisy in places.
+  - judge: human:fedorovvvv
+    scores:
+      read: 1
+      form: 1
+      motion: 1
+      cohesion: 1
+      appeal: 1
+    note: Overall 2/10, given as one number on the rating page of 2026-10-07; each axis set to round(2/10 × 4) = 1.

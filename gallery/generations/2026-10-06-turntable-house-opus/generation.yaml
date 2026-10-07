@@ -128,7 +128,7 @@ ratings:
       motion: 1
       cohesion: 1
       appeal: 1
-    note: Overall 3/10, given as one number; each axis set to round(3/10 × 4) = 1. The rater also remarked that it looks dark.
+    note: Overall 3/10, given as one number on the rating page of 2026-10-07; each axis set to round(3/10 × 4) = 1.
 benchmark:
   prompt: turntable-house
   revision: 2
