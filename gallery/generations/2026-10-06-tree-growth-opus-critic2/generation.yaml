@@ -1,5 +1,5 @@
 title: Cherry tree from seed to bloom — critic loop, second version
-description: "An experiment run, not a benchmark row. Plugin 0.7.0 plus unreleased skill and agent changes from commit 3339cb4: The critic ran on Opus; each fix round snapshotted the layers it touched, fixes had to be local, and a round was reverted unless the critic's score rose. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the tree-growth step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text. Blind: rated below the plain 0.7.0 tree; the second fix round rebuilt the crown into a thinner, hollow one."
+description: "A benchmark run on an experimental variant of the skills, not on released plugin code: Plugin 0.7.0 plus unreleased skill and agent changes from commit 3339cb4: The critic ran on Opus; each fix round snapshotted the layers it touched, fixes had to be local, and a round was reverted unless the critic's score rose. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the tree-growth step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text. Blind: rated below the plain 0.7.0 tree; the second fix round rebuilt the crown into a thinner, hollow one."
 date: 2026-10-06
 author:
   name: Nik Fedorov
@@ -62,6 +62,7 @@ tags:
   - nature
   - animation
   - growth
+  - benchmark
   - 64x64
   - pico-8
   - experiment
@@ -86,8 +87,68 @@ files:
     role: filmstrip
     label: Every frame, 2×
     step: 2
+validate:
+  - step: 1
+    passed: true
+    score: 95
+    errors: 0
+    warnings: 1
+  - step: 2
+    passed: true
+    score: 35
+    errors: 0
+    warnings: 13
 metrics:
   - step: 1
     minutes: 21
+    toolCalls: 87
+    outputTokens: 91221
+    costUsd: 6.1
   - step: 2
     minutes: 41.7
+    toolCalls: 233
+    outputTokens: 187276
+    costUsd: 13.75
+benchmark:
+  prompt: tree-growth
+  revision: 1
+  results:
+    - criterion: tree-validate
+      pass: true
+      note: "validate passes: score 95, 0 errors, one outline warning on trunk (68% #ab5236) which the agent called a false positive for an unoutlined two-tone trunk."
+    - criterion: tree-palette
+      pass: true
+      note: "palette op get returns exactly the 16 PICO-8 entries."
+    - criterion: tree-read
+      pass: true
+      note: "Trunk, thin forked branches showing through gaps, and three pink masses read at a glance in the 4× export."
+    - criterion: tree-spec
+      pass: true
+      note: "Layers ground/trunk/canopy; ground y56–63; trunk 4 px wide at y55 on x30–33; three branches fork around y35 and each forks again; canopy x7–55, y6–38 as three separate masses with white gaps."
+    - criterion: tree-shading
+      pass: true
+      note: "Cream highlights upper left on each mass, #7e2553 shadow on the right and underneath; rounded clumps, no strays reported."
+    - criterion: grow-tagged
+      pass: true
+      note: "20 frames; tag grow 1–20, direction forward."
+    - criterion: grow-final
+      pass: true
+      note: "Frame 20 composite and ground, trunk and canopy cels are pixel-identical to step1.aseprite (0 differing pixels); fx empty on frame 20."
+    - criterion: grow-stages
+      pass: true
+      note: "Filmstrip: seed (fx, frames 1–2), cracks and crumbs, stem with two seed leaves, bark sapling with side branches, thickening young tree with green masses, buds from frame 14, bloom with petals."
+    - criterion: grow-continuous
+      pass: true
+      note: "Trunk layer loses 0 pixels between consecutive frames and no trunk pixel on any frame lies outside the final trunk's pixels."
+    - criterion: grow-ground
+      pass: true
+      note: "Ground cel identical on all 20 frames; trunk base on x31 then x30–33, widening to x28–35 only as the roots flare."
+    - criterion: grow-easing
+      pass: true
+      note: "Composite change 0.0–0.7% for frames 2–7, peak 7.6% at frame 12, then 1.4–2.7% over the bloom, 1.6% on the last step."
+    - criterion: grow-timing
+      pass: true
+      note: "Seed frames 600/450 ms, growth frames 80–150 ms, final frame 1600 ms."
+    - criterion: grow-validate
+      pass: true
+      note: "validate passes, 0 errors, 13 outline warnings on partial-growth frames that the agent called false positives (the art has no outline); palette is the 16 PICO-8 entries."

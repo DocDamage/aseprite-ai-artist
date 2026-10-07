@@ -1,5 +1,5 @@
 title: Boombox mage and his sound blast — craft-briefing experiment
-description: "An experiment run, not a benchmark row. Plugin 0.7.0 plus unreleased skill and agent changes from commit 3af65fb: A hook put the `## Essentials` digest of three to six subject rule files into context before the first turn. The owner judged the results worse than plain 0.7.0, and the hook was reverted. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the boombox-mage step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text."
+description: "A benchmark run on an experimental variant of the skills, not on released plugin code: Plugin 0.7.0 plus unreleased skill and agent changes from commit 3af65fb: A hook put the `## Essentials` digest of three to six subject rule files into context before the first turn. The owner judged the results worse than plain 0.7.0, and the hook was reverted. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the boombox-mage step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text."
 date: 2026-10-06
 author:
   name: Nik Fedorov
@@ -67,6 +67,7 @@ tags:
   - 128x64
   - pico-8
   - experiment
+  - benchmark
 files:
   - path: anim.gif
     role: cover
@@ -88,8 +89,74 @@ files:
     role: filmstrip
     label: Every frame, 2×
     step: 2
+validate:
+  - step: 1
+    passed: true
+    score: 100
+    errors: 0
+    warnings: 0
+  - step: 2
+    passed: true
+    score: 85
+    errors: 0
+    warnings: 3
 metrics:
   - step: 1
     minutes: 13.6
+    toolCalls: 29
+    outputTokens: 69240
+    costUsd: 3.15
   - step: 2
     minutes: 14.3
+    toolCalls: 45
+    outputTokens: 72201
+    costUsd: 4.23
+benchmark:
+  prompt: boombox-mage
+  revision: 1
+  results:
+    - criterion: mage-validate
+      pass: true
+      note: "validate: Clean, score 100, no findings."
+    - criterion: mage-palette
+      pass: true
+      note: "palette op get returns exactly the 16 PICO-8 entries; every layer histogram uses only those colours."
+    - criterion: mage-read
+      pass: true
+      note: "Spiky orange hair, face, dark-blue coat, red scarf and a grey boombox with two pink round speakers are all distinct in the 4× preview."
+    - criterion: mage-spec
+      pass: false
+      note: "Measured OK: layers shadow/mage/boombox, facing right, soles on y=59, ink x 4–42, 46 px tall (head top y=14), light-blue trim on hem and cuffs, scarf trails left, pink speakers face the viewer, one pink note. But no hood is drawn anywhere, so \"hood down\" is not shown."
+    - criterion: mage-shading
+      pass: true
+      note: "Coat #1d2b53 with #83769c edge light and black folds; skin #ffccaa/#ab5236/#fff1e8; boombox #5f574f/#c2c3c7/#1d2b53/#7e2553. Upper-left light reads, though the coat highlight is thin (32 px)."
+    - criterion: attack-tagged
+      pass: true
+      note: "14 frames; one tag attack, frames 1–14, direction forward."
+    - criterion: attack-layers
+      pass: true
+      note: "Layers exactly shadow, mage, boombox, fx-charge, fx-flash, fx-wave, fx-particles. validate with expect.layerFrames fx-charge 1–5, fx-flash 6, fx-wave 7–14 (the ranges of the file's own cels; the run's reported frame plan was not compared) passes."
+    - criterion: attack-anticipation
+      pass: true
+      note: "Frame 2 lifts the boombox overhead, frame 3 points it forward, frames 3–5 hold a wide stance with a modest lean. Specks are sparse and scattered on frames 1–3 and tighten around the speakers on 4–5, so the convergence is weak but visible."
+    - criterion: attack-impact
+      pass: true
+      note: "Frame 6, 50 ms: mage, boombox and shadow cels are all #1d2b53; fx-flash fills the canvas with #ffec27/#fff1e8 radial streaks from the boombox."
+    - criterion: attack-wave
+      pass: true
+      note: "Frames 7–11: arc count grows 1, 2, 3, 4 with every arc moving right and a new small arc beside the speakers each frame; by frame 11 the leading arc has left the canvas. Not one arc copied and translated."
+    - criterion: attack-recoil
+      pass: true
+      note: "Mage min x goes 3 → 0 over frames 7–10 (3 px), boombox 37 → 34; grey dust at the feet on frames 8–12; scarf streams back; he returns toward x=3 on frames 13–14."
+    - criterion: attack-dissipate
+      pass: true
+      note: "Frames 12–14: arcs break into dashes and dots and fade pink → #7e2553 → #1d2b53; all seven layers have opacity 255."
+    - criterion: attack-timing
+      pass: true
+      note: "Anticipation 100/100/110/120, hold 260, impact 50, blast 60/60/60/60/70, recovery 110/140, last frame 400."
+    - criterion: attack-on-model
+      pass: true
+      note: "Proportions, outfit and colours hold on every non-impact frame in the filmstrip; validate raised no volume-drift finding."
+    - criterion: attack-validate
+      pass: true
+      note: "validate passed, score 85, 0 errors, 3 outline warnings on fx layers (deliberately outline-free); palette is still the 16 PICO-8 entries."

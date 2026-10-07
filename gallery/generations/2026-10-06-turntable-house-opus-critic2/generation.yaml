@@ -1,5 +1,5 @@
 title: Turntable cottage — critic loop, second version
-description: "An experiment run, not a benchmark row. Plugin 0.7.0 plus unreleased skill and agent changes from commit 3339cb4: The critic ran on Opus; each fix round snapshotted the layers it touched, fixes had to be local, and a round was reverted unless the critic's score rose. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the turntable-house step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text. Blind: the best house of every run, twice."
+description: "A benchmark run on an experimental variant of the skills, not on released plugin code: Plugin 0.7.0 plus unreleased skill and agent changes from commit 3339cb4: The critic ran on Opus; each fix round snapshotted the layers it touched, fixes had to be local, and a round was reverted unless the critic's score rose. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the turntable-house step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text. Blind: the best house of every run, twice."
 date: 2026-10-06
 author:
   name: Nik Fedorov
@@ -78,6 +78,7 @@ tags:
   - 128x128
   - pico-8
   - experiment
+  - benchmark
 files:
   - path: anim.gif
     role: cover
@@ -99,11 +100,28 @@ files:
     role: filmstrip
     label: Every frame, 2×
     step: 2
+validate:
+  - step: 1
+    passed: true
+    score: 95
+    errors: 0
+    warnings: 1
+  - step: 2
+    passed: true
+    score: 0
+    errors: 0
+    warnings: 20
 metrics:
   - step: 1
     minutes: 54.1
+    toolCalls: 158
+    outputTokens: 354383
+    costUsd: 18.14
   - step: 2
     minutes: 52.9
+    toolCalls: 236
+    outputTokens: 272424
+    costUsd: 18.78
 ratings:
   - judge: human:fedorovvvv
     scores:
@@ -113,3 +131,58 @@ ratings:
       cohesion: 3
       appeal: 3
     note: Overall 8/10, given as one number in a blind comparison; each axis set to round(8/10 × 4) = 3.
+benchmark:
+  prompt: turntable-house
+  revision: 2
+  results:
+    - criterion: house-validate
+      pass: true
+      note: validate passes with 0 errors; one outline warning on the plinth rim (66 edge px, the #00e436 highlight the brief itself asks for) and one note that the house has no outline, not errors.
+    - criterion: house-palette
+      pass: true
+      note: palette op get returns exactly the 16 PICO-8 entries; every drawn colour (13 used) is on it.
+    - criterion: house-read
+      pass: false
+      note: Roof, chimney, plinth, timber framing and the firewood pile read, but the porch door is a cream gap between two posts rather than a brown plank door, and the flower box is about 3 pink pixels on the left window.
+    - criterion: house-spec
+      pass: true
+      note: Layers ground/shadow/house; front wall left, right gable right; near bottom corner at (67-68, 102) so footprint centre is on the pivot; plinth x 8-119 by y 62-121 (112 px wide, 2:1); chimney on back slope near right gable; door in the front wall.
+    - criterion: house-geometry
+      pass: true
+      note: Verticals are vertical, wall and roof edges run parallel, the roof sits squarely on the walls.
+    - criterion: house-light
+      pass: false
+      note: The shadow is right, toward the viewer, attached and wholly on the plinth, but the walls have only two face tones (#ffccaa front, #ab5236 gable) plus timber lines, short of the 3 wall tones the brief asks for.
+    - criterion: spin-tagged
+      pass: true
+      note: 16 frames, all 125 ms; one tag spin, frames 1-16, forward.
+    - criterion: spin-ground
+      pass: true
+      note: All 16 ground cels are linked.
+    - criterion: spin-pivot
+      pass: true
+      note: The house bounding box is centred on x 62-66 and its bottom edge stays at y 97-103 on all frames; no drift or bob.
+    - criterion: spin-even
+      pass: true
+      note: Front face-on on frame 3, left gable on 7, back on 11, right gable on 15; frames 5, 9, 13 are three-quarter views; the front wall slides right from frame 1 to 3, so the turn is counter-clockwise; frame-to-frame change is even.
+    - criterion: spin-volume
+      pass: true
+      note: Silhouette width follows the turn symmetrically (57, 57, 51, 57, 57, 46, 35, 46 and the same again); wall and ridge height look constant, chimney height varies only with the parallax of the back slope.
+    - criterion: spin-solid
+      pass: false
+      note: Frame 9 is not a mirror of frame 1 (2098 px differ from the mirrored frame), but the back wall shows only two windows, one with green shutters like the front, instead of three square blue windows, and on frame 11 the rain barrel floats detached from the wall.
+    - criterion: spin-occlusion
+      pass: true
+      note: Porch and door disappear when the front faces away; the chimney base is hidden behind the ridge on frames 3 and 7; barrel and firewood only appear on their sides.
+    - criterion: spin-light
+      pass: true
+      note: Faces turned toward the left lit side are the lightest and re-shade as they turn (cream to brown, roof red to #7e2553); the same view direction (frames 3, 7, 11, 15) gives the same wall tone, so the shading follows the light, not the box.
+    - criterion: spin-shadow
+      pass: true
+      note: Shadow falls right and toward the viewer on every frame, is attached to the base, and sits wholly on the plinth (0 px off); its size and outline change (1066-1210 px, right edge x 91-108).
+    - criterion: spin-seamless
+      pass: false
+      note: Frame 16 to 1 changes about as much as 1 to 2 (1950 vs 1997 px), but frame 1 does not match the step-1 export - the cottage was redrawn, 1201 px of the composite differ (porch, front wall, firewood).
+    - criterion: spin-validate
+      pass: true
+      note: validate passes with 0 errors (outline warning on the plinth only); palette is still the 16 PICO-8 entries.

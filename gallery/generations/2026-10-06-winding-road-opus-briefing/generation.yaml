@@ -1,5 +1,5 @@
 title: Winding road and its ambient loop — craft-briefing experiment
-description: "An experiment run, not a benchmark row. Plugin 0.7.0 plus unreleased skill and agent changes from commit 3af65fb: A hook put the `## Essentials` digest of three to six subject rule files into context before the first turn. The owner judged the results worse than plain 0.7.0, and the hook was reverted. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the winding-road step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text."
+description: "A benchmark run on an experimental variant of the skills, not on released plugin code: Plugin 0.7.0 plus unreleased skill and agent changes from commit 3af65fb: A hook put the `## Essentials` digest of three to six subject rule files into context before the first turn. The owner judged the results worse than plain 0.7.0, and the hook was reverted. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the winding-road step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text."
 date: 2026-10-06
 author:
   name: Nik Fedorov
@@ -65,6 +65,7 @@ tags:
   - 160x96
   - pico-8
   - experiment
+  - benchmark
 files:
   - path: anim.gif
     role: cover
@@ -86,8 +87,69 @@ files:
     role: filmstrip
     label: Every frame, 2×
     step: 2
+validate:
+  - step: 1
+    passed: true
+    errors: 0
+    warnings: 0
+  - step: 2
+    passed: true
+    errors: 0
+    warnings: 0
 metrics:
   - step: 1
     minutes: 23.4
+    toolCalls: 45
+    outputTokens: 123548
+    costUsd: 5.75
   - step: 2
     minutes: 22.9
+    toolCalls: 77
+    outputTokens: 83478
+    costUsd: 6.17
+benchmark:
+  prompt: winding-road
+  revision: 1
+  results:
+    - criterion: land-validate
+      pass: true
+      note: "validate on step1.aseprite: clean, 0 errors, 0 warnings (outline notes only)."
+    - criterion: land-palette
+      pass: true
+      note: "palette op get returns exactly the 16 PICO-8 entries; a pixel scan of every exported layer finds no off-palette or semi-transparent pixel."
+    - criterion: land-read
+      pass: true
+      note: "Road reads from the bottom edge to the castle; castle, farmhouse, windmill and river are clear; the bridge is a small grey arch at about (35-48,72-79), small but readable."
+    - criterion: land-spec
+      pass: true
+      note: "Nine layers with the exact names in the stated order; sky ends at y=33 and hills start at y=34; sun rim spans x139-149, y15-25 on the right; river enters at the left edge y43-45 and leaves at the bottom, x18-31; windmill has 4 blades."
+    - criterion: land-road
+      pass: false
+      note: "Enters at the bottom 60 px wide (x50-109), hides behind a hill between y44 and y41, and has 4+ switchbacks, but the far road is 2 px wide on every row and the end at (111-112,19) is 2 px, not 1 px."
+    - criterion: land-depth
+      pass: true
+      note: "Posts shrink and bunch along the near road; far road thins to a line; mountains use only #29adff, #83769c, #fff1e8, #ffccaa and castle only #1d2b53, #83769c, #ffccaa; #000000 only on rows 87-95 (hills, props, foreground)."
+    - criterion: loop-frames
+      pass: true
+      note: "frame op list: 24 frames of 100 ms; tag op list: loop, frames 1-24, forward."
+    - criterion: loop-seamless
+      pass: true
+      note: "Pixels changed between consecutive frames (all layers except wagon) are 127-209 per step and 144 for frame 24 to 1; wagon is absent on frames 1 and 24; river and smoke repeat every 8, windmill every 6, foreground every 12."
+    - criterion: loop-static
+      pass: true
+      note: "sky, mountains, castle, hills, road and props: one distinct image across all 24 frames (hash-identical exported cels)."
+    - criterion: loop-windmill
+      pass: true
+      note: "Blade orientation (4-fold moment) advances 13-17 degrees per frame clockwise around a fixed hub at about (26,28), 6 distinct images, period 6; reach 8.1-9.2 px at every angle."
+    - criterion: loop-river
+      pass: true
+      note: "8 distinct river images, period 8; glints move on average 0.29 px/frame down-screen (toward the viewer); no #1d2b53 bank pixel changes against frame 1."
+    - criterion: loop-smoke
+      pass: true
+      note: "Puff leaves the chimney near (15,24), rises to y=4-8 and drifts left while the pixel count grows from 24 to 33 and thins; 8 distinct images, period 8 gives a new puff every 8 frames. Wisps are small; judged from rendered frames."
+    - criterion: loop-wagon
+      pass: true
+      note: "Hidden on frame 1; peeks as 4 px wide at (74-77,43-44) on frame 2, stays on the road, passes the bridge area on frames 16-18, 16 px wide on frame 22, gone on frame 24; step grows from about 3.6 to 9.7 px per frame."
+    - criterion: loop-validate
+      pass: true
+      note: "validate on step2.aseprite: clean, 0 errors, 0 warnings; palette is the 16 PICO-8 entries."

@@ -1,5 +1,5 @@
 title: Winding road and its ambient loop — critic loop, third version
-description: "An experiment run, not a benchmark row. Plugin 0.7.0 plus unreleased skill and agent changes from commit 738aeb4: A draft with no BLOCKING finding shipped as it was; a fix round was kept only if one critic call, shown the old and new versions blind, chose the new one; a fix touching more than a quarter of a layer counted as a redraw and was restored; objects that grow on screen were drawn at three or four hand-made sizes. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the winding-road step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text. Blind: the most balanced of three road runs; the mountains look odd and the wagon slightly misses its path."
+description: "A benchmark run on an experimental variant of the skills, not on released plugin code: Plugin 0.7.0 plus unreleased skill and agent changes from commit 738aeb4: A draft with no BLOCKING finding shipped as it was; a fix round was kept only if one critic call, shown the old and new versions blind, chose the new one; a fix touching more than a quarter of a layer counted as a redraw and was restored; objects that grow on screen were drawn at three or four hand-made sizes. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the winding-road step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text. Blind: the most balanced of three road runs; the mountains look odd and the wagon slightly misses its path."
 date: 2026-10-07
 author:
   name: Nik Fedorov
@@ -65,6 +65,7 @@ tags:
   - 160x96
   - pico-8
   - experiment
+  - benchmark
 files:
   - path: anim.gif
     role: cover
@@ -86,11 +87,26 @@ files:
     role: filmstrip
     label: Every frame, 2×
     step: 2
+validate:
+  - step: 1
+    passed: true
+    errors: 0
+    warnings: 2
+  - step: 2
+    passed: true
+    errors: 0
+    warnings: 0
 metrics:
   - step: 1
     minutes: 40.8
+    toolCalls: 119
+    outputTokens: 215787
+    costUsd: 12.78
   - step: 2
     minutes: 26.1
+    toolCalls: 151
+    outputTokens: 123508
+    costUsd: 10.05
 ratings:
   - judge: human:fedorovvvv
     scores:
@@ -100,3 +116,49 @@ ratings:
       cohesion: 2
       appeal: 2
     note: Overall 4/10, given as one number in a blind comparison; each axis set to round(4/10 × 4) = 2.
+benchmark:
+  prompt: winding-road
+  revision: 1
+  results:
+    - criterion: land-validate
+      pass: true
+      note: "validate on step1.aseprite: 0 errors, 2 outline warnings on the mountains and river edges (dithered edges, not silhouettes)."
+    - criterion: land-palette
+      pass: true
+      note: "palette op get returns exactly the 16 PICO-8 entries; a pixel scan of every exported layer finds no off-palette or semi-transparent pixel."
+    - criterion: land-read
+      pass: true
+      note: "Road, castle, farmhouse, windmill and bridge read; the river is a broken dashed line in the upper half and only reads clearly in the lower left."
+    - criterion: land-spec
+      pass: true
+      note: "Nine layers with the exact names in the stated order; sky ends at y=34 and hills start at y=35 (within 1); sun rim spans x140-148, y16-24 on the right; river enters at the left edge y44 and leaves at the bottom, x2-27; windmill has 4 blades."
+    - criterion: land-road
+      pass: true
+      note: "61 px wide at the bottom (x51-111); hidden behind a hill between y47 and y41; ends at 1 px at (117,20); the switchbacks are one long diagonal leg then three short zigzags only 3-5 px wide, so the count of 3 is marginal."
+    - criterion: land-depth
+      pass: true
+      note: "Posts shrink and bunch along the near road; mountains use only lavender, blue and peach and castle only #1d2b53, #83769c, #ffccaa, #fff1e8; #000000 appears only in props (rows 72-94) and foreground (rows 81-95)."
+    - criterion: loop-frames
+      pass: true
+      note: "frame op list: 24 frames of 100 ms; tag op list: loop, frames 1-24, forward."
+    - criterion: loop-seamless
+      pass: true
+      note: "Pixels changed between consecutive frames (all layers except wagon) are 156-272 per step and 167 for frame 24 to 1; wagon is absent on frames 1 and 24; river repeats every 12, windmill every 6, foreground every 12, smoke every 8."
+    - criterion: loop-static
+      pass: true
+      note: "sky, mountains, castle, hills, road and props: one distinct image across all 24 frames (hash-identical exported cels)."
+    - criterion: loop-windmill
+      pass: true
+      note: "Blade orientation advances 13.6-16 degrees per frame clockwise around a fixed hub at about (24,27), 6 distinct images, period 6; reach 8.2-9.0 px at every angle."
+    - criterion: loop-river
+      pass: true
+      note: "12 distinct river images, period 12; glints move on average 0.61 px/frame down-screen (toward the viewer); no #1d2b53 bank pixel changes against frame 1."
+    - criterion: loop-smoke
+      pass: true
+      note: "Pale grey puffs leave the chimney near y=28, rise to y=4 and drift left while the pixel count grows from 37 to 50 and breaks into dither; 8 distinct images, period 8. Wisps are faint; judged from rendered frames."
+    - criterion: loop-wagon
+      pass: true
+      note: "Hidden on frame 1; emerges as a 1 px sliver on frame 2 and reaches 4-5 px wide by frame 4 at (42-46,44-48), stays on the road, over the bridge area on frames 14-22, 17 px wide on frame 22, gone on frame 24; step grows from 1.0 to 9.9 px per frame."
+    - criterion: loop-validate
+      pass: true
+      note: "validate on step2.aseprite: clean, 0 errors, 0 warnings; palette is the 16 PICO-8 entries."

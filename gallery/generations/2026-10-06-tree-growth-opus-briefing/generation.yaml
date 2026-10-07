@@ -1,5 +1,5 @@
 title: Cherry tree from seed to bloom — craft-briefing experiment
-description: "An experiment run, not a benchmark row. Plugin 0.7.0 plus unreleased skill and agent changes from commit 3af65fb: A hook put the `## Essentials` digest of three to six subject rule files into context before the first turn. The owner judged the results worse than plain 0.7.0, and the hook was reverted. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the tree-growth step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text."
+description: "A benchmark run on an experimental variant of the skills, not on released plugin code: Plugin 0.7.0 plus unreleased skill and agent changes from commit 3af65fb: A hook put the `## Essentials` digest of three to six subject rule files into context before the first turn. The owner judged the results worse than plain 0.7.0, and the hook was reverted. Each step ran in its own fresh omp session (claude-opus-5-5, thinking high), launched through Herdr one after another, with the tree-growth step text sent verbatim after the `/skill:studio ` command prefix; the operator created the document and loaded PICO-8 before step 1 and handed step 2 a copy of the saved step-1 file. omp's built-in advisor was on, as in the earlier omp runs. No image model, no reference, no messages beyond the step text."
 date: 2026-10-06
 author:
   name: Nik Fedorov
@@ -62,6 +62,7 @@ tags:
   - nature
   - animation
   - growth
+  - benchmark
   - 64x64
   - pico-8
   - experiment
@@ -86,8 +87,68 @@ files:
     role: filmstrip
     label: Every frame, 2×
     step: 2
+validate:
+  - step: 1
+    passed: true
+    score: 100
+    errors: 0
+    warnings: 0
+  - step: 2
+    passed: true
+    score: 60
+    errors: 0
+    warnings: 8
 metrics:
   - step: 1
     minutes: 5.9
+    toolCalls: 26
+    outputTokens: 28747
+    costUsd: 1.83
   - step: 2
     minutes: 11.8
+    toolCalls: 52
+    outputTokens: 67760
+    costUsd: 3.91
+benchmark:
+  prompt: tree-growth
+  revision: 1
+  results:
+    - criterion: tree-validate
+      pass: true
+      note: "validate passes: score 100, 0 errors, 0 warnings (three 'not outlined' style notes only)."
+    - criterion: tree-palette
+      pass: true
+      note: "palette op get returns exactly the 16 PICO-8 entries; all pixels on-palette."
+    - criterion: tree-read
+      pass: true
+      note: "Trunk, branches and three pink masses read at a glance in the 4× export."
+    - criterion: tree-spec
+      pass: false
+      note: "Layers ground/trunk/canopy, ground y56–63, trunk 4 px wide at y50–53 on x29–32, three branches fork at y≈34–36 and each twigs again, canopy x8–56, y6–36; but the left and centre masses touch, so the canopy is one connected silhouette with no gap between them, and the trunk 4 px column sits on x29–32 rather than x30–33."
+    - criterion: tree-shading
+      pass: true
+      note: "Cream highlights on the upper left of each mass, #7e2553 shadow on the lower right and underneath; clumps rather than single-pixel noise; validate reports no strays."
+    - criterion: grow-tagged
+      pass: true
+      note: "21 frames; tag grow 1–21, direction forward."
+    - criterion: grow-final
+      pass: true
+      note: "Frame 21 composite and the ground, trunk and canopy cels are pixel-identical to step1.aseprite (0 differing pixels); fx has no pixels on frame 21."
+    - criterion: grow-stages
+      pass: true
+      note: "Filmstrip: seed, cracked soil and crumbs, green stem with seed leaves, bark-coloured sapling with side branches, thickening young tree with green masses, buds on the green (frames 15–16), bloom spreading with petals."
+    - criterion: grow-continuous
+      pass: true
+      note: "Trunk layer never loses a branch pixel and every pixel from frame 8 on lies inside the final trunk; the only removal is the 2×2 seed drawn on the trunk layer, which disappears at frame 7 (4 px outside the final trunk on frames 1–6)."
+    - criterion: grow-ground
+      pass: true
+      note: "Ground cel identical on all 21 frames; trunk base on x30–33 from frame 10 (x31–32 for seed and stem), roots widen it to x27–36 only on the final tree's own flare."
+    - criterion: grow-easing
+      pass: true
+      note: "Composite change 0.0–0.8% for frames 2–9, peak 6.1% at frame 12, 2.2–1.8% around frames 15–17; the bloom bumps to 5.3% at frame 18 before settling to 2.0% on the last step."
+    - criterion: grow-timing
+      pass: true
+      note: "Seed frames 500/500 ms, growth frames 80–150 ms, final frame 2000 ms."
+    - criterion: grow-validate
+      pass: true
+      note: "validate passes, 0 errors, 8 outline warnings on partial-growth frames that the agent called expected for unoutlined intermediate stages; palette is the 16 PICO-8 entries."
