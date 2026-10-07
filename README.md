@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/media/rainy-bookshop.gif" alt="A rainy night in Japan: a raccoon pulls a can from a vending machine, lightning flashes over the rooftops, maple leaves blow past an old bookshop where someone in a hoodie reads and sips coffee in warm lamplight" width="768">
+<img src="docs/media/rainy-bookshop.gif" alt="A rainy night in Japan, filmed by a slowly swaying camera through layers of rain: a raccoon pulls a can from a vending machine, lightning flashes over the rooftops, maple leaves blow past an old bookshop where a girl in a big knit sweater reads and sips cocoa in warm lamplight" width="768">
 
 # Aseprite AI Artist
 
@@ -13,7 +13,7 @@ The document on your screen, one pixel at a time — and every step is one Ctrl+
 [![CI](https://github.com/with-pebbly/aseprite-ai-artist/actions/workflows/ci.yml/badge.svg)](https://github.com/with-pebbly/aseprite-ai-artist/actions/workflows/ci.yml)
 [![licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
-<sub>☔ 500×400 · 72 frames · 20 layers — drawn by <b>Claude Opus 5.5</b> through this server.</sub>
+<sub>☔ 500×400 · 384 frames at 24 fps · 16 s · 23 layers — drawn by <b>Claude Opus 5.5</b> through this server.</sub>
 
 **[Install](#-install)** · **[How it draws](#-how-it-draws)** · **[Skills](#-skills)** · **[Gallery](https://pixeli.pebbly.space/)**
 
