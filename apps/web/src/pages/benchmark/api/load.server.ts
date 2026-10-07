@@ -13,7 +13,14 @@ export function load({ params }: { params: { prompt: string } }): BenchmarkPageD
 	const runs = generations.filter(
 		(generation) => generation.benchmark?.prompt === benchmark.prompt.id
 	);
-	const summaries = runs.map((run) => summary(run, prompts));
+	// Every run, best first by the same points the hero ranks by, so a card's place matches its
+	// score; runs without points (an older revision) go last, newest first among themselves.
+	const summaries = runs
+		.map((run) => summary(run, prompts))
+		.sort(
+			(a, b) =>
+				(b.points ?? -1) - (a.points ?? -1) || b.date.localeCompare(a.date) || b.id.localeCompare(a.id)
+		);
 	const view = benchmarkView(benchmark, promptView(benchmark.prompt));
 	const byId = new Map(summaries.map((run) => [run.id, run]));
 	// `models` is already strongest first; each model is shown by its best cell across plugin

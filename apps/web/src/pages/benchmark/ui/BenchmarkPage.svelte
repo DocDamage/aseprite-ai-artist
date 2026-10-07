@@ -168,8 +168,8 @@ test works comes last, for whoever wants to check it. -->
 				{/if}
 			</div>
 			<p class="mt-4 text-sm text-muted-foreground">
-				{plural(runs.length, 'run')} of this prompt, newest first. Runs on an older revision are marked
-				unranked.
+				{plural(runs.length, 'run')} of this prompt, highest score first. Runs on an older revision are
+				marked unranked and come last.
 			</p>
 			<div class="mt-8">
 				<GalleryGrid
