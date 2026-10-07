@@ -118,6 +118,7 @@ ratings:
       cohesion: 2
       appeal: 2
     note: Overall 5/10, given as one number on the rating page of 2026-10-07; each axis set to round(5/10 × 4) = 2.
+    overall: 5
 benchmark:
   prompt: tree-growth
   revision: 1

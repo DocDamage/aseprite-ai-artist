@@ -62,7 +62,7 @@ export interface Score {
 }
 
 /** Relative weights of the composite score; they sum to 1. */
-export const scoreWeights = { compliance: 0.5, craft: 0.35, speed: 0.15 } as const;
+export const scoreWeights = { compliance: 0.35, craft: 0.5, speed: 0.15 } as const;
 
 export interface ScoreComponents {
   /** Criteria passed ÷ total, 0–1. */
@@ -323,6 +323,9 @@ export function inspectGallery(root: string = DEFAULT_GALLERY_ROOT): LoadResult 
 
   const benchmarks = prompts.map((prompt) => buildBenchmark(prompt, generations, releases));
   const leaderboard = buildLeaderboard(benchmarks);
+  // Members are shown best-first by score, so the order in pack.yaml does not matter and the
+  // cover (generations[0]) is the pack's best run. Scored runs by compareRuns, unscored newest first.
+  for (const pack of packs) pack.generations.sort(comparePackMembers);
 
   return { gallery: { root: galleryRoot, releases, prompts, generations, packs, benchmarks, leaderboard }, problems };
 }
@@ -409,6 +412,13 @@ function readPacks(
 
   // The same order as generations: newest first, then id descending.
   return packs.sort((a, b) => (a.date === b.date ? b.id.localeCompare(a.id) : b.date.localeCompare(a.date)));
+}
+
+function comparePackMembers(a: Generation, b: Generation): number {
+  if (a.points !== null && b.points !== null) return compareRuns(a, b);
+  if (a.points !== null) return -1;
+  if (b.points !== null) return 1;
+  return b.date === a.date ? b.id.localeCompare(a.id) : b.date.localeCompare(a.date);
 }
 
 function readReleases(changelogPath: string, problems: Problem[]): PluginRelease[] {
@@ -673,6 +683,7 @@ function craftOf(ratings: Rating[]): Craft | null {
     if (given.length > 0) axes[axis] = given.reduce((sum, value) => sum + value, 0) / given.length;
   }
   const perJudge = ratings.map((rating) => {
+    if (rating.overall !== undefined) return rating.overall / 10;
     const values = Object.values(rating.scores);
     return values.reduce((sum, value) => sum + value, 0) / values.length / 4;
   });

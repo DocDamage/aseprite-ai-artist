@@ -298,7 +298,7 @@ test('the leaderboard takes each model at its best cell and ranks by it', () => 
     const { leaderboard } = inspectGallery(root).gallery;
     assert.deepEqual(
       leaderboard.map((entry) => [entry.modelLabel, entry.score, entry.benchmarks, entry.runs]),
-      [['model-x', 59, 1, 2], ['model-y', 0, 1, 1]],
+      [['model-x', 41, 1, 2], ['model-y', 0, 1, 1]],
     );
     assert.equal(leaderboard[0]!.best.knight!.plugin, '0.3.1', 'the older version held the better run');
   } finally {
@@ -322,7 +322,7 @@ test('a benchmark a model never ran counts against it in the leaderboard', () =>
     assert.deepEqual(result.problems.filter((p) => p.level === 'error'), []);
     assert.deepEqual(
       result.gallery.leaderboard.map((e) => [e.modelLabel, e.score, e.benchmarks]),
-      [['all-rounder', 44, 2], ['one-trick', 29.5, 1]],
+      [['all-rounder', 31, 2], ['one-trick', 20.5, 1]],
     );
   } finally {
     cleanup();
@@ -343,13 +343,13 @@ test('leaderboard history replays each day from the model\'s first run, keeping 
     assert.deepEqual(errorsOf(result), []);
     const history = Object.fromEntries(result.gallery.leaderboard.map((entry) => [entry.modelLabel, entry.history]));
     assert.deepEqual(history['model-x'], [
-      { date: '2026-09-28', score: 59, benchmarks: 1, ran: true },
-      { date: '2026-09-29', score: 59, benchmarks: 1, ran: true },
-      { date: '2026-09-30', score: 59, benchmarks: 1, ran: false },
+      { date: '2026-09-28', score: 41, benchmarks: 1, ran: true },
+      { date: '2026-09-29', score: 41, benchmarks: 1, ran: true },
+      { date: '2026-09-30', score: 41, benchmarks: 1, ran: false },
     ], 'a worse later run does not lower the line, and a day without runs carries it');
     assert.deepEqual(history['model-y'], [
       { date: '2026-09-29', score: 0, benchmarks: 1, ran: true },
-      { date: '2026-09-30', score: 29, benchmarks: 1, ran: true },
+      { date: '2026-09-30', score: 21, benchmarks: 1, ran: true },
     ], 'the line starts on the model\'s first run, not the suite\'s');
     for (const entry of result.gallery.leaderboard) assert.equal(entry.history.at(-1)!.score, entry.score);
   } finally {
@@ -357,22 +357,23 @@ test('leaderboard history replays each day from the model\'s first run, keeping 
   }
 });
 
-test('points weigh criteria 50%, craft 35% and speed 15%, rounded to an integer 0–100', () => {
+test('points weigh criteria 35%, craft 50% and speed 15%, rounded to an integer 0–100', () => {
   const full = { compliance: 1, craft: 1, speed: 1, minutes: 10 };
   assert.equal(pointsOf(full), 100);
   assert.equal(pointsOf({ compliance: 0, craft: 0, speed: 0, minutes: 10 }), 0);
-  assert.equal(pointsOf({ compliance: 1, craft: 0, speed: 0, minutes: 10 }), 50);
-  assert.equal(pointsOf({ compliance: 0, craft: 1, speed: 0, minutes: 10 }), 35);
+  assert.equal(pointsOf({ compliance: 1, craft: 0, speed: 0, minutes: 10 }), 35);
+  assert.equal(pointsOf({ compliance: 0, craft: 1, speed: 0, minutes: 10 }), 50);
   assert.equal(pointsOf({ compliance: 0, craft: 0, speed: 1, minutes: 5 }), 15);
-  assert.equal(pointsOf({ compliance: 0.5, craft: 0, speed: 0.5, minutes: 20 }), 33, '32.5 rounds up');
+  assert.equal(pointsOf({ compliance: 0.5, craft: 0, speed: 0.5, minutes: 20 }), 25);
+  assert.equal(pointsOf({ compliance: 0.5, craft: 0.5, speed: 0.1, minutes: 20 }), 44, '43.5 rounds up');
   assert.equal(scoreComponents({ score: { passed: 1, total: 2 }, craft: null }, 20, 10).speed, 0.5, 'fastest ÷ own minutes');
   assert.equal(scoreComponents({ score: { passed: 1, total: 2 }, craft: null }, 10, 10).speed, 1, 'the fastest run gets 1');
 });
 
 test('a run with no recorded time is scored on criteria and craft alone, rescaled to 0–100', () => {
   assert.equal(pointsOf({ compliance: 1, craft: 1, speed: 0, minutes: null }), 100);
-  assert.equal(pointsOf({ compliance: 1, craft: 0, speed: 0, minutes: null }), 59, '50 / 85');
-  assert.equal(pointsOf({ compliance: 0, craft: 1, speed: 0, minutes: null }), 41, '35 / 85');
+  assert.equal(pointsOf({ compliance: 1, craft: 0, speed: 0, minutes: null }), 41, '35 / 85');
+  assert.equal(pointsOf({ compliance: 0, craft: 1, speed: 0, minutes: null }), 59, '50 / 85');
   // Unmeasured beats a slow measured run with the same criteria and craft, and loses to a fast one.
   const unmeasured = pointsOf({ compliance: 0.8, craft: 0.5, speed: 0, minutes: null });
   assert.ok(pointsOf({ compliance: 0.8, craft: 0.5, speed: 0.2, minutes: 50 }) < unmeasured);
@@ -397,7 +398,7 @@ test('speed is relative to the fastest fully measured current run', () => {
     assert.equal(byModel.partial!.components!.minutes, null);
     assert.deepEqual(
       [byModel.fast!.points, byModel.slow!.points, byModel.partial!.points, byModel.none!.points],
-      [40, 33, 29, 29],
+      [33, 25, 21, 21],
       'untimed runs are scored on criteria and craft alone',
     );
   } finally {
@@ -423,6 +424,42 @@ test('a benchmark run from someone outside MAINTAINERS is refused; a free genera
 });
 
 const STILL = { read: 3, form: 2, cohesion: 4, appeal: 3 };
+
+test('a rating with overall counts that, not the axis mean; axes still feed the per-axis display', () => {
+  const { root, cleanup } = makeRepo({
+    '2026-09-29-a': generation({ models: ['model-x'], ratings: [{ judge: 'human:tester', scores: { read: 4, form: 4, cohesion: 4, appeal: 4 }, overall: 5 }] }),
+    '2026-09-29-b': generation({
+      models: ['model-y'],
+      ratings: [
+        { judge: 'human:tester', scores: { read: 4, form: 4, cohesion: 4, appeal: 4 }, overall: 7 },
+        { judge: 'human:second', scores: { read: 4, form: 4, cohesion: 4, appeal: 4 } },
+      ],
+    }),
+  });
+  try {
+    const result = inspectGallery(root);
+    assert.deepEqual(errorsOf(result), []);
+    const a = result.gallery.generations.find((g) => g.id === '2026-09-29-a')!;
+    assert.equal(a.craft!.score, 0.5, 'overall 5/10, not the axis mean 1');
+    assert.equal(a.craft!.axes.read, 4);
+    const b = result.gallery.generations.find((g) => g.id === '2026-09-29-b')!;
+    assert.equal(b.craft!.score, (0.7 + 1) / 2, 'a judge without overall still counts their axis mean');
+  } finally {
+    cleanup();
+  }
+});
+
+test('overall must be an integer from 0 to 10', () => {
+  const { root, cleanup } = makeRepo({
+    '2026-09-29-a': generation({ ratings: [{ judge: 'human:tester', scores: { read: 1, form: 1, cohesion: 1, appeal: 1 }, overall: 11 }] }),
+    '2026-09-29-b': generation({ ratings: [{ judge: 'human:tester', scores: { read: 1, form: 1, cohesion: 1, appeal: 1 }, overall: 6.5 }] }),
+  });
+  try {
+    assert.equal(errorsOf(inspectGallery(root)).length >= 2, true);
+  } finally {
+    cleanup();
+  }
+});
 
 test('craft averages human judges over their axes and ignores model judges', () => {
   const { root, cleanup } = makeRepo({
@@ -504,7 +541,7 @@ test('without a packs folder there are no packs and no error', () => {
   }
 });
 
-test('a pack lists its members in file order, back-references them and sorts by newest member', () => {
+test('a pack back-references its members and sorts by newest member', () => {
   const { root, cleanup } = makeRepo({
     '2026-09-29-a': generation(),
     '2026-09-30-b': generation({ date: '2026-09-30' }),
@@ -524,7 +561,7 @@ test('a pack lists its members in file order, back-references them and sorts by 
     assert.deepEqual(packs.map((p) => p.id), ['mid', 'zz', 'aa'], 'newest member first, ties by id descending like generations');
     assert.deepEqual(packs.map((p) => p.date), ['2026-10-01', '2026-09-30', '2026-09-30'], "a pack's date is its newest member's");
     const zz = packs.find((p) => p.id === 'zz')!;
-    assert.deepEqual(zz.generations.map((g) => g.id), ['2026-09-29-a', '2026-09-30-b'], 'pack.yaml order, not date order');
+    assert.deepEqual(zz.generations.map((g) => g.id), ['2026-09-30-b', '2026-09-29-a'], 'equal scores: newer first, not pack.yaml order');
     assert.equal(zz.title, 'Zed');
     assert.equal(zz.description, 'Oldest listed first.');
     const packOf = Object.fromEntries(generations.map((g) => [g.id, g.pack]));
@@ -533,7 +570,7 @@ test('a pack lists its members in file order, back-references them and sorts by 
     assert.equal(packOf['2026-09-30-c'], 'aa');
     assert.equal(packOf['2026-10-01-e'], 'mid');
     assert.equal(packOf['2026-09-29-loose'], null);
-    assert.equal(zz.generations[0], generations.find((g) => g.id === '2026-09-29-a'), 'members are the loaded generations');
+    assert.equal(zz.generations[1], generations.find((g) => g.id === '2026-09-29-a'), 'members are the loaded generations');
   } finally {
     cleanup();
   }
@@ -554,6 +591,28 @@ test('a pack needs two members, a title and no unknown fields', () => {
     assert.ok(where('badid').some((m) => /generation folder name/.test(m)));
     assert.deepEqual(result.gallery.packs, []);
     assert.ok(result.gallery.generations.every((g) => g.pack === null));
+  } finally {
+    cleanup();
+  }
+});
+
+test('a pack shows its members best-first by points; unscored runs come last, newest first', () => {
+  const rate = (overall: number) => [{ judge: 'human:tester', scores: { read: 1, form: 1, cohesion: 1, appeal: 1 }, overall }];
+  const { root, cleanup } = makeRepo({
+    '2026-09-29-low': generation({ models: ['m1'], ratings: rate(2) }),
+    '2026-09-29-high': generation({ models: ['m2'], ratings: rate(9) }),
+    '2026-09-29-mid': generation({ models: ['m3'], ratings: rate(5) }),
+    '2026-09-30-free': generation({ date: '2026-09-30', benchmark: undefined }),
+    '2026-10-01-free': generation({ date: '2026-10-01', benchmark: undefined }),
+  });
+  try {
+    writePack(root, 'p', { title: 'P', generations: ['2026-09-30-free', '2026-09-29-low', '2026-10-01-free', '2026-09-29-mid', '2026-09-29-high'] });
+    const result = inspectGallery(root);
+    assert.deepEqual(errorsOf(result), []);
+    assert.deepEqual(
+      result.gallery.packs[0]!.generations.map((g) => g.id),
+      ['2026-09-29-high', '2026-09-29-mid', '2026-09-29-low', '2026-10-01-free', '2026-09-30-free'],
+    );
   } finally {
     cleanup();
   }

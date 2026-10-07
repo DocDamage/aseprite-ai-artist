@@ -57,7 +57,7 @@
 	<section aria-labelledby="leaderboard">
 		<h2 id="leaderboard" class="section-title text-lg sm:text-2xl">Leaderboard</h2>
 		<p class="mt-4 max-w-[70ch] text-sm text-muted-foreground">
-			Score is 0–100: 50% criteria passed, 35% craft from human judges, 15% speed relative to the
+			Score is 0–100: 35% criteria passed, 50% craft from human judges, 15% speed relative to the
 			fastest run of each benchmark. A run with no recorded time is scored on criteria and craft
 			alone. Each model's best run per benchmark counts, averaged over every benchmark; unrated
 			craft and benchmarks it has not run count as 0.

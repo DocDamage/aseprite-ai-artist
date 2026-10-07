@@ -107,6 +107,7 @@ metrics:                                 # optional: what each step cost, from t
 ratings:                                 # optional: blind craft scores, see RUBRIC.md
   - judge: human:ada                     # human:<github login> or model:<model id>
     scores: { read: 3, form: 2, motion: 3, cohesion: 4, appeal: 2 }   # 0–4 each
+    overall: 6                           # optional 0–10: your own overall score; counts as craft instead of the axis mean
     note: Arcs read well; the coat loses its shading on the recoil frames.
 benchmark:                               # only for benchmark runs
   prompt: boombox-mage                   # a folder name under gallery/prompts/

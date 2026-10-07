@@ -184,6 +184,13 @@ export const ratingSchema = z.strictObject({
     cohesion: axisScore,
     appeal: axisScore,
   }),
+  /**
+   * The judge's own 0–10 overall score. The axes above are 0–4 integers, which
+   * cannot hold a 0–10 score without collapsing neighbours (4 and 5 both
+   * round to 2/4), so when present it is the judge's craft score and the axes
+   * only feed the per-axis display.
+   */
+  overall: z.number().int().min(0).max(10).optional(),
   note: line.optional(),
 });
 

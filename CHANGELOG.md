@@ -6,6 +6,17 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **Benchmark score: craft counts most.** The composite is now 50% craft from
+  human judges, 35% criteria passed, 15% speed (was 50% criteria, 35% craft,
+  15% speed). A rating may carry the judge's own `overall` (0–10 integer), which
+  replaces the axis mean as their craft score — the 0–4 axes could not hold a
+  0–10 score without merging neighbours (4 and 5, 7 and 8). The existing
+  `human:fedorovvvv` overall scores are migrated to it.
+- **Packs sort by score.** A pack's cards, and so its cover, are ordered
+  best-first by score; the order in `pack.yaml` no longer matters.
+
 ## [0.8.0] — 2026-10-07
 
 ### Added

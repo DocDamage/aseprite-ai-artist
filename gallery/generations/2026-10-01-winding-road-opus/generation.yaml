@@ -168,3 +168,4 @@ ratings:
       cohesion: 0
       appeal: 0
     note: Overall 1/10, given as one number on the rating page of 2026-10-07; each axis set to round(1/10 × 4) = 0.
+    overall: 1

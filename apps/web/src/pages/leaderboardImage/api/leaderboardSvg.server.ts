@@ -193,7 +193,7 @@ ${heads}
 <rect x="${PAD}" y="${headY + 8}" width="${width - 2 * PAD}" height="2" fill="${colors.border}"/>
 ${rows}${empty}
 <rect x="${PAD}" y="${firstRowTop + bodyHeight}" width="${width - 2 * PAD}" height="2" fill="${colors.border}"/>
-<text x="${PAD}" y="${footY}" class="small">Score 0–100: 50% criteria · 35% craft · 15% speed</text>
+<text x="${PAD}" y="${footY}" class="small">Score 0–100: 35% criteria · 50% craft · 15% speed</text>
 <text x="${width - PAD}" y="${footY}" text-anchor="end" class="small">${host}/benchmarks</text>
 </svg>
 `;

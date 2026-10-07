@@ -7,9 +7,11 @@ question — is it good — on five axes, 0 to 4, against written anchors, so tw
 judges scoring the same run land in the same place.
 
 Ratings live in `generation.yaml` under `ratings`, one entry per judge. The
-site averages them: per run, the mean over judges of each judge's mean axis
-score, shown as a percentage beside the compliance score. Craft is 35% of the
-composite 0–100 score (50% criteria passed, 15% speed); a run nobody has rated
+site averages them: per run, the mean over judges of each judge's craft score,
+shown as a percentage beside the compliance score. A judge's craft score is
+their `overall` (0–10, ÷10) when they gave one, otherwise the mean of their
+axes. Craft is 50% of the composite 0–100 score (35% criteria passed, 15%
+speed); a run nobody has rated
 counts 0 for craft. A run with no recorded time is scored on criteria and craft
 alone, rescaled to 0–100. Model judges (`model:<id>`) are paused until they are
 re-evaluated: their ratings may stay in `generation.yaml`, but only human
@@ -36,6 +38,7 @@ ratings are shown and counted.
 ratings:
   - judge: human:fedorovvvv        # or model:<model id>
     scores: { read: 3, form: 2, motion: 3, cohesion: 4, appeal: 2 }
+    overall: 6                     # optional, 0–10 integer: your own overall score; replaces the axis mean in craft
     note: Arcs read well; the coat loses its shading on the recoil frames.
 ```
 

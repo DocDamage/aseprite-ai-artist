@@ -19,7 +19,7 @@ A **pack** groups generations. It lives in `gallery/packs/<slug>/pack.yaml`:
 ```yaml
 title: Cherry tree — from seed to full bloom
 description: Benchmark runs of the tree-growth prompt, one card per model run.  # optional
-generations:            # ≥ 2 generation folder ids, in display order
+generations:            # ≥ 2 generation folder ids, display order is not used
   - 2026-10-06-tree-growth-opus
   - 2026-10-05-tree-growth-sonnet
 ```
@@ -53,6 +53,9 @@ generations:            # ≥ 2 generation folder ids, in display order
 
 ## Consequences
 
+- Members are shown best-first by score (points, then compliance, craft, date;
+  unscored runs after them, newest first), so the order in `pack.yaml` no
+  longer matters and the pack's cover is its best run.
 - A new benchmark run shows loose on the wall until a maintainer adds it to its
   prompt's pack, in a separate PR.
 - Filters on the wall match a pack when any of its pieces matches, and the facet
