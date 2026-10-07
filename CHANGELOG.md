@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-10-07
+
 ### Added
 
 - **Review by fresh eyes.** `studio` now hands everything it drew to the
@@ -19,7 +21,7 @@ All notable changes to this project are documented here. Format follows
   the new one — scores from separate calls proved not to share a scale.
   `animate` draws objects that grow on screen at three or four hand-made
   sizes, and the critic inspects key frames at full zoom. The effect on
-  quality is not established: twelve single-run experiments, all in the
+  quality is not established: thirteen single-run experiments, all in the
   gallery beside the benchmark rows.
 
 - **Site: a knowledge base.** `/knowledge` shows the pixel-art rulebook the

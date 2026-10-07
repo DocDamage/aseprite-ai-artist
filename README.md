@@ -113,7 +113,7 @@ Ask `/aseprite:studio` for anything and it runs the whole job:
 | 3 | **Concept** | For anything new: writes the design down and gives you a prompt for an image model. Send back a concept sheet, or say "continue without". |
 | 4 | **Draw** | Silhouette first, written as a text grid (below), then shading. |
 | 5 | **Animate** | Splits limbs onto layers, plans key poses and timing, draws each frame, tags the cycles. |
-| 6 | **Review** | Looks, validates, fixes — two rounds, and it tells you if a third wouldn't help. |
+| 6 | **Review** | A separate critic who didn't draw it judges the result cold — what does it look like to someone never told? Blockers get fixed one at a time; a fix is kept only if the critic, shown both versions blind, prefers it. |
 | 7 | **Export** | Spritesheet + atlas, GIF or PNGs for your engine. |
 
 After every step that changed pixels, it **looks** at the result before moving on.
@@ -160,6 +160,21 @@ the agent pastes straight onto the canvas. Any MCP client reads them as
 
 🎨 **Palettes:** the console classics plus Lospec's 2000 most-downloaded, each
 credited — `preset: "endesga-32"`, or just a word of the name.
+
+### 👀 Review by fresh eyes
+
+New in 0.8.0. The agent that drew a sprite is the worst judge of it — it
+knows what it meant, so it sees it. `studio` hands the result to
+**pixel-critic**, which first writes a cold read (what the picture shows to
+someone who was never told), then a scored critique. A draft ships at 7/10
+with nothing blocking; below that the agent fixes the one thing named,
+snapshotting first. Each fix goes back to the critic as a blind A/B — old and
+new under neutral names — and stays only if it wins, so a round can't quietly
+make good art worse.
+
+It costs time (roughly one more critique per round) and its effect on
+quality is not yet measured — the thirteen experiment runs behind it are in the
+[gallery](https://pixeli.pebbly.space/), next to the benchmark rows.
 
 ## 🧰 Skills
 
