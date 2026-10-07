@@ -8,6 +8,14 @@ All notable changes to this project are documented here. Format follows
 
 ### Changed
 
+- **README hero in 3D.** The rainy bookshop is redrawn in two-point perspective
+  as a 16-second multiplane shot at 24 fps (384 frames): 23 layers, the depth
+  planes swaying with the camera, rain falling at three depths with every drop
+  splashing on whatever it hits, a maple that sways and sheds leaves, light
+  shafts and puddle reflections moving against the facade, and the lightning
+  throwing long shadows. Same shop, same story; a girl in a big knit sweater
+  now reads inside.
+
 - **Benchmark score: craft counts most.** The composite is now 50% craft from
   human judges, 35% criteria passed, 15% speed (was 50% criteria, 35% craft,
   15% speed). A rating may carry the judge's own `overall` (0–10 integer), which
@@ -16,6 +24,18 @@ All notable changes to this project are documented here. Format follows
   `human:fedorovvvv` overall scores are migrated to it.
 - **Packs sort by score.** A pack's cards, and so its cover, are ordered
   best-first by score; the order in `pack.yaml` no longer matters.
+
+### Added
+
+- **Gallery pack: the rainy bookshop, before and after.** The old hero
+  (plugin 0.2.0) and the 3D cut (0.8.0), both by Claude Opus 5.5, with their
+  sources and prompts.
+
+### Fixed
+
+- **Gallery prompts in English.** The blacksmith generation now keeps its
+  Russian prompt in `original` and the English rendering in `text`, like the
+  others.
 
 ## [0.8.0] — 2026-10-07
 

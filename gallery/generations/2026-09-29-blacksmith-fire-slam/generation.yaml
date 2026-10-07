@@ -2,11 +2,8 @@ title: Blacksmith fire slam
 description: >-
   A 64×64 blacksmith in 3/4 view performing an 8-frame hammer-slam attack skill
   with fire and ember particles. Drawn from an image-model concept sheet and
-  storyboard supplied by the user. The prompts below are English translations of
-  the user's original Russian messages, recorded in English at the user's request.
-  Original step 1: "Нарисуй персонажа: кузнец с молотом / Анимацция: удар как скилл
-  атаки и эффекты огня с частицами от молота / Поза: 3/4 к камере, чтобы был объем /
-  Размер: 64 x 64".
+  storyboard supplied by the user. The prompt was sent in Russian; `text` is the
+  English rendering and `original` the message as sent.
 date: 2026-09-29
 author: { name: Nik Fedorov, github: fedorovvvv }
 plugin: 0.4.0
@@ -20,6 +17,12 @@ steps:
       Pose: 3/4 toward the camera, so there is volume
 
       Size: 64 x 64
+    original: |-
+      Нарисуй персонажа: кузнец с молотом
+      Анимацция: удар как скилл атаки  и эффекты огня с частицами от молота
+      Поза: 3/4 к камере, чтобы был объем
+
+      Размер: 64 x 64
     interventions:
       - "Q: Draw into a new file or rework the existing blacksmith.aseprite? A: New file."
       - "Q: Generate references from the provided image-model prompts, or continue without? A: I'll generate and send them."
