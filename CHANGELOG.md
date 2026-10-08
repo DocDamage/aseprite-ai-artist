@@ -9,9 +9,10 @@ All notable changes to this project are documented here. Format follows
 ### Changed
 
 - **README hero in 3D.** The rainy bookshop is redrawn in two-point perspective
-  as a 16-second multiplane shot at 24 fps (384 frames): 23 layers, the depth
+  as a 16-second multiplane shot at 24 fps (384 frames): 24 layers, the depth
   planes swaying with the camera, rain falling at three depths with every drop
-  splashing on whatever it hits, a maple that sways and sheds leaves, light
+  splashing on whatever it hits, a maple that sways and sheds leaves with the
+  utility pole passing through its crown, light
   shafts and puddle reflections moving against the facade, and the lightning
   throwing long shadows. Same shop, same story; a girl in a big knit sweater
   now reads inside.

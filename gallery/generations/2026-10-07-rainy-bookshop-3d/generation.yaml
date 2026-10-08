@@ -2,10 +2,11 @@ title: Rainy bookshop, the 3D cut
 description: >-
   The README hero remade in depth: the same shop, night and story as the
   2026-09-28 hero, redrawn in two-point perspective as a 16-second multiplane
-  shot at 24 fps (384 frames, 23 layers). A slow camera sway moves every depth
+  shot at 24 fps (384 frames, 24 layers). A slow camera sway moves every depth
   plane at its own rate; rain falls at three depths and every drop splashes on
   whatever it hits; the maple sways and sheds leaves; puddle reflections move
-  against the facade; lightning throws long shadows. Inside, a girl in a big
+  against the facade; lightning throws long shadows; the utility pole passes
+  through the maple's crown. Inside, a girl in a big
   knit sweater reads and sips cocoa while a raccoon pulls a can from the
   vending machine. An omp orchestrator wrote the briefs and launched a second
   omp agent in a herdr pane, which drew everything in the live Aseprite with
@@ -106,9 +107,33 @@ steps:
       А че персонаж такой огромный??? Она размером с дом и автомат
     interventions:
       - "The girl was redrawn at the scale the scene's projection gives her depth: about 28 px above the desk against the vending machine's 92 px."
+  - text: |-
+      Fix the roof!!! [Image #1, 480x700]
+      Once it's fixed, we'll need to update the generation we uploaded and the hero.
+
+      Right now it looks as if it's transparent.
+
+      And in general the layers sometimes go wrong.
+      For example, the tree's shadow is over the pole, but it should be under it (by z-index).
+    original: |-
+      Крышу поправь!!! [Image #1, 480x700]
+      Когда поправим - надо будет обновить генерацию которую загрузили и hero
+
+      Она сейчас прозрачная будто
+
+      И в целом в слоях иногда беды
+      К примеру тень от дерева поверх столба, а должна быть под (по z-index)
+    interventions:
+      - "The image was a crop of the roof's left gable end, the street lamp and the side wall."
+  - text: |-
+      The pole should also pass through the tree's foliage (to give a sense of perspective and depth).
+    original: |-
+      Надо еще чтобы столб проходил сквозь листву дерева (чтобы было ощущение перспективы и глубины)
+    interventions:
+      - "Sent while step 9 was being drawn; folded into the same pass."
 files:
-  - { path: rainy-bookshop-3d.gif, role: cover, label: "The README hero from 0.8.0, 384 frames at 24 fps", step: 8 }
-  - { path: rainy-bookshop-3d.aseprite, role: source, label: "Source document, 23 layers", step: 8 }
-  - { path: rainy-bookshop-3d-f218.png, role: frame, label: "Frame 218: the sip", step: 8 }
-  - { path: rainy-bookshop-3d-contact.png, role: sheet, label: "Every 24th frame", step: 8 }
+  - { path: rainy-bookshop-3d.gif, role: cover, label: "The README hero from 0.8.0, 384 frames at 24 fps", step: 10 }
+  - { path: rainy-bookshop-3d.aseprite, role: source, label: "Source document, 24 layers", step: 10 }
+  - { path: rainy-bookshop-3d-f218.png, role: frame, label: "Frame 218: the sip", step: 10 }
+  - { path: rainy-bookshop-3d-contact.png, role: sheet, label: "Every 24th frame", step: 10 }
   - { path: reference-previous-hero.png, role: reference, label: "The previous hero, as the user sent it", step: 1 }

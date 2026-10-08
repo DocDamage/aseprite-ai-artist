@@ -13,7 +13,7 @@ The document on your screen, one pixel at a time — and every step is one Ctrl+
 [![CI](https://github.com/with-pebbly/aseprite-ai-artist/actions/workflows/ci.yml/badge.svg)](https://github.com/with-pebbly/aseprite-ai-artist/actions/workflows/ci.yml)
 [![licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
-<sub>☔ 500×400 · 384 frames at 24 fps · 16 s · 23 layers — drawn by <b>Claude Opus 5.5</b> through this server.</sub>
+<sub>☔ 500×400 · 384 frames at 24 fps · 16 s · 24 layers — drawn by <b>Claude Opus 5.5</b> through this server.</sub>
 
 **[Install](#-install)** · **[How it draws](#-how-it-draws)** · **[Skills](#-skills)** · **[Gallery](https://pixeli.pebbly.space/)**
 
