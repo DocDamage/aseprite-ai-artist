@@ -1,7 +1,7 @@
 ---
 name: concept
 title: Design it first — concept sheet and storyboard
-description: Before drawing a new character, prop, scene or animation, write an art spec, turn it into a ready-to-paste prompt for an image-generation model, and offer the user a choice — generate a concept sheet or storyboard with it and send it back, or continue without one. When reference art arrives (from that prompt or from the user), read it into a PixelSpec and import it panel by panel, so the pixel work reproduces a decided design instead of improvising one. Use after the brief for anything drawn from scratch, and whenever the user supplies reference art; skip for edits to existing art.
+description: Before drawing a new character, prop, scene or animation, write an art spec, turn it into a prompt for an image-generation model, and offer the user a choice — have the local Stable Diffusion (Image Studio) generate the concept sheet or storyboard, generate it themselves and send it back, or continue without one. When reference art arrives (from that prompt or from the user), read it into a PixelSpec and import it panel by panel, so the pixel work reproduces a decided design instead of improvising one. Use after the brief for anything drawn from scratch, and whenever the user supplies reference art; skip for edits to existing art.
 ---
 
 # Design it first — concept sheet and storyboard
@@ -110,17 +110,55 @@ prompt, choice — not a second round trip. Then offer exactly these options,
 through the harness's question tool when it has one (Claude Code's
 AskUserQuestion, omp's `ask`), otherwise as a numbered list:
 
-1. **"I'll generate references"** — the user pastes the prompt into any image
+1. **"Generate it here with Stable Diffusion"** — only when Image Studio is
+   running on this machine (see *Local generation* below; check before
+   offering). You generate the reference yourself and carry on. Recommend this
+   one when it is available: it is local, free and needs nothing from the user.
+2. **"I'll generate references"** — the user pastes the prompt into any image
    model (ChatGPT, Gemini, Midjourney, …) and sends the result back. Ask for
    the image **as a file path** — saved to disk, or dragged into the chat where
    the harness turns that into a path — because `reference import` reads
    files, not pixels you have only seen in the conversation.
-2. **"Continue without references"** — go straight to drawing from the spec.
+3. **"Continue without references"** — go straight to drawing from the spec.
    The spec still binds: it is the design now.
 
-If your harness has an image-generation tool, add it as a third option ("you
-generate it"), never as a silent default. When the user chooses option 1, stop
-and wait for the image; do not start drawing in the meantime.
+If your harness has another image-generation tool, add it as a further option
+("you generate it"), never as a silent default. When the user chooses option
+2, stop and wait for the image; do not start drawing in the meantime.
+
+#### Local generation — Image Studio (Stable Diffusion)
+
+Image Studio is a local front end for Stable Diffusion that listens on
+`http://127.0.0.1:8200`. It has to be started by the user; never try to start
+it yourself.
+
+- **Is it there?** `curl -s -m 3 http://127.0.0.1:8200/api/config` — any JSON
+  back means yes. No answer: leave option 1 out of the offer and say in one
+  line that starting Image Studio would add it.
+- **Generate** — one call per image, with the prompt from step 3 unchanged and
+  the number of panels it asks for:
+
+  ```
+  curl -s -m 600 -X POST http://127.0.0.1:8200/api/concept \
+    -H "Content-Type: application/json" \
+    -d '{"prompt": "…", "panels": 4}'
+  ```
+
+  It answers once, after about a minute (longer the first time, while the
+  model loads): `{"file": "<full path to a PNG>", "width": …, "height": …,
+  "panels": …}`. Build the JSON body with a tool that escapes quotes and
+  newlines properly rather than by hand. An `error` field instead of `file`
+  means it did not work — status 409 is "busy with another job": wait and try
+  once more, then fall back to offering options 2 and 3.
+- **Look at it before trusting it** — open the file. A local model follows the
+  layout contract less strictly than a hosted one: count the panels, check they
+  are the same scale and on one ground line. One retry with the same prompt is
+  fine (each call uses a new seed); if it is still wrong, import the usable
+  panels one at a time with `region` instead of `grid`, and note what was
+  dropped as a deviation.
+- A concept sheet and a storyboard are two calls, one after the other — Image
+  Studio does one job at a time.
+- Then continue at step 5 with the returned `file` as the reference path.
 
 ### 5. Read the reference into a PixelSpec
 

@@ -44,11 +44,13 @@ workflow it names and follow that — do not do the step from memory.
 5. **Design before drawing.** Anything new — a character, a prop, a scene, an
    animation — goes through `aseprite:concept` before a pixel is placed: it
    writes the art spec (scenario, palette, poses), turns it into a prompt for
-   an image model, and offers the user two ways on: generate a concept sheet or
-   storyboard with that prompt and send it back, or continue without one. That
+   an image model, and offers the user the ways on: have the local Stable
+   Diffusion (Image Studio, when it is running) generate the concept sheet or
+   storyboard, generate it themselves and send it back, or continue without
+   one. That
    offer rides in the brief's message when there is a brief, so the user still
    answers once. If they will send references, stop and wait; when the images
-   arrive, `aseprite:concept` reads them into a PixelSpec and imports them. If
+   arrive (from them or from Image Studio), `aseprite:concept` reads them into a PixelSpec and imports them. If
    the user already supplied reference art, skip the prompt and go straight to
    reading it.
 
