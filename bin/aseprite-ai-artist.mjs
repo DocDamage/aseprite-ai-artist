@@ -17,6 +17,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { buildSteps } from "./launcher.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const cli = path.join(root, "dist", "cli.js");
@@ -27,10 +28,7 @@ const log = (msg) => process.stderr.write(`[aseprite-ai-artist] ${msg}\n`);
 if (!existsSync(cli)) {
   log("first run — building…");
   // `shell: true` so npm resolves as npm.cmd on Windows.
-  const steps = [
-    ["install", "--silent", "--no-audit", "--no-fund"],
-    ["run", "--silent", "build"],
-  ];
+  const steps = buildSteps();
   for (const args of steps) {
     const result = spawnSync("npm", args, { cwd: root, stdio: ["ignore", 2, 2], shell: true });
     if (result.status !== 0) {

@@ -8,6 +8,10 @@ All notable changes to this project are documented here. Format follows
 
 ### Changed
 
+- **Git-install bootstrap pins its lockfile.** `bin/aseprite-ai-artist.mjs`
+  builds first-run installs with `npm ci --ignore-scripts`, so a plugin
+  installed from git cannot execute dependency lifecycle scripts.
+
 - **README hero in 3D.** The rainy bookshop is redrawn in two-point perspective
   as a 16-second multiplane shot at 24 fps (384 frames): 24 layers, the depth
   planes swaying with the camera, rain falling at three depths with every drop
