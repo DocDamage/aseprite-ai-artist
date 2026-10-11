@@ -5,7 +5,10 @@
  * The wording and the probe must not drift between them.
  */
 
+import { readdirSync, readFileSync } from "node:fs";
 import net from "node:net";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const PROBE_BUDGET_MS = 400;
 
@@ -46,3 +49,45 @@ export async function bridgeStatusMessage() {
 
 export const LOOK_NUDGE =
   "You just changed pixels. Call `look` before deciding whether it worked — op 'preview' for the overall read, op 'ascii' for exact pixel positions. A tool result saying pixels changed is not evidence that the sprite is right.";
+
+// The SKILL.md command loader lives here, not in a harness file, so every
+// harness that registers `/aseprite:<workflow>` commands reads them identically.
+const SKILLS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "skills");
+
+/**
+ * Every harness shows these workflows as `aseprite:<name>`: Claude Code from the
+ * plugin name, MCP clients from the prompt names. omp is the exception — it
+ * lists plugin skills as `/skill:<name>` — so the same names are registered here
+ * as commands, from the same SKILL.md files.
+ */
+export function loadSkillCommands(dir = SKILLS_DIR) {
+  const commands = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    let raw;
+    try {
+      raw = readFileSync(path.join(dir, entry.name, "SKILL.md"), "utf8");
+    } catch {
+      continue;
+    }
+    const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw);
+    const description = match?.[1].match(/^description:\s*(.+)$/m)?.[1].trim() ?? entry.name;
+    commands.push({
+      name: `aseprite:${entry.name}`,
+      skill: entry.name,
+      description,
+      body: match ? raw.slice(match[0].length).trim() : raw.trim(),
+    });
+  }
+  return commands.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function skillPrompt(command, args) {
+  const request = args.trim();
+  return [
+    `Follow the \`${command.name}\` workflow below (also at skill://${command.skill}).`,
+    "",
+    command.body,
+    ...(request ? ["", `User request: ${request}`] : []),
+  ].join("\n");
+}
