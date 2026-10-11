@@ -57,6 +57,72 @@ test("every tool declares a description and an output schema", async () => {
   await close();
 });
 
+test("sprite_info's payload stays inside its declared output schema", async () => {
+  // OpenCode validates structuredContent strictly and rejects any property the
+  // schema does not declare ("data must NOT have additional properties"), so a
+  // field the extension returns but the schema forgets is a hard failure there
+  // and silence everywhere else. This is the shape sprite.info returns
+  // (captured from extension 0.8.0; palette and batch arrays trimmed).
+  const payload = {
+    id: 6,
+    name: "Sprite-0001",
+    filename: "Sprite-0001",
+    width: 128,
+    height: 128,
+    colorMode: "rgb",
+    frameCount: 1,
+    modified: false,
+    layers: [
+      {
+        name: "Layer 1",
+        index: 1,
+        visible: true,
+        editable: true,
+        opacity: 255,
+        blendMode: "normal",
+        isGroup: false,
+        isTilemap: false,
+        cels: [1],
+      },
+    ],
+    frames: [{ number: 1, durationMs: 100 }],
+    tags: [],
+    palette: ["#000000", "#ffffff"],
+    slices: [],
+    selection: { x: 1, y: 2, width: 3, height: 4 },
+    activeLayer: "Layer 1",
+    activeFrame: 1,
+  };
+
+  const { client, close } = await connected();
+  const { tools } = await client.listTools();
+  const schema = tools.find((t) => t.name === "sprite_info")?.outputSchema;
+  assert.ok(schema, "sprite_info declares an output schema");
+  assert.deepEqual(undeclared(payload, schema as Record<string, unknown>), []);
+  await close();
+});
+
+/** Keys in `value` that `schema` does not declare, at any nesting depth. */
+function undeclared(value: unknown, schema: Record<string, unknown> | undefined, at = ""): string[] {
+  if (!schema) return [];
+  const branches = (schema.anyOf ?? schema.oneOf) as Record<string, unknown>[] | undefined;
+  const shape = branches?.find((s) => s.type === "object" && s.properties) ?? schema;
+  if (Array.isArray(value)) {
+    return value.flatMap((v, i) => undeclared(v, shape.items as Record<string, unknown> | undefined, `${at}[${i}]`));
+  }
+  if (value && typeof value === "object") {
+    const props = (shape.properties as Record<string, Record<string, unknown>> | undefined) ?? {};
+    const extra = Object.keys(value)
+      .filter((k) => !(k in props))
+      .map((k) => (at ? `${at}.${k}` : k));
+    const nested = Object.entries(value).flatMap(([k, v]) =>
+      k in props ? undeclared(v, props[k], at ? `${at}.${k}` : k) : [],
+    );
+    return [...extra, ...nested];
+  }
+  return [];
+}
+
 test("read-only tools are annotated as read-only", async () => {
   const { client, close } = await connected();
   const { tools } = await client.listTools();

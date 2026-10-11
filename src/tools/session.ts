@@ -192,6 +192,7 @@ export function registerSessionTools(server: McpServer, live: LinkSelector): voi
         colorMode: z.enum(["rgb", "grayscale", "indexed"]),
         transparentIndex: z.number().int().nullish(),
         frameCount: z.number().int(),
+        modified: z.boolean().describe("Unsaved changes present in this document."),
         layers: z.array(
           z.object({
             name: z.string(),

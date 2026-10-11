@@ -49,6 +49,11 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- **`sprite_info` is valid under strict output validation.** The extension
+  reports `modified`; the declared output schema did not allow it. OpenCode's
+  MCP client rejects any result with undeclared properties, so the tool failed
+  there while every other harness never noticed — the field is now declared.
+
 - **Gallery prompts in English.** The blacksmith generation now keeps its
   Russian prompt in `original` and the English rendering in `text`, like the
   others.
