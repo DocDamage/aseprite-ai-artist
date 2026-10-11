@@ -35,7 +35,12 @@ export default {
     }
     const commands = loadSkillCommands(skillsDir);
     const statusSent = new Set();
+    // The one look-nudge per session, split across two hooks: `execute.after`
+    // detects the pixel mutation, and `context` delivers the reminder into the
+    // next model call's system prompt. See the note on the `context` hook below
+    // for why delivery does not happen in `execute.after` itself.
     const nudged = new Set();
+    const pendingNudge = new Set();
 
     await ctx.skill.transform((editor) => {
       for (const command of commands) {
@@ -62,18 +67,30 @@ export default {
     });
 
     await ctx.session.hook("context", async (event) => {
-      if (statusSent.has(event.sessionID)) return;
-      statusSent.add(event.sessionID);
-      event.system.push({ type: "text", text: await bridgeStatusMessage() });
+      if (!statusSent.has(event.sessionID)) {
+        statusSent.add(event.sessionID);
+        event.system.push({ type: "text", text: await bridgeStatusMessage() });
+      }
+      if (pendingNudge.has(event.sessionID)) {
+        pendingNudge.delete(event.sessionID);
+        nudged.add(event.sessionID);
+        event.system.push({ type: "text", text: LOOK_NUDGE });
+      }
     });
 
     await ctx.tool.hook("execute.after", (event) => {
-      if (event.status !== "completed" || nudged.has(event.sessionID) || !isPixelMutation(event.tool)) return;
-      const content = event.result?.content;
+      // Delivery happens on the next `context` hook, not here. OpenCode hands a
+      // tool result back to the model two ways: the direct tool-call path keeps
+      // the `content` blocks, but Code Mode — the build agent's default — decodes
+      // only the structured `output` and drops anything appended to `content`, so
+      // mutating `event.result` here never reaches the model on that path. The
+      // `context` hook is prepended to every model call on both paths, so it is
+      // the one reliable channel.
+      if (event.status !== "completed" || !isPixelMutation(event.tool)) return;
+      if (nudged.has(event.sessionID) || pendingNudge.has(event.sessionID)) return;
       // A malformed result must not spend the session's one nudge.
-      if (!Array.isArray(content)) return;
-      nudged.add(event.sessionID);
-      event.result = { ...event.result, content: [...content, { type: "text", text: LOOK_NUDGE }] };
+      if (!Array.isArray(event.result?.content)) return;
+      pendingNudge.add(event.sessionID);
     });
   },
 };

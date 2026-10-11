@@ -75,8 +75,16 @@ export function install(client: ClientId, opts: InstallOptions): InstallResult {
 
 function installOpenCode(file: string, opts: InstallOptions): InstallResult {
   const existing = readJson(file);
-  const mcp = (existing.mcp as Record<string, unknown> | undefined) ?? {};
-  const servers = (mcp.servers as Record<string, unknown> | undefined) ?? {};
+  // `mcp` and `mcp.servers` are only treated as objects when they already are
+  // one. A config that stored `"mcp": "hello"` (or `"mcp": { "servers": 42 }`)
+  // would otherwise be spread into a character-indexed blob. Replacing the bad
+  // value with a fresh object keeps the rest of the file and still writes the
+  // server. installJson below has no such guard on purpose: those clients keep
+  // the server map at a single top-level key that no one has observed holding a
+  // non-object, so the same latent spread there is left out of scope rather
+  // than diverging its behaviour in this change.
+  const mcp = isPlainObject(existing.mcp) ? existing.mcp : {};
+  const servers = isPlainObject(mcp.servers) ? mcp.servers : {};
   const entry = {
     type: "local",
     command: [opts.command, ...opts.args],
@@ -198,6 +206,10 @@ function readJson(file: string): Record<string, unknown> {
       `${file} is not valid JSON, so it cannot be edited safely. Fix or move it, then retry. (${(err as Error).message})`,
     );
   }
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**

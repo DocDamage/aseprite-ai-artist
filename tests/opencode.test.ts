@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { existsSync, mkdtempSync, readdirSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -66,37 +66,55 @@ test("a command sends the skill body with the typed request", async () => {
   assert.ok(!sent[1].text.includes("User request"), "no empty request line");
 });
 
-test("the look nudge fires once per session on successful mutations", async () => {
-  const { ready, toolHooks } = load();
+test("the look nudge lands in the next context call, once per session", async () => {
+  const { ready, toolHooks, sessionHooks } = load();
   await ready;
   const after = toolHooks.get("execute.after");
-  const first = result("s1", "aseprite-ai-artist_draw");
-  await after(first);
-  assert.deepEqual(first.result.content, [{ type: "text", text: "412 pixels changed" }, { type: "text", text: LOOK_NUDGE }]);
-  const second = result("s1", "aseprite_recolor");
-  await after(second);
-  assert.equal(second.result.content.length, 1, "once per session");
-  const other = result("s2", "aseprite_transform");
-  await after(other);
-  assert.equal(other.result.content.length, 2, "a new session is nudged again");
+  const context = sessionHooks.get("context");
+
+  // A completed mutation queues the nudge, delivered on the next model call.
+  await after(result("s1", "aseprite-ai-artist_draw"));
+  const first = { sessionID: "s1", system: [] };
+  await context(first);
+  assert.equal(first.system.length, 2, "status message plus the nudge");
+  assert.ok(first.system.some((p: Any) => p.text === LOOK_NUDGE));
+
+  // The same session is never nudged again, no matter how many draws follow.
+  await after(result("s1", "aseprite_recolor"));
+  const again = { sessionID: "s1", system: [] };
+  await context(again);
+  assert.equal(again.system.length, 0, "once per session");
+
+  // A new session is nudged once more.
+  await after(result("s2", "aseprite_transform"));
+  const other = { sessionID: "s2", system: [] };
+  await context(other);
+  assert.ok(other.system.some((p: Any) => p.text === LOOK_NUDGE));
 });
 
 test("non-mutations, failures and odd results never nudge", async () => {
-  const { ready, toolHooks } = load();
+  const { ready, toolHooks, sessionHooks } = load();
   await ready;
   const after = toolHooks.get("execute.after");
-  const look = result("s3", "aseprite_look");
-  await after(look);
-  assert.equal(look.result.content.length, 1);
-  const failed = { ...result("s3", "aseprite_draw"), status: "error" };
-  await after(failed);
-  assert.equal(failed.result.content.length, 1);
-  const odd = { status: "completed", sessionID: "s3", tool: "aseprite_draw", result: {} };
-  await after(odd); // must not throw
-  await after(look);
-  const proper = result("s3", "aseprite_draw");
-  await after(proper);
-  assert.equal(proper.result.content.length, 2, "a malformed result does not spend the session's one nudge");
+  const context = sessionHooks.get("context");
+
+  await after(result("s3", "aseprite_look")); // not a mutation
+  await after({ ...result("s3", "aseprite_draw"), status: "error" }); // failed
+  await after({ status: "completed", sessionID: "s3", tool: "aseprite_draw", result: {} }); // no content
+  // Non-array content must not throw and must not spend the session's one nudge.
+  await after({ status: "completed", sessionID: "s3", tool: "aseprite_draw", result: { content: "a string" } });
+
+  // None of the above queued a nudge; the next context call is status-only.
+  const first = { sessionID: "s3", system: [] };
+  await context(first);
+  assert.equal(first.system.length, 1);
+  assert.ok(first.system.every((p: Any) => p.text !== LOOK_NUDGE));
+
+  // A well-formed mutation afterwards still nudges — the odd ones did not spend it.
+  await after(result("s3", "aseprite_draw"));
+  const second = { sessionID: "s3", system: [] };
+  await context(second);
+  assert.ok(second.system.some((p: Any) => p.text === LOOK_NUDGE));
 });
 
 test("status lands once per session on the first context call", async () => {
@@ -128,4 +146,10 @@ test("resolveSkillsDir finds the checkout skills and fails softly elsewhere", ()
   const here = path.dirname(fileURLToPath(new URL("../opencode/index.mjs", import.meta.url)));
   assert.equal(resolveSkillsDir(here), path.resolve(here, "..", "skills"));
   assert.equal(resolveSkillsDir(mkdtempSync(path.join(tmpdir(), "aia-nowhere-"))), null);
+});
+
+test("opencode/package.json version matches the root package", () => {
+  const root = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+  const plugin = JSON.parse(readFileSync(new URL("../opencode/package.json", import.meta.url), "utf8"));
+  assert.equal(plugin.version, root.version, "bump both together or drift releases silently");
 });

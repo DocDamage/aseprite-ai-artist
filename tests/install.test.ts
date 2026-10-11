@@ -69,6 +69,28 @@ test("install merges into an existing config and backs it up", () => {
   );
 });
 
+test("install defaults a non-object mcp / mcp.servers to an empty object", () => {
+  for (const mcp of ["hello", { servers: 42 }]) {
+    const dir = scratch();
+    const file = path.join(dir, ".opencode", "opencode.json");
+    mkdirSync(path.join(dir, ".opencode"), { recursive: true });
+    writeFileSync(file, JSON.stringify({ $schema: "https://opencode.ai/config.json", theme: "x", mcp }));
+    install("opencode", base(dir));
+    const after = JSON.parse(readFileSync(file, "utf8"));
+    assert.equal(after.theme, "x", "unrelated keys survive");
+    // The bad value is replaced by a real object, not spread into a character-indexed blob.
+    assert.deepEqual(after.mcp.servers["aseprite-ai-artist"], {
+      type: "local",
+      command: ["npx", "-y", "@pebbly/aseprite-ai-artist@latest", "serve"],
+      environment: { ASEPRITE_AI_PROMPTS: "0" },
+    });
+    assert.ok(
+      readdirSync(path.join(dir, ".opencode")).some((n) => n.startsWith("opencode.json.bak-")),
+      "a timestamped backup exists",
+    );
+  }
+});
+
 test("dry run returns the entry and writes nothing", () => {
   const dir = scratch();
   const result = install("opencode", base(dir, { dryRun: true }));

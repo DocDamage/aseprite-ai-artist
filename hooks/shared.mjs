@@ -1,8 +1,9 @@
 /**
- * What the hooks tell the model, kept in one place because two harnesses
- * deliver it: Claude Code runs the scripts next to this file from
- * `hooks.json`, and omp loads `omp/aseprite-ai-artist.mjs` as an extension.
- * The wording and the probe must not drift between them.
+ * Shared text and the skill-command loader, kept in one file so harnesses do
+ * not drift. Three harnesses read it: Claude Code runs the scripts next to
+ * this file from `hooks.json`, omp loads `omp/aseprite-ai-artist.mjs` as an
+ * extension, and OpenCode loads `opencode/index.mjs` as a plugin. The wording
+ * and the probe must not drift between them.
  */
 
 import { readdirSync, readFileSync } from "node:fs";
@@ -55,10 +56,12 @@ export const LOOK_NUDGE =
 const SKILLS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "skills");
 
 /**
- * Every harness shows these workflows as `aseprite:<name>`: Claude Code from the
- * plugin name, MCP clients from the prompt names. omp is the exception — it
- * lists plugin skills as `/skill:<name>` — so the same names are registered here
- * as commands, from the same SKILL.md files.
+ * Command definitions for every skill, consumed by the harnesses that cannot
+ * derive `/aseprite:<name>` from the skills themselves. Claude Code and MCP
+ * clients already surface the workflows as `/aseprite:<name>` prompts, but omp
+ * lists plugin skills as `/skill:<name>` and OpenCode lists them as bare
+ * `skill://<name>` skills — so omp and OpenCode both register these names as
+ * commands, from the same SKILL.md files.
  */
 export function loadSkillCommands(dir = SKILLS_DIR) {
   const commands = [];
