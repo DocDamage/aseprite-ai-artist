@@ -136,9 +136,12 @@ frame where both layers' opaque pixels intersect.
 
 ## Escape hatch
 
-`run_lua` executes Lua inside Aseprite. **Off by default** — it is arbitrary
-code execution in the application holding the user's unsaved work. Enable with
-`--allowLua` or `ASEPRITE_AI_ALLOW_LUA=1`.
+`run_lua` executes Lua inside Aseprite. **Off by default, and gated twice** — it
+is arbitrary code execution in the application holding the user's unsaved work.
+The server hides the tool unless `--allowLua` (or `ASEPRITE_AI_ALLOW_LUA=1` in
+its environment) is set, and the extension itself refuses the call unless the
+**Aseprite process** was started with `ASEPRITE_AI_ALLOW_LUA=1`. Headless
+sessions need only the flag: the server passes the variable on.
 
 ## Resources and prompts
 

@@ -157,6 +157,12 @@ extension nor the bridge is involved. For the Claude Code and omp plugins, set
 `ASEPRITE_AI_HEADLESS=1` — and `ASEPRITE_PATH` if Aseprite is not in a standard
 place — in the environment the agent is started from.
 
+One variable belongs to Aseprite itself: `lua.run` refuses unless the Aseprite
+process carries `ASEPRITE_AI_ALLOW_LUA=1`. A headless server passes it to the
+batch process when started with `--allowLua`; a live session needs it on
+Aseprite's own environment. See
+[SECURITY](../SECURITY.md#run_lua).
+
 Without `--aseprite`/`ASEPRITE_PATH` the server looks in the standard and Steam
 install locations, then on `PATH`. `doctor` prints the one it would use:
 

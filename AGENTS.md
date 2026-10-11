@@ -111,7 +111,9 @@ gotchas above was found by `test:e2e` after the isolated tests were green. Run
 it before claiming a change to the Lua side works.
 
 Use an isolated Aseprite for e2e — `ASEPRITE_USER_FOLDER` pointed at a scratch
-directory — so a test never touches someone's real documents.
+directory — so a test never touches someone's real documents. Start it with
+`ASEPRITE_AI_ALLOW_LUA=1` too: the e2e undo checks use `run_lua`, and the
+extension refuses it otherwise.
 
 ## Style
 

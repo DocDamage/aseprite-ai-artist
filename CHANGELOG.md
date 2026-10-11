@@ -8,6 +8,11 @@ All notable changes to this project are documented here. Format follows
 
 ### Changed
 
+- **`lua.run` is gated on both sides.** The Aseprite extension refuses the
+  escape hatch unless the Aseprite process was started with
+  `ASEPRITE_AI_ALLOW_LUA=1`, so the capability itself — not just the tool entry
+  — is off by default. Headless sessions inherit the variable from the server
+  when `--allowLua` is set.
 - **Git-install bootstrap pins its lockfile.** `bin/aseprite-ai-artist.mjs`
   builds first-run installs with `npm ci --ignore-scripts`, so a plugin
   installed from git cannot execute dependency lifecycle scripts.

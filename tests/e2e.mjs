@@ -31,7 +31,9 @@ import { createServer } from "../dist/server.js";
 const pluginPort = Number(process.env.E2E_PLUGIN_PORT || 9931);
 const controlPort = Number(process.env.E2E_CONTROL_PORT || pluginPort + 1);
 // allowLua enables run_lua, used below only to prove a single undo reverts a
-// whole tween/oscillate transaction -- there is no MCP-level "undo" tool.
+// whole tween/oscillate transaction -- there is no MCP-level "undo" tool. The
+// live Aseprite must be started with ASEPRITE_AI_ALLOW_LUA=1 as well: the
+// extension refuses the call otherwise.
 const { server, live } = createServer({ pluginPort, controlPort, autoSpawnBridge: false, allowLua: true });
 const [ct, st] = InMemoryTransport.createLinkedPair();
 const client = new Client({ name: "e2e", version: "0" });

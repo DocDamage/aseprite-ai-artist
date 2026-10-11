@@ -65,6 +65,7 @@ export function createServer(opts: CreateServerOptions = {}): RunningServer {
         new HeadlessClient({
           asepritePath: opts.asepritePath ?? findAsepriteBinary(),
           root,
+          allowLua: opts.allowLua ?? false,
           // Watches the user's window without ever starting a bridge: its only
           // job is to refuse a headless write to a file that window has open.
           guard: editorGuard(
