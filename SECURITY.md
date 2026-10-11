@@ -45,7 +45,8 @@ an agent.
 
 `install` modifies files that belong to your agent:
 `~/.claude.json`, `~/.codex/config.toml`, `~/.gemini/settings.json`,
-`~/.cursor/mcp.json`, `.vscode/mcp.json`, `~/.codeium/windsurf/mcp_config.json`.
+`~/.cursor/mcp.json`, `.vscode/mcp.json`, `~/.codeium/windsurf/mcp_config.json`,
+`~/.config/opencode/opencode.json`.
 
 Two protections:
 

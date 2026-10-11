@@ -12,9 +12,9 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { packageRoot } from "./lib/version.js";
 
-export type ClientId = "claude" | "codex" | "gemini" | "cursor" | "vscode" | "windsurf";
+export type ClientId = "claude" | "codex" | "gemini" | "cursor" | "vscode" | "windsurf" | "opencode";
 
-export const CLIENTS: ClientId[] = ["claude", "codex", "gemini", "cursor", "vscode", "windsurf"];
+export const CLIENTS: ClientId[] = ["claude", "codex", "gemini", "cursor", "vscode", "windsurf", "opencode"];
 
 export interface InstallOptions {
   scope: "user" | "project";
@@ -57,6 +57,10 @@ export function configPath(client: ClientId, opts: InstallOptions): string {
       return path.join(project, ".vscode", "mcp.json");
     case "windsurf":
       return path.join(home, ".codeium", "windsurf", "mcp_config.json");
+    case "opencode":
+      return opts.scope === "user"
+        ? path.join(process.env.XDG_CONFIG_HOME ?? path.join(home, ".config"), "opencode", "opencode.json")
+        : path.join(project, ".opencode", "opencode.json");
   }
 }
 
@@ -65,7 +69,26 @@ const SERVER_KEY = "aseprite-ai-artist";
 export function install(client: ClientId, opts: InstallOptions): InstallResult {
   const file = configPath(client, opts);
   if (client === "codex") return installToml(file, opts);
+  if (client === "opencode") return installOpenCode(file, opts);
   return installJson(client, file, opts);
+}
+
+function installOpenCode(file: string, opts: InstallOptions): InstallResult {
+  const existing = readJson(file);
+  const mcp = (existing.mcp as Record<string, unknown> | undefined) ?? {};
+  const servers = (mcp.servers as Record<string, unknown> | undefined) ?? {};
+  const entry = {
+    type: "local",
+    command: [opts.command, ...opts.args],
+    // Plugin harnesses disable MCP prompts: the plugin already lists the
+    // skills as /aseprite:*; the prompts would double every workflow.
+    environment: { ...opts.env, ASEPRITE_AI_PROMPTS: "0" },
+  };
+  const next = { ...existing, mcp: { ...mcp, servers: { ...servers, [SERVER_KEY]: entry } } };
+  if (opts.dryRun) return { client: "opencode", file, written: false, note: JSON.stringify({ [SERVER_KEY]: entry }, null, 2) };
+  backup(file);
+  writeAtomic(file, JSON.stringify(next, null, 2) + "\n");
+  return { client: "opencode", file, written: true };
 }
 
 function installJson(client: ClientId, file: string, opts: InstallOptions): InstallResult {
