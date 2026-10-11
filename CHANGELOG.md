@@ -40,6 +40,9 @@ All notable changes to this project are documented here. Format follows
 - **OpenCode install target.** `install opencode` writes the MCP server into
   OpenCode's config (`~/.config/opencode/opencode.json`), with MCP prompts off
   so the plugin's `/aseprite:*` commands do not double.
+- **OpenCode plugin.** `/aseprite:*` commands, skills, bridge status and the
+  look nudge for OpenCode V2, loaded from the repo (checkout path or
+  `github:...::path:opencode`).
 - **Gallery pack: the rainy bookshop, before and after.** The old hero
   (plugin 0.2.0) and the 3D cut (0.8.0), both by Claude Opus 5.5, with their
   sources and prompts.

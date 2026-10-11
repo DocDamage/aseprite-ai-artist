@@ -32,10 +32,10 @@ Linux `~/.config/aseprite`.
 npx @pebbly/aseprite-ai-artist install --all --agents
 ```
 
-Writes config for Claude Code, Codex, Gemini CLI, Cursor, VS Code and Windsurf,
-and adds an `AGENTS.md` section for the clients that read one. Existing config
-files are backed up first (`.bak-<timestamp>`), and `--dry-run` prints the change
-without making it.
+Writes config for Claude Code, Codex, Gemini CLI, Cursor, OpenCode, VS Code
+and Windsurf, and adds an `AGENTS.md` section for the clients that read one.
+Existing config files are backed up first (`.bak-<timestamp>`), and `--dry-run`
+prints the change without making it.
 
 ### Workflow names
 
@@ -49,6 +49,7 @@ the rest), `aseprite:brief`, `aseprite:concept`, `aseprite:new`, `aseprite:palet
 |--------|-----------------|
 | Claude Code (plugin) | `/aseprite:draw` — plugin skills |
 | omp (plugin) | `/aseprite:draw` — commands from the omp extension |
+| OpenCode (plugin) | `/aseprite:draw` — commands from the OpenCode plugin |
 | Gemini CLI, Cursor, other prompt-aware MCP clients | MCP prompt `aseprite:draw` |
 | Codex, and any client without prompts | resource `skill://draw`; the server instructions list the names |
 
@@ -136,6 +137,30 @@ npx @pebbly/aseprite-ai-artist install gemini
 npx @pebbly/aseprite-ai-artist install cursor
 ```
 
+### OpenCode
+
+```bash
+npx @pebbly/aseprite-ai-artist install opencode
+```
+
+Writes `mcp.servers.aseprite-ai-artist` into
+`~/.config/opencode/opencode.json`. Then add the plugin — it brings the
+`/aseprite:*` commands, the skills and the two hooks:
+
+```bash
+opencode plugin add github:rio-ap/aseprite-ai-artist::path:opencode
+```
+
+From a checkout, point at the directory instead:
+
+```jsonc
+{ "plugins": ["/path/to/aseprite-ai-artist/opencode"] }
+```
+
+MCP prompts are off for this client on purpose: the plugin already lists the
+fourteen workflows, and the prompts would double every one of them. Without the
+plugin the skills still reach the model as `skill://` resources, like Codex.
+
 ### Project scope instead of user scope
 
 ```bash
@@ -153,9 +178,9 @@ npx @pebbly/aseprite-ai-artist install codex --headless --aseprite /path/to/asep
 
 Writes `ASEPRITE_AI_HEADLESS=1` (and `ASEPRITE_PATH`) into the client config.
 The server then runs one batch Aseprite (`aseprite -b`) itself; neither the
-extension nor the bridge is involved. For the Claude Code and omp plugins, set
-`ASEPRITE_AI_HEADLESS=1` — and `ASEPRITE_PATH` if Aseprite is not in a standard
-place — in the environment the agent is started from.
+extension nor the bridge is involved. For the Claude Code, omp and OpenCode
+plugins, set `ASEPRITE_AI_HEADLESS=1` — and `ASEPRITE_PATH` if Aseprite is not in
+a standard place — in the environment the agent is started from.
 
 One variable belongs to Aseprite itself: `lua.run` refuses unless the Aseprite
 process carries `ASEPRITE_AI_ALLOW_LUA=1`. A headless server passes it to the

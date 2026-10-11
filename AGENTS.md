@@ -14,6 +14,7 @@ Guidance for agents and humans changing this code. For using the tool, see the
 | `skills/` | Workflows, served as `skill://` resources and MCP prompts |
 | `agents/`, `hooks/` | Claude Code plugin surface; omp reads the same tree as a marketplace plugin |
 | `omp/` | omp extension replaying `hooks/hooks.json` with omp's event API; hook text lives in `hooks/shared.mjs` |
+| `opencode/` | OpenCode V2 plugin: the fourteen commands, skills and the two hooks, from the same SKILL.md files the omp extension reads |
 | `tests/` | Node tests, plus a Lua harness that runs inside `aseprite -b` |
 | `docs/adr/` | Why things are the way they are. Read these before arguing with them. |
 | `gallery/` | Workspace package: community generations, benchmark prompts, and the zod schema + checker both are held to ([ADR-0006](docs/adr/0006-gallery-and-benchmark.md)) |
