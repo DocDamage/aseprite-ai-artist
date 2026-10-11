@@ -18,6 +18,7 @@
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
 	import { BoosterPack, takeFlight, type PackSummary } from '#entities/pack/index.js';
+	import { playSound, type SoundName } from '#shared/lib/sound/index.js';
 	import FanCard from './FanCard.svelte';
 
 	interface Props {
@@ -27,8 +28,12 @@
 	}
 
 	let { pack, modelFirst = false }: Props = $props();
-
 	const count = $derived(pack.generations.length);
+	/**
+	 * The pack keeps its cards best first (its cover is the top score); the fan lays them out
+	 * lowest to highest, so the hand reads left to right towards the winner, on top at the right.
+	 */
+	const fan = $derived([...pack.generations].reverse());
 	/**
 	 * From hydration until the last card lands. While it holds, a click anywhere on the stage —
 	 * the stacked cards included — finishes the opening instead of following a card's link: the
@@ -70,6 +75,7 @@
 		skipped = true;
 		playing = false;
 		named = false;
+		playSound('card-fan');
 	}
 
 	function landed(event: AnimationEvent) {
@@ -78,6 +84,34 @@
 			playing = false;
 			named = false;
 		}
+	}
+
+	/**
+	 * The opening's soundtrack, cued by the CSS itself: each keyframes animation fires
+	 * `animationstart` when its delay runs out, so the sounds stay in step with whatever timing
+	 * the styles set (the flight's extra wait included) and stop with a skip. Svelte scopes the
+	 * names as `svelte-<hash>-<name>`, hence the suffix.
+	 */
+	const CUES: Record<string, SoundName> = {
+		shake: 'pack-shake',
+		tear: 'pack-tear',
+		rise: 'card-rise'
+	};
+	const DEALS: SoundName[] = ['card-deal-1', 'card-deal-2', 'card-deal-3', 'card-deal-4'];
+	/** Both cards of a ring swing out together and make one sound between them. */
+	const dealt = new Set<number>();
+
+	function cue(event: AnimationEvent) {
+		const name = event.animationName.slice(event.animationName.lastIndexOf('-') + 1);
+		if (name !== 'deal') {
+			if (CUES[name]) playSound(CUES[name]);
+			return;
+		}
+		const ring = Number((event.target as HTMLElement).style.getPropertyValue('--ring'));
+		if (dealt.has(ring)) return;
+		dealt.add(ring);
+		// A shade higher for each ring outward, so the deal climbs instead of repeating.
+		playSound(DEALS[ring % DEALS.length]!, { rate: 0.94 + ring * 0.04 });
 	}
 
 	// A loose, hand-held stack before it is dealt: each card a degree or two off, the same way
@@ -102,6 +136,7 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 	style:--n={count}
 	title={playing ? 'Click to skip' : undefined}
 	onclick={skip}
+	onanimationstart={cue}
 	onanimationend={landed}
 	aria-hidden="true"
 >
@@ -109,7 +144,7 @@ it plays it is hidden from assistive tech like the rest of the fan. -->
 	<div class="burst absolute left-1/2"></div>
 
 	<div class="deck absolute left-1/2">
-		{#each pack.generations as generation, index (generation.id)}
+		{#each fan as generation, index (generation.id)}
 			<div
 				class="slot absolute inset-0"
 				style:--i={index}
