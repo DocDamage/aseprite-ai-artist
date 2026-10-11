@@ -8,6 +8,15 @@ All notable changes to this project are documented here. Format follows
 
 ### Changed
 
+- **`lua.run` is gated on both sides.** The Aseprite extension refuses the
+  escape hatch unless the Aseprite process was started with
+  `ASEPRITE_AI_ALLOW_LUA=1`, so the capability itself — not just the tool entry
+  — is off by default. Headless sessions inherit the variable from the server
+  when `--allowLua` is set.
+- **Git-install bootstrap pins its lockfile.** `bin/aseprite-ai-artist.mjs`
+  builds first-run installs with `npm ci --ignore-scripts`, so a plugin
+  installed from git cannot execute dependency lifecycle scripts.
+
 - **README hero in 3D.** The rainy bookshop is redrawn in two-point perspective
   as a 16-second multiplane shot at 24 fps (384 frames): 24 layers, the depth
   planes swaying with the camera, rain falling at three depths with every drop
@@ -28,6 +37,13 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **OpenCode install target.** `install opencode` writes the MCP server into
+  OpenCode 2.x's config (`~/.config/opencode/opencode.json`, native
+  `mcp.servers` shape — OpenCode 1.x cannot read it), with MCP prompts off so
+  the plugin's `/aseprite:*` commands do not double.
+- **OpenCode plugin.** `/aseprite:*` commands, skills, bridge status and the
+  look nudge for OpenCode V2, loaded from the repo (checkout path or
+  `github:...::path:opencode`).
 - **Gallery pack: the rainy bookshop, before and after.** The old hero
   (plugin 0.2.0) and the 3D cut (0.8.0), both by Claude Opus 5.5, with their
   sources and prompts.
@@ -41,6 +57,11 @@ All notable changes to this project are documented here. Format follows
   motion. Nothing plays before the first click or key press on a page.
 
 ### Fixed
+
+- **`sprite_info` is valid under strict output validation.** The extension
+  reports `modified`; the declared output schema did not allow it. OpenCode's
+  MCP client rejects any result with undeclared properties, so the tool failed
+  there while every other harness never noticed — the field is now declared.
 
 - **Gallery prompts in English.** The blacksmith generation now keeps its
   Russian prompt in `original` and the English rendering in `text`, like the

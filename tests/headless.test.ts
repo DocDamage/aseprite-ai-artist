@@ -288,3 +288,21 @@ test("headless drives a real batch Aseprite end to end", { skip: aseprite ? fals
     await server.close();
   }
 });
+
+// `--allowLua` has to reach the batch Aseprite as an environment variable: the
+// extension gates `lua.run` on its own process, and this child is the server's.
+// Skipped where Aseprite is not installed (CI), like the test above.
+test("headless passes the lua.run switch to the batch Aseprite", { skip: aseprite ? false : "no Aseprite executable" }, async () => {
+  const { server, live } = createServer({ headless: true, allowLua: true });
+  const [ct, st] = InMemoryTransport.createLinkedPair();
+  const mcp = new Client({ name: "test", version: "0" });
+  await Promise.all([mcp.connect(ct), server.connect(st)]);
+  try {
+    const result = await mcp.callTool({ name: "run_lua", arguments: { script: "return 7" } });
+    assert.notEqual(result.isError, true, JSON.stringify(result.content));
+    assert.equal((result.structuredContent as { result: number }).result, 7);
+  } finally {
+    live.close();
+    await server.close();
+  }
+});

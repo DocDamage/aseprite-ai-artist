@@ -31,8 +31,8 @@ after every step, and at the end tells you what it compromised on.
 
 You stay in charge. Don't like the helmet? Ctrl+Z, or just say so.
 
-Works with **Claude Code, omp, Codex CLI, Gemini CLI, Cursor, VS Code and
-Windsurf**. Best results so far: **Claude Opus 5.5**.
+Works with **Claude Code, omp, OpenCode, Codex CLI, Gemini CLI, Cursor, VS Code
+and Windsurf**. Best results so far: **Claude Opus 5.5**.
 
 ## 🚀 Install
 
@@ -63,6 +63,16 @@ npx @pebbly/aseprite-ai-artist install-extension
 ```bash
 omp plugin marketplace add with-pebbly/aseprite-ai-artist
 omp plugin install aseprite@aseprite-ai-artist
+```
+
+</details>
+
+<details>
+<summary><b>OpenCode 2.x</b></summary>
+
+```bash
+npx @pebbly/aseprite-ai-artist install opencode
+opencode plugin add github:with-pebbly/aseprite-ai-artist::path:opencode
 ```
 
 </details>

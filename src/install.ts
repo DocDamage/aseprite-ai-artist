@@ -12,9 +12,9 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { packageRoot } from "./lib/version.js";
 
-export type ClientId = "claude" | "codex" | "gemini" | "cursor" | "vscode" | "windsurf";
+export type ClientId = "claude" | "codex" | "gemini" | "cursor" | "vscode" | "windsurf" | "opencode";
 
-export const CLIENTS: ClientId[] = ["claude", "codex", "gemini", "cursor", "vscode", "windsurf"];
+export const CLIENTS: ClientId[] = ["claude", "codex", "gemini", "cursor", "vscode", "windsurf", "opencode"];
 
 export interface InstallOptions {
   scope: "user" | "project";
@@ -57,6 +57,10 @@ export function configPath(client: ClientId, opts: InstallOptions): string {
       return path.join(project, ".vscode", "mcp.json");
     case "windsurf":
       return path.join(home, ".codeium", "windsurf", "mcp_config.json");
+    case "opencode":
+      return opts.scope === "user"
+        ? path.join(process.env.XDG_CONFIG_HOME ?? path.join(home, ".config"), "opencode", "opencode.json")
+        : path.join(project, ".opencode", "opencode.json");
   }
 }
 
@@ -65,7 +69,34 @@ const SERVER_KEY = "aseprite-ai-artist";
 export function install(client: ClientId, opts: InstallOptions): InstallResult {
   const file = configPath(client, opts);
   if (client === "codex") return installToml(file, opts);
+  if (client === "opencode") return installOpenCode(file, opts);
   return installJson(client, file, opts);
+}
+
+function installOpenCode(file: string, opts: InstallOptions): InstallResult {
+  const existing = readJson(file);
+  // `mcp` and `mcp.servers` are only treated as objects when they already are
+  // one. A config that stored `"mcp": "hello"` (or `"mcp": { "servers": 42 }`)
+  // would otherwise be spread into a character-indexed blob. Replacing the bad
+  // value with a fresh object keeps the rest of the file and still writes the
+  // server. installJson below has no such guard on purpose: those clients keep
+  // the server map at a single top-level key that no one has observed holding a
+  // non-object, so the same latent spread there is left out of scope rather
+  // than diverging its behaviour in this change.
+  const mcp = isPlainObject(existing.mcp) ? existing.mcp : {};
+  const servers = isPlainObject(mcp.servers) ? mcp.servers : {};
+  const entry = {
+    type: "local",
+    command: [opts.command, ...opts.args],
+    // Plugin harnesses disable MCP prompts: the plugin already lists the
+    // skills as /aseprite:*; the prompts would double every workflow.
+    environment: { ...opts.env, ASEPRITE_AI_PROMPTS: "0" },
+  };
+  const next = { ...existing, mcp: { ...mcp, servers: { ...servers, [SERVER_KEY]: entry } } };
+  if (opts.dryRun) return { client: "opencode", file, written: false, note: JSON.stringify({ [SERVER_KEY]: entry }, null, 2) };
+  backup(file);
+  writeAtomic(file, JSON.stringify(next, null, 2) + "\n");
+  return { client: "opencode", file, written: true };
 }
 
 function installJson(client: ClientId, file: string, opts: InstallOptions): InstallResult {
@@ -175,6 +206,10 @@ function readJson(file: string): Record<string, unknown> {
       `${file} is not valid JSON, so it cannot be edited safely. Fix or move it, then retry. (${(err as Error).message})`,
     );
   }
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**

@@ -78,6 +78,7 @@ jobs:
               'extension/package.json',
               'knowledge/palettes.json',
               'skills/draw/SKILL.md',
+              'opencode/index.mjs',
               'rules/00-core-principles.md',
               'templates/AGENTS.section.md',
               'dist/cli.js',
