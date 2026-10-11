@@ -31,6 +31,14 @@ All notable changes to this project are documented here. Format follows
 - **Gallery pack: the rainy bookshop, before and after.** The old hero
   (plugin 0.2.0) and the 3D cut (0.8.0), both by Claude Opus 5.5, with their
   sources and prompts.
+- **Site: sound effects.** Every control on the site now clicks, selects,
+  toggles or opens with a short retro sound, and opening a pack has a
+  soundtrack cued by its animation: the shake, the foil tearing, the cards
+  rising and each ring of the fan being dealt. The effects are Kenney's CC0
+  sounds picked from soundcn (credits in `apps/web/static/sounds/CREDITS.txt`).
+  A speaker switch in the header (and the phone menu) turns them off; with no
+  choice made, they start off for visitors whose system asks for reduced
+  motion. Nothing plays before the first click or key press on a page.
 
 ### Fixed
 

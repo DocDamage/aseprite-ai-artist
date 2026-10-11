@@ -4,6 +4,7 @@
 	import CheckIcon from '~icons/pixelarticons/check';
 	import CopyIcon from '~icons/pixelarticons/copy';
 	import { Button, toast, type BitButtonProps } from '#shared/ui/8bit/index.js';
+	import { playSound } from '#shared/lib/sound/index.js';
 
 	type Props = BitButtonProps & {
 		text: string;
@@ -30,9 +31,11 @@
 		try {
 			await navigator.clipboard.writeText(text);
 		} catch {
+			playSound('error');
 			toast('Copy failed: the browser blocked the clipboard. Select the text instead.');
 			return;
 		}
+		playSound('confirm');
 		toast(done ?? `Copied: ${label.toLowerCase()}`);
 		copied = true;
 		clearTimeout(timer);
@@ -40,7 +43,8 @@
 	}
 </script>
 
-<Button {variant} {size} class={className} onclick={copy}>
+<!-- Silent on the click itself: the copy answers with success or failure once it settles. -->
+<Button {variant} {size} class={className} data-sound="none" onclick={copy}>
 	{#if copied}
 		<CheckIcon aria-hidden="true" />
 	{:else}
