@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.8.1] — 2026-10-12
+
 ### Changed
 
 - **`lua.run` is gated on both sides.** The Aseprite extension refuses the
