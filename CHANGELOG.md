@@ -38,8 +38,9 @@ All notable changes to this project are documented here. Format follows
 ### Added
 
 - **OpenCode install target.** `install opencode` writes the MCP server into
-  OpenCode's config (`~/.config/opencode/opencode.json`), with MCP prompts off
-  so the plugin's `/aseprite:*` commands do not double.
+  OpenCode 2.x's config (`~/.config/opencode/opencode.json`, native
+  `mcp.servers` shape — OpenCode 1.x cannot read it), with MCP prompts off so
+  the plugin's `/aseprite:*` commands do not double.
 - **OpenCode plugin.** `/aseprite:*` commands, skills, bridge status and the
   look nudge for OpenCode V2, loaded from the repo (checkout path or
   `github:...::path:opencode`).

@@ -144,11 +144,15 @@ npx @pebbly/aseprite-ai-artist install opencode
 ```
 
 Writes `mcp.servers.aseprite-ai-artist` into
-`~/.config/opencode/opencode.json`. Then add the plugin — it brings the
-`/aseprite:*` commands, the skills and the two hooks:
+`~/.config/opencode/opencode.json`. That is OpenCode 2.x's native config shape,
+and the plugin below is 2.x-only too. OpenCode 1.x cannot read a file in that
+shape, so on 1.x — including after `install --all` — skip this target and put
+the same entry directly under `mcp` as `mcp.aseprite-ai-artist`, without the
+`servers` level. On 2.x, add the plugin — it brings the `/aseprite:*` commands,
+the skills and the two hooks:
 
 ```bash
-opencode plugin add github:rio-ap/aseprite-ai-artist::path:opencode
+opencode plugin add github:with-pebbly/aseprite-ai-artist::path:opencode
 ```
 
 From a checkout, point at the directory instead:

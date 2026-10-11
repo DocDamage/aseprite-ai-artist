@@ -68,11 +68,11 @@ omp plugin install aseprite@aseprite-ai-artist
 </details>
 
 <details>
-<summary><b>OpenCode</b></summary>
+<summary><b>OpenCode 2.x</b></summary>
 
 ```bash
 npx @pebbly/aseprite-ai-artist install opencode
-opencode plugin add github:rio-ap/aseprite-ai-artist::path:opencode
+opencode plugin add github:with-pebbly/aseprite-ai-artist::path:opencode
 ```
 
 </details>

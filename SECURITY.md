@@ -72,7 +72,7 @@ Nothing else is touched.
 `run_lua` executes arbitrary Lua inside the Aseprite process holding your
 unsaved work. It has full Aseprite API access, which includes the filesystem.
 
-Is it **off by default, and gated twice**:
+It is **off by default, and gated twice**:
 
 - The server hides the tool unless `--allowLua` on the CLI, or
   `ASEPRITE_AI_ALLOW_LUA=1` in the server's environment, is set. The agent
