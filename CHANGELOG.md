@@ -6,6 +6,14 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **The OpenCode plugin loads from a git install.** `opencode plugin add
+  …::path:opencode` keeps only the plugin subdirectory in its cache, so the
+  plugin failed on `../hooks/shared.mjs` and found no skills. It now resolves
+  both from the published package (declared dependency) when the sibling tree
+  is absent, and the install command names the `#main` ref it needs.
+
 ## [0.8.1] — 2026-10-12
 
 ### Changed

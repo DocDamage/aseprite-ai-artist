@@ -152,7 +152,7 @@ the same entry directly under `mcp` as `mcp.aseprite-ai-artist`, without the
 the skills and the two hooks:
 
 ```bash
-opencode plugin add github:with-pebbly/aseprite-ai-artist::path:opencode
+opencode plugin add github:with-pebbly/aseprite-ai-artist#main::path:opencode
 ```
 
 From a checkout, point at the directory instead:
