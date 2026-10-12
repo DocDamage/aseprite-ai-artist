@@ -1,8 +1,8 @@
 import { strict as assert } from "node:assert";
-import { existsSync, mkdtempSync, readdirSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { test } from "node:test";
 // @ts-ignore — plain .mjs on purpose: loaded from a clone, no build step.
 import plugin, { isPixelMutation, resolveSkillsDir } from "../opencode/index.mjs";
@@ -15,7 +15,7 @@ process.env.ASEPRITE_AI_CONTROL_PORT = "19971";
 
 type Any = Record<string, any>;
 
-function load() {
+function load(ext: Any = plugin) {
   const commands: Any[] = [];
   const skills: Any[] = [];
   const toolHooks = new Map<string, Any>();
@@ -30,7 +30,7 @@ function load() {
       prompt: async (p: Any) => void sent.push(p),
     },
   };
-  return { ready: plugin.setup(ctx), commands, skills, toolHooks, sessionHooks, sent };
+  return { ready: ext.setup(ctx), commands, skills, toolHooks, sessionHooks, sent };
 }
 
 const result = (sessionID: string, tool: string, content: Any[] | undefined = [{ type: "text", text: "412 pixels changed" }]) => ({
@@ -148,8 +148,69 @@ test("resolveSkillsDir finds the checkout skills and fails softly elsewhere", ()
   assert.equal(resolveSkillsDir(mkdtempSync(path.join(tmpdir(), "aia-nowhere-"))), null);
 });
 
-test("opencode/package.json version matches the root package", () => {
+test("loads from an installed layout where only the published package sits beside it", async () => {
+  // `opencode plugin add …::path:opencode` keeps only this subdirectory in its
+  // cache; hooks/ and skills/ exist only in the published package, which the
+  // plugin declares as a dependency. Reproduce that layout with no sibling tree.
+  const tmp = mkdtempSync(path.join(tmpdir(), "aia-plugin-installed-"));
+  const self = path.join(tmp, "node_modules", "opencode-aseprite-ai-artist");
+  const pkg = path.join(tmp, "node_modules", "@pebbly", "aseprite-ai-artist");
+  mkdirSync(path.join(pkg, "hooks"), { recursive: true });
+  mkdirSync(path.join(pkg, "skills", "studio"), { recursive: true });
+  mkdirSync(self, { recursive: true });
+  const repo = path.dirname(fileURLToPath(new URL("../opencode/index.mjs", import.meta.url)));
+  copyFileSync(path.join(repo, "index.mjs"), path.join(self, "index.mjs"));
+  copyFileSync(path.join(repo, "package.json"), path.join(self, "package.json"));
+  writeFileSync(path.join(pkg, "package.json"), JSON.stringify({ name: "@pebbly/aseprite-ai-artist", version: "0.0.0" }));
+  copyFileSync(new URL("../hooks/shared.mjs", import.meta.url), path.join(pkg, "hooks", "shared.mjs"));
+  copyFileSync(new URL("../skills/studio/SKILL.md", import.meta.url), path.join(pkg, "skills", "studio", "SKILL.md"));
+
+  const mod: Any = await import(pathToFileURL(path.join(self, "index.mjs")).href);
+  const { ready, commands, skills, toolHooks, sessionHooks } = load(mod.default);
+  await ready;
+  assert.deepEqual(commands.map((c) => c.name), ["aseprite:studio"]);
+  assert.deepEqual(skills.map((s) => s.id), ["studio"]);
+  assert.ok(toolHooks.has("execute.after"), "the nudge hook registers");
+  assert.ok(sessionHooks.has("context"), "the status/nudge hook registers");
+});
+
+test("stays inert with one warning when no shared tree is available", async () => {
+  const tmp = mkdtempSync(path.join(tmpdir(), "aia-plugin-bare-"));
+  const file = path.join(tmp, "index.mjs");
+  copyFileSync(new URL("../opencode/index.mjs", import.meta.url), file);
+
+  const mod: Any = await import(pathToFileURL(file).href);
+  const warnings: string[] = [];
+  const realWrite = process.stderr.write;
+  process.stderr.write = ((chunk: unknown) => {
+    warnings.push(String(chunk));
+    return true;
+  }) as typeof process.stderr.write;
+  try {
+    const { ready, commands } = load(mod.default);
+    await ready;
+    assert.equal(commands.length, 0, "no commands without the shared tree");
+  } finally {
+    process.stderr.write = realWrite;
+  }
+  assert.ok(
+    warnings.some((w) => w.includes("shared code not found")),
+    `expected one clear warning, got: ${warnings.join("")}`,
+  );
+});
+
+test("opencode/package.json tracks the root package version", () => {
   const root = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
   const plugin = JSON.parse(readFileSync(new URL("../opencode/package.json", import.meta.url), "utf8"));
   assert.equal(plugin.version, root.version, "bump both together or drift releases silently");
+
+  // The dependency supplies hooks/ and skills/ to a git install. A caret range
+  // already covers every patch release, so only a minor bump needs the range
+  // revisited — and this check is what says so, at that point, exactly once.
+  const range = plugin.dependencies?.["@pebbly/aseprite-ai-artist"] as string | undefined;
+  const caret = range ? /^\^(\d+)\.(\d+)\.\d+$/.exec(range) : null;
+  assert.ok(caret, `expected a caret dependency range, got ${range}`);
+  const [major, minor] = root.version.split(".");
+  const covers = major !== "0" ? caret[1] === major : caret[1] === major && caret[2] === minor;
+  assert.ok(covers, `caret range ${range} does not cover ${root.version} — bump it to ^${root.version}`);
 });

@@ -72,7 +72,7 @@ omp plugin install aseprite@aseprite-ai-artist
 
 ```bash
 npx @pebbly/aseprite-ai-artist install opencode
-opencode plugin add github:with-pebbly/aseprite-ai-artist::path:opencode
+opencode plugin add github:with-pebbly/aseprite-ai-artist#main::path:opencode
 ```
 
 </details>
