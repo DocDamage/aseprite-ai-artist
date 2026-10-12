@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.8.2] — 2026-10-12
+
 ### Fixed
 
 - **The OpenCode plugin loads from a git install.** `opencode plugin add
