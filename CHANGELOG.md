@@ -6,6 +6,12 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `reference` no longer leaves the source image open as the active sprite when
+  reading it fails, and now restores the user's active layer and frame too, not
+  only the sprite.
+
 ## [0.8.2] — 2026-10-12
 
 ### Fixed

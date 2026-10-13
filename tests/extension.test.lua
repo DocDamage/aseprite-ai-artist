@@ -1075,6 +1075,44 @@ check("reference.apply imports, lists, samples and removes", function()
   os.remove(ref_path)
 end)
 
+check("reference.apply leaves the user's site alone when reading the file throws", function()
+  local ref_path = app.fs.joinPath(app.fs.tempPath, "ai-artist-test-reference-throw.png")
+  withMockSprite(6, 6, ColorMode.RGB, function(mock)
+    mock:saveCopyAs(ref_path)
+  end)
+
+  withMockSprite(6, 6, ColorMode.RGB, function(mock)
+    mock:newEmptyFrame()
+    mock:newLayer()
+    app.frame = mock.frames[2]
+    app.layer = mock.layers[1]
+    local open_before = #app.sprites
+
+    -- Fail after app.open, inside the read: the path the scorer found uncaged.
+    local real_image = Image
+    Image = function(...)
+      local img = real_image(...)
+      return setmetatable({}, { __index = function(_, k)
+        if k == "drawSprite" then return function() error("simulated read failure", 0) end end
+        local v = img[k]
+        if type(v) == "function" then return function(_, ...) return v(img, ...) end end
+        return v
+      end })
+    end
+    local ok, reply = pcall(A.handleCommand, { id = "t", cmd = "reference.apply",
+      args = { op = "sample_palette", path = ref_path } })
+    Image = real_image
+
+    assert(ok, "handler raised instead of replying: " .. tostring(reply))
+    assertEq(reply.ok, false, "a failed read must be reported")
+    assertEq(#app.sprites, open_before, "the reference file was left open")
+    assert(app.sprite == mock, "a failed read left the reference as the active sprite")
+    assertEq(app.frame.frameNumber, 2, "active frame changed")
+    assert(app.layer == mock.layers[1], "active layer changed")
+  end)
+  os.remove(ref_path)
+end)
+
 --- A 12x4 strip of three 4x4 panels — red, blue, white — written to disk, the
 --- shape a storyboard sheet from an image model arrives in.
 local function write_strip(path)

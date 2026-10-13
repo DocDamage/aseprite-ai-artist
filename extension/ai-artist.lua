@@ -2740,18 +2740,21 @@ H["reference.apply"] = function(args)
   -- NO active sprite at all. app.transaction then refuses to run — raising a
   -- value that is not even a string, so the agent saw an unreadable error — and
   -- in the UI the user's tab had silently changed under them either way.
-  local restore = app.sprite
-  local source = app.open(path)
-  if not source then
-    app.sprite = restore
-    fault("aseprite_error", "Could not open '" .. path .. "'.")
-  end
-
-  local flat = Image(source.width, source.height, ColorMode.RGB)
-  flat:drawSprite(source, source.frames[1])
-  local sw, sh = source.width, source.height
-  source:close()
-  app.sprite = restore
+  -- preserving_site restores sprite, layer and frame on every path, and the
+  -- source is closed even when reading it throws, so a bad file never leaves a
+  -- stranger's tab open in the user's window.
+  local flat, sw, sh
+  preserving_site(function()
+    local source = app.open(path)
+    if not source then fault("aseprite_error", "Could not open '" .. path .. "'.") end
+    local ok, err = pcall(function()
+      flat = Image(source.width, source.height, ColorMode.RGB)
+      flat:drawSprite(source, source.frames[1])
+      sw, sh = source.width, source.height
+    end)
+    pcall(function() source:close() end)
+    if not ok then error(err, 0) end
+  end)
 
   local function crop(img, r)
     local out = Image(r.width, r.height, ColorMode.RGB)
