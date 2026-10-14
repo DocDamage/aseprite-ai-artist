@@ -2,9 +2,9 @@ import { strict as assert } from "node:assert";
 import { existsSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 // @ts-ignore — plain .mjs on purpose: omp loads it from a git clone with no build step.
-import extension, { isPixelMutation, loadSkillCommands, skillPrompt } from "../omp/aseprite-ai-artist.mjs";
+import extension, { isPixelMutation } from "../omp/aseprite-ai-artist.mjs";
 // @ts-ignore
-import { LOOK_NUDGE } from "../hooks/shared.mjs";
+import { LOOK_NUDGE, loadSkillCommands, skillPrompt } from "../hooks/shared.mjs";
 
 // Nothing listens here, so the status probe answers fast and never touches a
 // real Aseprite session.

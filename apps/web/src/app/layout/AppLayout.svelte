@@ -1,9 +1,11 @@
 <script lang="ts">
 	import '../styles/index.css';
+	import { onMount } from 'svelte';
 	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { trackAnalytics } from '../analytics/index.js';
 	import { SITE_NAME, SITE_URL } from '#shared/lib/site.js';
+	import { listenForClicks, soundSetting } from '#shared/lib/sound/index.js';
 	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from '#shared/ui/sonner/index.js';
 	import { HoloDefs } from '#shared/ui/holo/index.js';
@@ -13,6 +15,15 @@
 	let { children } = $props();
 
 	trackAnalytics();
+
+	onMount(() => {
+		const forget = soundSetting.restore();
+		const unlisten = listenForClicks();
+		return () => {
+			forget();
+			unlisten();
+		};
+	});
 
 	// Page changes cross-fade through the View Transitions API where the browser has it; the
 	// header and footer carry their own transition names, so only the page between them moves.

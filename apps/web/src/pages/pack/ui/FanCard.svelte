@@ -38,6 +38,7 @@
 	href={resolve('/g/[id]', { id: generation.id })}
 	tabindex={-1}
 	class="fan-card block"
+	data-sound="card"
 	{@attach pointerShine}
 >
 	<article

@@ -3,8 +3,8 @@
 --
 -- Aseprite's Lua WebSocket is a client only, so this dials out to a local bridge
 -- rather than listening. Everything it accepts is a named command from a fixed
--- table; there is no eval path unless the operator explicitly enables `lua.run`
--- on the server side.
+-- table; there is no eval path unless the operator enables `lua.run` on both
+-- sides: --allowLua on the server, ASEPRITE_AI_ALLOW_LUA in this process.
 --
 -- Design rules for anything added here:
 --   * Never guess. An unknown command returns `unsupported_command` loudly so
@@ -15,12 +15,19 @@
 --------------------------------------------------------------------------------
 
 local PROTOCOL_VERSION = 1
-local EXTENSION_VERSION = "0.8.0"
+local EXTENSION_VERSION = "0.8.2"
 
 -- Optional capabilities. The wire version stays 1 across builds; new command
 -- families are gated on these flags plus the loud unsupported_command reply,
 -- so an older extension degrades visibly rather than mysteriously.
 local FEATURES = { "draw_batch", "recolor", "validate", "tileset", "reference", "filmstrip" }
+
+-- The truthy set src/cli.ts accepts, so a value that enables the tool on the
+-- server cannot fail to enable the capability here.
+local function env_truthy(name)
+  local value = os.getenv(name)
+  return value == "1" or value == "true" or value == "yes"
+end
 
 local CONFIG = {
   host = "127.0.0.1",
@@ -28,6 +35,8 @@ local CONFIG = {
   reconnect_tick = 2,        -- seconds between reconnect bookkeeping ticks
   connect_max_ticks = 3,     -- give a handshake ~6s before forcing a reset
   debug = os.getenv("ASEPRITE_AI_DEBUG") == "1",
+  -- Read once at load: this is a capability switch, not a per-call option.
+  allow_lua = env_truthy("ASEPRITE_AI_ALLOW_LUA"),
 }
 
 local ws = nil
@@ -2731,18 +2740,21 @@ H["reference.apply"] = function(args)
   -- NO active sprite at all. app.transaction then refuses to run — raising a
   -- value that is not even a string, so the agent saw an unreadable error — and
   -- in the UI the user's tab had silently changed under them either way.
-  local restore = app.sprite
-  local source = app.open(path)
-  if not source then
-    app.sprite = restore
-    fault("aseprite_error", "Could not open '" .. path .. "'.")
-  end
-
-  local flat = Image(source.width, source.height, ColorMode.RGB)
-  flat:drawSprite(source, source.frames[1])
-  local sw, sh = source.width, source.height
-  source:close()
-  app.sprite = restore
+  -- preserving_site restores sprite, layer and frame on every path, and the
+  -- source is closed even when reading it throws, so a bad file never leaves a
+  -- stranger's tab open in the user's window.
+  local flat, sw, sh
+  preserving_site(function()
+    local source = app.open(path)
+    if not source then fault("aseprite_error", "Could not open '" .. path .. "'.") end
+    local ok, err = pcall(function()
+      flat = Image(source.width, source.height, ColorMode.RGB)
+      flat:drawSprite(source, source.frames[1])
+      sw, sh = source.width, source.height
+    end)
+    pcall(function() source:close() end)
+    if not ok then error(err, 0) end
+  end)
 
   local function crop(img, r)
     local out = Image(r.width, r.height, ColorMode.RGB)
@@ -3977,11 +3989,19 @@ H["validate.run"] = function(args)
 end
 
 --------------------------------------------------------------------------------
--- Escape hatch. Gated on the server side; reaching here means the operator
--- turned it on deliberately.
+-- Escape hatch. Gated twice: the server hides the tool unless --allowLua, and
+-- this side refuses unless the Aseprite process was started with
+-- ASEPRITE_AI_ALLOW_LUA. Reaching here with the gate closed means something
+-- other than the server sent the command — the gap a server-side-only flag
+-- leaves open (see SECURITY.md).
 --------------------------------------------------------------------------------
 
 H["lua.run"] = function(args)
+  if not CONFIG.allow_lua then
+    fault("unsupported_command",
+      "lua.run is disabled in this Aseprite session. Start Aseprite with " ..
+      "ASEPRITE_AI_ALLOW_LUA=1 (and run the server with --allowLua) to enable it.")
+  end
   local source = need(args.script, "script")
   local started = os.clock()
   local captured = {}

@@ -45,7 +45,8 @@ an agent.
 
 `install` modifies files that belong to your agent:
 `~/.claude.json`, `~/.codex/config.toml`, `~/.gemini/settings.json`,
-`~/.cursor/mcp.json`, `.vscode/mcp.json`, `~/.codeium/windsurf/mcp_config.json`.
+`~/.cursor/mcp.json`, `.vscode/mcp.json`, `~/.codeium/windsurf/mcp_config.json`,
+`~/.config/opencode/opencode.json`.
 
 Two protections:
 
@@ -71,18 +72,26 @@ Nothing else is touched.
 `run_lua` executes arbitrary Lua inside the Aseprite process holding your
 unsaved work. It has full Aseprite API access, which includes the filesystem.
 
-It is **off by default**. Enabling it is explicit — `--allowLua` on the CLI, or
-`ASEPRITE_AI_ALLOW_LUA=1` in the server's environment — and the tool does not
-appear in `tools/list` at all until you do.
+It is **off by default, and gated twice**:
 
-**What that flag does and does not do.** It gates the tool surface your agent
-sees. It does not gate the capability: the extension implements `lua.run`
-whenever it is installed, and the bridge has no authentication, so any other
-process on your machine that connects to the control port can invoke it
-regardless of how this server was started. That is the same trust boundary as
-the rest of the bridge — but it means "off unless you turn it on" is a statement
-about your agent, not about your machine. If that distinction matters to you,
-stop the bridge when you are not using it.
+- The server hides the tool unless `--allowLua` on the CLI, or
+  `ASEPRITE_AI_ALLOW_LUA=1` in the server's environment, is set. The agent
+  cannot see or call it.
+- The extension itself refuses `lua.run` unless the Aseprite process was
+  started with `ASEPRITE_AI_ALLOW_LUA=1`. The capability is absent, not just
+  the tool entry.
+
+A live session therefore needs the variable in the environment that started
+**Aseprite**, not in the agent's — the extension cannot see the agent's
+environment. Headless mode has nothing extra to do: when the server runs with
+`--allowLua`, it passes the variable to the batch Aseprite it starts.
+
+**What the gate does not cover.** The rest of the bridge stays open: while it
+runs, any local process that connects to the control port can drive the
+ordinary tools — draw, save, export, close documents — no matter how this
+server was started. That is the same trust boundary as any other localhost
+developer service, and it is a real one. If it matters on your machine, stop
+the bridge when you are not using it.
 
 ## Instructions served to the agent
 

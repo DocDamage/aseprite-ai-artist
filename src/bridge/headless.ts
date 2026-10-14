@@ -61,6 +61,12 @@ export interface HeadlessClientOptions {
    * recent-files list; an explicit ASEPRITE_USER_FOLDER is honoured.
    */
   userFolder?: string;
+  /**
+   * The operator enabled `lua.run` server-side. The extension gates the hatch
+   * on its own environment, and this child is ours, so the flag has to reach
+   * it as ASEPRITE_AI_ALLOW_LUA.
+   */
+  allowLua?: boolean;
   guard?: EditorGuard | null;
   timeoutMs?: number;
   startupTimeoutMs?: number;
@@ -82,6 +88,7 @@ export class HeadlessClient implements AsepriteLink {
   private readonly root: string;
   private readonly cwd: string;
   private readonly userFolder: string;
+  private readonly allowLua: boolean;
   private readonly guard: EditorGuard | null;
   private readonly timeoutMs: number;
   private readonly startupTimeoutMs: number;
@@ -108,6 +115,7 @@ export class HeadlessClient implements AsepriteLink {
     this.cwd = opts.cwd ?? process.cwd();
     this.userFolder =
       opts.userFolder ?? process.env.ASEPRITE_USER_FOLDER ?? path.join(tmpdir(), "aseprite-ai-artist-headless");
+    this.allowLua = opts.allowLua ?? false;
     this.guard = opts.guard ?? null;
     this.timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.startupTimeoutMs = opts.startupTimeoutMs ?? DEFAULT_STARTUP_MS;
@@ -307,7 +315,13 @@ export class HeadlessClient implements AsepriteLink {
         const runner = path.join(this.root, "headless", "runner.lua");
         child = spawn(binary, ["-b", "--script-param", `root=${this.root}`, "--script", runner], {
           cwd: this.cwd,
-          env: { ...process.env, ASEPRITE_USER_FOLDER: this.userFolder },
+          env: {
+            ...process.env,
+            ASEPRITE_USER_FOLDER: this.userFolder,
+            // The extension refuses `lua.run` unless the Aseprite process
+            // itself carries the switch; when the flag is on, honour it.
+            ...(this.allowLua ? { ASEPRITE_AI_ALLOW_LUA: "1" } : {}),
+          },
           stdio: ["pipe", "pipe", "pipe"],
           windowsHide: true,
         });

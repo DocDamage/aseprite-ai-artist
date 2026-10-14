@@ -94,6 +94,23 @@ check("unknown command fails loudly, not silently", function()
   assertEq(reply.error.code, "unsupported_command", "error code")
 end)
 
+check("lua.run obeys the ASEPRITE_AI_ALLOW_LUA capability gate", function()
+  local reply = A.handleCommand({ id = "t", cmd = "lua.run", args = { script = "return 7" } })
+  -- Deterministic under both environments: a machine running this suite with
+  -- the variable set must see the hatch open, and one without must see a
+  -- refusal naming the switch — never a silent success through a closed gate.
+  local value = os.getenv("ASEPRITE_AI_ALLOW_LUA")
+  if value == "1" or value == "true" or value == "yes" then
+    assert(reply.ok == true, "lua.run refused with the gate open")
+    assertEq(reply.data.result, 7, "lua.run result")
+  else
+    assert(reply.ok == false, "lua.run ran with the gate closed")
+    assertEq(reply.error.code, "unsupported_command", "error code")
+    assert(string.find(reply.error.message, "ASEPRITE_AI_ALLOW_LUA", 1, true),
+      "refusal names the switch")
+  end
+end)
+
 check("draw.batch writes pixels and reports the count", function()
   local result = call("draw.batch", {
     ops = { { kind = "rect", color = "#ff004d", rect = { x = 2, y = 2, width = 6, height = 6 },
@@ -1054,6 +1071,44 @@ check("reference.apply imports, lists, samples and removes", function()
 
     call("reference.apply", { op = "remove", name = listed[1] })
     assertEq(#call("reference.apply", { op = "list" }).references, 0, "reference survived removal")
+  end)
+  os.remove(ref_path)
+end)
+
+check("reference.apply leaves the user's site alone when reading the file throws", function()
+  local ref_path = app.fs.joinPath(app.fs.tempPath, "ai-artist-test-reference-throw.png")
+  withMockSprite(6, 6, ColorMode.RGB, function(mock)
+    mock:saveCopyAs(ref_path)
+  end)
+
+  withMockSprite(6, 6, ColorMode.RGB, function(mock)
+    mock:newEmptyFrame()
+    mock:newLayer()
+    app.frame = mock.frames[2]
+    app.layer = mock.layers[1]
+    local open_before = #app.sprites
+
+    -- Fail after app.open, inside the read: the path the scorer found uncaged.
+    local real_image = Image
+    Image = function(...)
+      local img = real_image(...)
+      return setmetatable({}, { __index = function(_, k)
+        if k == "drawSprite" then return function() error("simulated read failure", 0) end end
+        local v = img[k]
+        if type(v) == "function" then return function(_, ...) return v(img, ...) end end
+        return v
+      end })
+    end
+    local ok, reply = pcall(A.handleCommand, { id = "t", cmd = "reference.apply",
+      args = { op = "sample_palette", path = ref_path } })
+    Image = real_image
+
+    assert(ok, "handler raised instead of replying: " .. tostring(reply))
+    assertEq(reply.ok, false, "a failed read must be reported")
+    assertEq(#app.sprites, open_before, "the reference file was left open")
+    assert(app.sprite == mock, "a failed read left the reference as the active sprite")
+    assertEq(app.frame.frameNumber, 2, "active frame changed")
+    assert(app.layer == mock.layers[1], "active layer changed")
   end)
   os.remove(ref_path)
 end)

@@ -14,6 +14,7 @@ export * from './retro-mode-switcher';
 export * as Select from './select';
 export * from './separator';
 export * from './slider';
+export * from './sound-switcher';
 export * as Table from './table';
 export * from './toast';
 export * as ToggleGroup from './toggle-group';

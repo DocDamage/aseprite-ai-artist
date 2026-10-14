@@ -5,8 +5,9 @@
 	import CloseIcon from '~icons/pixelarticons/close';
 	import GithubIcon from '~icons/pixelarticons/github';
 	import PlusIcon from '~icons/pixelarticons/plus';
-	import { Button, RetroModeSwitcher } from '#shared/ui/8bit/index.js';
+	import { Button, RetroModeSwitcher, SoundSwitcher } from '#shared/ui/8bit/index.js';
 	import { REPO_URL } from '#shared/lib/site.js';
+	import { playSound } from '#shared/lib/sound/index.js';
 	import type { NavLink } from '../model/types';
 
 	interface Props {
@@ -29,8 +30,14 @@
 	// button's aria-controls always points at something.
 	$effect(() => {
 		if (!dialog) return;
-		if (open && !dialog.open) dialog.showModal();
-		if (!open && dialog.open) dialog.close();
+		if (open && !dialog.open) {
+			dialog.showModal();
+			playSound('open');
+		}
+		if (!open && dialog.open) {
+			dialog.close();
+			playSound('close');
+		}
 	});
 
 	$effect(() => {
@@ -127,6 +134,8 @@
 					{/if}
 				</a>
 				<div class="flex items-center gap-2 text-sm text-muted-foreground">
+					Sound
+					<SoundSwitcher />
 					Theme
 					<RetroModeSwitcher />
 				</div>

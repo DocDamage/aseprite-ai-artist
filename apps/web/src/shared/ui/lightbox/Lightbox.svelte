@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import CloseIcon from '~icons/pixelarticons/close';
 	import { Button } from '#shared/ui/8bit/index.js';
+	import { playSound } from '#shared/lib/sound/index.js';
 
 	interface Props {
 		open: boolean;
@@ -22,10 +23,13 @@
 	// inert, without any of that re-implemented here.
 	function modal(dialog: HTMLDialogElement) {
 		if (!dialog.open) dialog.showModal();
+		playSound('expand');
 		const scroll = document.documentElement.style.overflow;
 		document.documentElement.style.overflow = 'hidden';
 		return () => {
 			document.documentElement.style.overflow = scroll;
+			// Every way out (button, backdrop, Escape, `open = false`) unmounts the dialog here.
+			playSound('collapse');
 			// Closed from our side (button, backdrop, `open = false`) the dialog is only unmounted;
 			// close() is what hands focus back to the element that opened it.
 			if (dialog.open) dialog.close();

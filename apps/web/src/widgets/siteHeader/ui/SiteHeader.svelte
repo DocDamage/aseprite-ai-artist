@@ -10,7 +10,7 @@
 	import PlugIcon from '~icons/pixelarticons/plug';
 	import PlusIcon from '~icons/pixelarticons/plus';
 	import TrophyIcon from '~icons/pixelarticons/trophy';
-	import { Button, RetroModeSwitcher } from '#shared/ui/8bit/index.js';
+	import { Button, RetroModeSwitcher, SoundSwitcher } from '#shared/ui/8bit/index.js';
 	import { REPO_URL } from '#shared/lib/site.js';
 	import { BrandLink } from '#shared/ui/brand/index.js';
 	import MobileMenu from './MobileMenu.svelte';
@@ -109,7 +109,8 @@
 					{/if}
 				</span>
 			</Button>
-			<div class="hidden md:block">
+			<div class="hidden items-center md:flex">
+				<SoundSwitcher />
 				<RetroModeSwitcher />
 			</div>
 			<Button

@@ -37,6 +37,7 @@
 	href={resolve('/packs/[id]', { id: pack.id })}
 	class="pack-tile group relative block outline-offset-8"
 	aria-label="Open the pack {pack.title}: {plural(pack.generations.length, 'card')}"
+	data-sound="pack-take"
 	onclick={launch}
 >
 	<!-- Card backs, deepest first, so each sits under the one after it. -->

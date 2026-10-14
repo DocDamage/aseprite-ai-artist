@@ -111,6 +111,7 @@
 					<Button
 						href={source.url}
 						download={source.name}
+						data-sound="confirm"
 						onclick={(event: MouseEvent) => saveFrom(event, source.url, source.name)}
 						variant="accent"
 					>

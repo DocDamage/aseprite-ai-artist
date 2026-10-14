@@ -6,7 +6,34 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `reference` no longer leaves the source image open as the active sprite when
+  reading it fails, and now restores the user's active layer and frame too, not
+  only the sprite.
+
+## [0.8.2] — 2026-10-12
+
+### Fixed
+
+- **The OpenCode plugin loads from a git install.** `opencode plugin add
+  …::path:opencode` keeps only the plugin subdirectory in its cache, so the
+  plugin failed on `../hooks/shared.mjs` and found no skills. It now resolves
+  both from the published package (declared dependency) when the sibling tree
+  is absent, and the install command names the `#main` ref it needs.
+
+## [0.8.1] — 2026-10-12
+
 ### Changed
+
+- **`lua.run` is gated on both sides.** The Aseprite extension refuses the
+  escape hatch unless the Aseprite process was started with
+  `ASEPRITE_AI_ALLOW_LUA=1`, so the capability itself — not just the tool entry
+  — is off by default. Headless sessions inherit the variable from the server
+  when `--allowLua` is set.
+- **Git-install bootstrap pins its lockfile.** `bin/aseprite-ai-artist.mjs`
+  builds first-run installs with `npm ci --ignore-scripts`, so a plugin
+  installed from git cannot execute dependency lifecycle scripts.
 
 - **README hero in 3D.** The rainy bookshop is redrawn in two-point perspective
   as a 16-second multiplane shot at 24 fps (384 frames): 24 layers, the depth
@@ -28,11 +55,31 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **OpenCode install target.** `install opencode` writes the MCP server into
+  OpenCode 2.x's config (`~/.config/opencode/opencode.json`, native
+  `mcp.servers` shape — OpenCode 1.x cannot read it), with MCP prompts off so
+  the plugin's `/aseprite:*` commands do not double.
+- **OpenCode plugin.** `/aseprite:*` commands, skills, bridge status and the
+  look nudge for OpenCode V2, loaded from the repo (checkout path or
+  `github:...::path:opencode`).
 - **Gallery pack: the rainy bookshop, before and after.** The old hero
   (plugin 0.2.0) and the 3D cut (0.8.0), both by Claude Opus 5.5, with their
   sources and prompts.
+- **Site: sound effects.** Every control on the site now clicks, selects,
+  toggles or opens with a short retro sound, and opening a pack has a
+  soundtrack cued by its animation: the shake, the foil tearing, the cards
+  rising and each ring of the fan being dealt. The effects are Kenney's CC0
+  sounds picked from soundcn (credits in `apps/web/static/sounds/CREDITS.txt`).
+  A speaker switch in the header (and the phone menu) turns them off; with no
+  choice made, they start off for visitors whose system asks for reduced
+  motion. Nothing plays before the first click or key press on a page.
 
 ### Fixed
+
+- **`sprite_info` is valid under strict output validation.** The extension
+  reports `modified`; the declared output schema did not allow it. OpenCode's
+  MCP client rejects any result with undeclared properties, so the tool failed
+  there while every other harness never noticed — the field is now declared.
 
 - **Gallery prompts in English.** The blacksmith generation now keeps its
   Russian prompt in `original` and the English rendering in `text`, like the

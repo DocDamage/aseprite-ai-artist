@@ -42,6 +42,7 @@
 							<Button
 								href={file.url}
 								download={file.name}
+								data-sound="confirm"
 								onclick={(event: MouseEvent) => saveFrom(event, file.url, file.name)}
 								variant="outline"
 								size="sm"
